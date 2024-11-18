@@ -11,7 +11,7 @@
 #include "pps.h"
 #include "winpibt.h"
 
-enum destroy_heuristic { RANDOMAGENTS, RANDOMWALK, INTERSECTION, DESTORY_COUNT };
+enum destroy_heuristic { RANDOMAGENTS, RANDOMWALK, INTERSECTION, DESTORY_COUNT, SAT };
 
 // TODO: adaptively change the neighbor size, that is,
 // increase it if no progress is made for a while
@@ -79,4 +79,6 @@ private:
     int findRandomAgent() const;
     void randomWalk(int agent_id, int start_location, int start_timestep,
                     set<int>& neighbor, int neighbor_size, int upperbound);
+
+    bool generateNeighborBySAT();
 };

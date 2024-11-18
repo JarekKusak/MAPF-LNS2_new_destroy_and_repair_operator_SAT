@@ -25,6 +25,8 @@ LNS::LNS(const Instance& instance, double time_limit, const string & init_algo_n
         destroy_strategy = INTERSECTION;
     else if (destory_name == "Random")
         destroy_strategy = RANDOMAGENTS;
+    else if (destory_name == "SAT")
+        destroy_strategy = SAT;
     else
     {
         cerr << "Destroy heuristic " << destory_name << " does not exists. " << endl;
@@ -38,6 +40,18 @@ LNS::LNS(const Instance& instance, double time_limit, const string & init_algo_n
     preprocessing_time = ((fsec)(Time::now() - start_time)).count();
     if (screen >= 2)
         cout << "Pre-processing time = " << preprocessing_time << " seconds." << endl;
+}
+
+bool LNS::generateNeighborBySAT() {
+    neighbor.agents.resize(agents.size());
+    for (int i = 0; i < (int)agents.size(); i++)
+        neighbor.agents[i] = i;
+    if (neighbor.agents.size() > neighbor_size)
+    {
+        std::random_shuffle(neighbor.agents.begin(), neighbor.agents.end());
+        neighbor.agents.resize(neighbor_size);
+    }
+    return true;
 }
 
 bool LNS::run()
@@ -126,6 +140,9 @@ bool LNS::run()
                     neighbor.agents.resize(neighbor_size);
                 }
                 succ = true;
+                break;
+            case SAT: // new operator
+                succ = generateNeighborBySAT();
                 break;
             default:
                 cerr << "Wrong neighbor generation strategy" << endl;
@@ -541,6 +558,7 @@ void LNS::chooseDestroyHeuristicbyALNS()
         case 0 : destroy_strategy = RANDOMWALK; break;
         case 1 : destroy_strategy = INTERSECTION; break;
         case 2 : destroy_strategy = RANDOMAGENTS; break;
+        case 3 : destroy_strategy = SAT; break;
         default : cerr << "ERROR" << endl; exit(-1);
     }
 }

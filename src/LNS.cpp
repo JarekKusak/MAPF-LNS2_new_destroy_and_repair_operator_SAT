@@ -43,8 +43,8 @@ LNS::LNS(const Instance& instance, double time_limit, const string & init_algo_n
         cout << "Pre-processing time = " << preprocessing_time << " seconds." << endl;
 }
 
-/* getting the submap around one or more agents and identifying agents in these submaps*/
-pair<vector<int>, vector<int>> getSubmapAndAgents(int agent_id, int submap_size){
+/* getting the submap around one or more agents and identifying agents in these submaps */
+pair<vector<int>, vector<int>> LNS::getSubmapAndAgents(int agent_id, int submap_size){
     // already using methods from PathTable.cpp
     vector<int> submap; // cells of map that belong to the submap
     vector<int> agents_in_submap; // IDs of agents in the submap
@@ -54,11 +54,13 @@ pair<vector<int>, vector<int>> getSubmapAndAgents(int agent_id, int submap_size)
     int agent_loc = agents[agent_id].path[0].location; // beginning of the path of the agent
 
     // defy the submap using adjacent cells
-    vector<int> neighbors = instance.getNeighbors(agent_loc);
+    list<int> neighbors_list = instance.getNeighbors(agent_loc);
+    vector<int> neighbors(neighbors_list.begin(), neighbors_list.end());
 
     for (int neighbor : neighbors) {
         submap.push_back(neighbor);
-        vector<int> further_neighbors = instance.getNeighbors(neighbor); // neighbors of the neighbors
+        list<int> further_neighbors_list = instance.getNeighbors(neighbor); // neighbors of the neighbors
+        vector<int> further_neighbors(further_neighbors_list.begin(), further_neighbors_list.end());
         submap.insert(submap.end(), further_neighbors.begin(), further_neighbors.end());
     }
     submap.push_back(agent_loc); // also adding our agent
@@ -77,8 +79,27 @@ pair<vector<int>, vector<int>> getSubmapAndAgents(int agent_id, int submap_size)
 
 bool LNS::generateNeighborBySAT() {
     cout << "SAT operator called." << endl;
-    int agent_id = findMostDelayedAgent();
-    return true;
+    int key_agent_id = findMostDelayedAgent();
+
+    if (key_agent_id < 0) {
+        cout << "No delayed agent found." << endl;
+        return false;
+    }
+
+    int submap_size = 10; // size of the submap (e.g. 10 cells)
+    auto [submap, agents_in_submap] = getSubmapAndAgents(key_agent_id, submap_size);
+
+    neighbor.agents.clear();
+    for (int agent : agents_in_submap)
+        neighbor.agents.push_back(agent);
+
+    cout << "Selected agents: ";
+    for (int agent : neighbor.agents) { // debug
+        cout << agent << " ";
+    }
+    cout << endl;
+
+    return !neighbor.agents.empty(); // return true if non-empty
 
 
     /*

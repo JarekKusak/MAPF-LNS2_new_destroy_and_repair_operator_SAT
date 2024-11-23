@@ -50,8 +50,28 @@ pair<vector<int>, vector<int>> getSubmapAndAgents(int agent_id, int submap_size)
     vector<int> agents_in_submap; // IDs of agents in the submap
     set<int> conflicting_agents; // set of agents that will be rescheduled
 
-    
+    // get location of the agent (passed in the parameter)
+    int agent_loc = agents[agent_id].path[0].location; // beginning of the path of the agent
 
+    // defy the submap using adjacent cells
+    vector<int> neighbors = instance.getNeighbors(agent_loc);
+
+    for (int neighbor : neighbors) {
+        submap.push_back(neighbor);
+        vector<int> further_neighbors = instance.getNeighbors(neighbor); // neighbors of the neighbors
+        submap.insert(submap.end(), further_neighbors.begin(), further_neighbors.end());
+    }
+    submap.push_back(agent_loc); // also adding our agent
+
+    // find agents in the submap with the help of PathTable.cpp
+    for (int loc : submap)
+        path_table.get_agents(conflicting_agents, submap_size, loc); // find agents...
+
+    // add found agents in the vector
+    for (int agent : conflicting_agents)
+        agents_in_submap.push_back(agent);
+
+    return {submap, agents_in_submap};
 }
 
 

@@ -46,6 +46,14 @@ LNS::LNS(const Instance& instance, double time_limit, const string & init_algo_n
 /* getting the submap around one or more agents and identifying agents in these submaps */
 pair<vector<int>, vector<int>> LNS::getSubmapAndAgents(int agent_id, int submap_size){
     // already using methods from PathTable.cpp
+
+    // cell in a submap is represented as index in vector: index = x * num_of_cols + y
+    // up: index - num_of_cols
+    // down: index + num_of_cols
+    // left: index - 1 (if y > 0)
+    // right: index + 1 (if y < 0)
+
+
     vector<int> submap; // cells of map that belong to the submap
     vector<int> agents_in_submap; // IDs of agents in the submap
     set<int> conflicting_agents; // set of agents that will be rescheduled

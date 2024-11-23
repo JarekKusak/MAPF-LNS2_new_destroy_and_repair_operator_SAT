@@ -116,11 +116,6 @@ bool LNS::run()
         return false; // terminate because no initial solution is found
     }
 
-    cout << "Checking while condition:" << endl;
-    cout << "runtime = " << runtime << ", time_limit = " << time_limit << endl;
-    cout << "iteration_stats.size() = " << iteration_stats.size()
-         << ", num_of_iterations = " << num_of_iterations << endl;
-
     while (runtime < time_limit && iteration_stats.size() <= num_of_iterations)
     {
         cout.flush();

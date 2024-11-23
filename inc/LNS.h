@@ -80,5 +80,6 @@ private:
     void randomWalk(int agent_id, int start_location, int start_timestep,
                     set<int>& neighbor, int neighbor_size, int upperbound);
 
-    bool generateNeighborBySAT();
+    bool generateNeighborBySAT(); // new destroy operator
+    pair<vector<int>, vector<int>> getSubmapAndAgents(int agent_id, int submap_size); // helper function for getting sub-map
 };

@@ -43,7 +43,18 @@ LNS::LNS(const Instance& instance, double time_limit, const string & init_algo_n
         cout << "Pre-processing time = " << preprocessing_time << " seconds." << endl;
 }
 
+pair<vector<int>, vector<int>> getSubmapAndAgents(int agent_id, int submap_size){
+
+}
+
+
 bool LNS::generateNeighborBySAT() {
+    cout << "SAT operator called." << endl;
+    int agent_id = findMostDelayedAgent();
+    return true;
+
+
+    /*
     // implementing random walk just for test run
     neighbor.agents.resize(agents.size());
     for (int i = 0; i < (int)agents.size(); i++)
@@ -52,8 +63,7 @@ bool LNS::generateNeighborBySAT() {
     {
         std::random_shuffle(neighbor.agents.begin(), neighbor.agents.end());
         neighbor.agents.resize(neighbor_size);
-    }
-    return true;
+    }*/
 }
 
 bool LNS::run()

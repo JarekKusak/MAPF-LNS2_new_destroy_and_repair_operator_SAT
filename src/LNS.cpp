@@ -6,7 +6,8 @@ LNS::LNS(const Instance& instance, double time_limit, const string & init_algo_n
          const string & destory_name, int neighbor_size, int num_of_iterations, bool use_init_lns,
          const string & init_destory_name, bool use_sipp, int screen, PIBTPPS_option pipp_option) :
          BasicLNS(instance, time_limit, neighbor_size, screen),
-         init_algo_name(init_algo_name),  replan_algo_name(replan_algo_name), num_of_iterations(num_of_iterations),
+         init_algo_name(init_algo_name),  replan_algo_name(replan_algo_name),
+         num_of_iterations(num_of_iterations > 0 ? num_of_iterations : 10),
          use_init_lns(use_init_lns),init_destory_name(init_destory_name),
          path_table(instance.map_size), pipp_option(pipp_option)
 {
@@ -25,7 +26,7 @@ LNS::LNS(const Instance& instance, double time_limit, const string & init_algo_n
         destroy_strategy = INTERSECTION;
     else if (destory_name == "Random")
         destroy_strategy = RANDOMAGENTS;
-    else if (destory_name == "SAT")
+    else if (destory_name == "SAT") // new operator
         destroy_strategy = SAT;
     else
     {
@@ -43,6 +44,7 @@ LNS::LNS(const Instance& instance, double time_limit, const string & init_algo_n
 }
 
 bool LNS::generateNeighborBySAT() {
+    // implementing random walk just for test run
     neighbor.agents.resize(agents.size());
     for (int i = 0; i < (int)agents.size(); i++)
         neighbor.agents[i] = i;
@@ -114,8 +116,14 @@ bool LNS::run()
         return false; // terminate because no initial solution is found
     }
 
+    cout << "Checking while condition:" << endl;
+    cout << "runtime = " << runtime << ", time_limit = " << time_limit << endl;
+    cout << "iteration_stats.size() = " << iteration_stats.size()
+         << ", num_of_iterations = " << num_of_iterations << endl;
+
     while (runtime < time_limit && iteration_stats.size() <= num_of_iterations)
     {
+        cout.flush();
         runtime =((fsec)(Time::now() - start_time)).count();
         if(screen >= 1)
             validateSolution();
@@ -148,6 +156,7 @@ bool LNS::run()
                 cerr << "Wrong neighbor generation strategy" << endl;
                 exit(-1);
         }
+
         if(!succ)
             continue;
 

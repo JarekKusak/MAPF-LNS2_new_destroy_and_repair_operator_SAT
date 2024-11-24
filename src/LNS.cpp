@@ -44,7 +44,7 @@ LNS::LNS(const Instance& instance, double time_limit, const string & init_algo_n
 }
 
 /* getting the submap around one or more agents and identifying agents in these submaps */
-pair<vector<int>, vector<int>> LNS::getSubmapAndAgents(int agent_id, int submap_size){
+pair<vector<int>, vector<int>> LNS::getSubmapAndAgents(int agent_id, int submap_size, int agent_location){
     // already using methods from PathTable.cpp
 
     // cell in a submap is represented as index in vector: index = x * num_of_cols + y
@@ -56,31 +56,35 @@ pair<vector<int>, vector<int>> LNS::getSubmapAndAgents(int agent_id, int submap_
     vector<int> submap; // cells of map that belong to the submap
     vector<int> agents_in_submap; // IDs of agents in the submap
     set<int> conflicting_agents; // set of agents that will be rescheduled
+    set<int> visited_cells; // set to avoid revisiting cells
 
-    // get location of the agent (passed in the parameter)
+    std::queue<int> cells_to_explore;
+    cells_to_explore.push(agent_location);
+    visited_cells.insert(agent_location);
 
-    // we are finding the submap at the beginning of the most problematic agent, not in the most problematic place...
-    int agent_loc = agents[agent_id].path[0].location; // beginning of the path of the agent
+    while (!cells_to_explore.empty() && (int)submap.size() < submap_size) {
+        int current_cell = cells_to_explore.front();
+        cells_to_explore.pop();
 
-    // defy the submap using adjacent cells
-    list<int> neighbors_list = instance.getNeighbors(agent_loc);
-    vector<int> neighbors(neighbors_list.begin(), neighbors_list.end());
+        // add the current cell to the submap
+        submap.push_back(current_cell);
 
-    for (int neighbor : neighbors) {
-        submap.push_back(neighbor);
-        list<int> further_neighbors_list = instance.getNeighbors(neighbor); // neighbors of the neighbors
-        vector<int> further_neighbors(further_neighbors_list.begin(), further_neighbors_list.end());
-        submap.insert(submap.end(), further_neighbors.begin(), further_neighbors.end());
+        // explore neighbors of the current cell
+        list<int> neighbors_list = instance.getNeighbors(current_cell);
+        for (int neighbor : neighbors_list) {
+            if (visited_cells.find(neighbor) == visited_cells.end()) {
+                cells_to_explore.push(neighbor);
+                visited_cells.insert(neighbor);
+            }
+        }
     }
-    submap.push_back(agent_loc); // also adding our agent
 
-    // find agents in the submap with the help of PathTable.cpp
+    // find agents in the submap with the help of PathTable
     for (int loc : submap)
-        path_table.get_agents(conflicting_agents, submap_size, loc); // find agents...
+        path_table.get_agents(conflicting_agents, loc);
 
-    // add found agents in the vector
-    for (int agent : conflicting_agents)
-        agents_in_submap.push_back(agent);
+    // add found agents to the vector
+    agents_in_submap.assign(conflicting_agents.begin(), conflicting_agents.end());
 
     return {submap, agents_in_submap};
 }
@@ -89,15 +93,16 @@ pair<vector<int>, vector<int>> LNS::getSubmapAndAgents(int agent_id, int submap_
 bool LNS::generateNeighborBySAT() {
     cout << "SAT operator called." << endl;
     auto [key_agent_id, problematic_timestep] = findMostDelayedAgent();
-    // TODO: find his most problematic place on the track
 
     if (key_agent_id < 0) {
         cout << "No delayed agent found." << endl;
         return false;
     }
 
+    int agent_loc = agents[key_agent_id].path[problematic_timestep].location;
+
     int submap_size = 10; // size of the submap (e.g. 10 cells)
-    auto [submap, agents_in_submap] = getSubmapAndAgents(key_agent_id, submap_size);
+    auto [submap, agents_in_submap] = getSubmapAndAgents(key_agent_id, submap_size, agent_loc);
 
     neighbor.agents.clear();
     for (int agent : agents_in_submap)

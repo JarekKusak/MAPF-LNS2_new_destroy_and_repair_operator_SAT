@@ -1,6 +1,24 @@
 #include "SingleAgentSolver.h"
 #include "SpaceTimeAStar.h"
 
+int SingleAgentSolver::getNumOfDelaysAtTimestep(const PathTable& path_table, const Path& path, int location, int timestep) const {
+    int delays = 0;
+
+    // control of the conflicts on current node
+    if (path_table.constrained(location, location, timestep))
+        delays++;
+
+    // transition conflict control (from previous node to current)
+    if (timestep > 0) {
+        int prev_location = path[timestep - 1].location;
+        if (path_table.constrained(prev_location, location, timestep))
+            delays++;
+    }
+
+    return delays;
+}
+
+
 list<int> SingleAgentSolver::getNextLocations(int curr) const // including itself and its neighbors
 {
 	list<int> rst = instance.getNeighbors(curr);

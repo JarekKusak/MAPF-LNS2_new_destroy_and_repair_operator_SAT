@@ -136,6 +136,8 @@ public:
         num_generated = 0;
         num_reopened = 0;
     }
+
+    int getNumOfDelaysAtTimestep(const PathTable& path_table, const Path& path, int location, int timestep) const;
 protected:
     uint64_t num_expanded = 0;
     uint64_t num_generated = 0;

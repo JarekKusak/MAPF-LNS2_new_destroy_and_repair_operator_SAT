@@ -88,9 +88,7 @@ pair<vector<int>, vector<int>> LNS::getSubmapAndAgents(int agent_id, int submap_
 
 bool LNS::generateNeighborBySAT() {
     cout << "SAT operator called." << endl;
-    std::pair<int, int> result = findMostDelayedAgent();
-    int key_agent_id = result.first;
-    int problematic_timestep = result.second;
+    auto [key_agent_id, problematic_timestep] = findMostDelayedAgent();
     // TODO: find his most problematic place on the track
 
     if (key_agent_id < 0) {

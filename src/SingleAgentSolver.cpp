@@ -7,8 +7,8 @@ int SingleAgentSolver::getNumOfDelaysAtTimestep(const PathTable& path_table, con
     // control of the conflicts on current node
     if (path_table.constrained(location, location, timestep)){
         delays++;
-        cout << "Conflict at location " << location
-             << ", timestep " << timestep << endl;
+        //cout << "Conflict at location " << location
+        //     << ", timestep " << timestep << endl;
     }
 
 
@@ -17,8 +17,8 @@ int SingleAgentSolver::getNumOfDelaysAtTimestep(const PathTable& path_table, con
         int prev_location = path[timestep - 1].location;
         if (path_table.constrained(prev_location, location, timestep)){
             delays++;
-            cout << "Edge conflict between " << prev_location
-                 << " -> " << location << ", timestep " << timestep << endl;
+            //cout << "Edge conflict between " << prev_location
+            //     << " -> " << location << ", timestep " << timestep << endl;
         }
     }
 

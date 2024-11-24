@@ -7,7 +7,7 @@ LNS::LNS(const Instance& instance, double time_limit, const string & init_algo_n
          const string & init_destory_name, bool use_sipp, int screen, PIBTPPS_option pipp_option) :
          BasicLNS(instance, time_limit, neighbor_size, screen),
          init_algo_name(init_algo_name),  replan_algo_name(replan_algo_name),
-         num_of_iterations(num_of_iterations > 0 ? num_of_iterations : 10),
+         num_of_iterations(num_of_iterations > 0 ? num_of_iterations : 5),
          use_init_lns(use_init_lns),init_destory_name(init_destory_name),
          path_table(instance.map_size), pipp_option(pipp_option)
 {
@@ -83,11 +83,11 @@ pair<vector<int>, vector<int>> LNS::getSubmapAndAgents(int agent_id, int submap_
     for (int loc : submap)
         path_table.get_agents(conflicting_agents, loc);
 
-    cout << "Agents in submap: ";
-    for (int agent : agents_in_submap) {
-        cout << agent << " ";
-    }
-    cout << endl;
+    //cout << "Agents in submap: ";
+    //for (int agent : agents_in_submap) {
+    //    cout << agent << " ";
+    //}
+    //cout << endl;
 
     // add found agents to the vector
     agents_in_submap.assign(conflicting_agents.begin(), conflicting_agents.end());
@@ -95,13 +95,12 @@ pair<vector<int>, vector<int>> LNS::getSubmapAndAgents(int agent_id, int submap_
     return {submap, agents_in_submap};
 }
 
-
 bool LNS::generateNeighborBySAT() {
     cout << "SAT operator called." << endl;
     auto [key_agent_id, problematic_timestep] = findMostDelayedAgent();
 
-    cout << "Most delayed agent: " << key_agent_id
-         << ", Problematic timestep: " << problematic_timestep << endl;
+    //cout << "Most delayed agent: " << key_agent_id
+    //     << ", Problematic timestep: " << problematic_timestep << endl;
 
     if (key_agent_id < 0) {
         cout << "No delayed agent found." << endl;
@@ -111,32 +110,31 @@ bool LNS::generateNeighborBySAT() {
     int agent_loc = agents[key_agent_id].path[problematic_timestep].location;
     int submap_size = 10; // size of the submap (e.g. 10 cells)
 
-    cout << "Generating submap for agent at location: " << agent_loc << endl;
+    //cout << "Generating submap for agent at location: " << agent_loc << endl;
     auto [submap, agents_in_submap] = getSubmapAndAgents(key_agent_id, submap_size, agent_loc);
 
-    // =============================================
+    /* =============================================
     cout << "Submap generated (size = " << submap.size() << "): ";
-    for (int cell : submap) {
+    for (int cell : submap)
         cout << cell << " ";
-    }
+
     cout << endl;
 
     cout << "Agents in submap: ";
-    for (int agent : agents_in_submap) {
+    for (int agent : agents_in_submap)
         cout << agent << " ";
-    }
+
     cout << endl;
-    // =============================================
+    // ============================================= */
 
     neighbor.agents.clear();
     for (int agent : agents_in_submap)
         neighbor.agents.push_back(agent);
 
-    cout << "selected agents: ";
-    for (int agent : neighbor.agents) // debug
-        cout << agent << " ";
-
-    cout << endl;
+    //cout << "selected agents: ";
+    //for (int agent : neighbor.agents) // debug
+    //    cout << agent << " ";
+    //cout << endl;
 
     return !neighbor.agents.empty(); // return true if non-empty
 }
@@ -703,6 +701,7 @@ bool LNS::generateNeighborByIntersection()
         cout << "Generate " << neighbor.agents.size() << " neighbors by intersection " << location << endl;
     return true;
 }
+
 bool LNS::generateNeighborByRandomWalk()
 {
     if (neighbor_size >= (int)agents.size())
@@ -760,15 +759,20 @@ pair<int, int> LNS::findMostDelayedAgent() {
 
     for (const auto& agent : agents) {
         auto [agent_max_delays, problematic_timestep] = agent.getMostProblematicDelay(path_table);
-        cout << "Agent " << agent.id << ": Delays = " << agent_max_delays
-             << ", Problematic timestep = " << problematic_timestep << endl;
+
+        // debug
+        //cout << "Agent " << agent.id << ": Delays = " << agent_max_delays
+        //     << ", Problematic timestep = " << problematic_timestep << endl;
+
         if (agent_max_delays > max_delays) {
             max_delays = agent_max_delays;
             agent_with_max_delays = agent.id;
             most_problematic_timestep = problematic_timestep;
-            cout << "New most delayed agent: " << agent_with_max_delays
-                 << " with delays = " << max_delays
-                 << " at timestep = " << most_problematic_timestep << endl;
+
+            // debug
+            //cout << "New most delayed agent: " << agent_with_max_delays
+            //     << " with delays = " << max_delays
+            //     << " at timestep = " << most_problematic_timestep << endl;
         }
     }
 

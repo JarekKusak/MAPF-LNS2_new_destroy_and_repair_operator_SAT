@@ -32,7 +32,7 @@ struct Agent
 
         for (int t = 0; t < path.size(); t++) {
             int delays = path_planner->getNumOfDelaysAtTimestep(path_table, path, path[t].location, t);
-            if (delays > max_delays) {
+            if (delays > max_delays) { // finding the most problematic place
                 max_delays = delays;
                 problematic_timestep = t;
             }

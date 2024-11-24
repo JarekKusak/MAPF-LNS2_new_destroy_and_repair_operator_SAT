@@ -88,7 +88,9 @@ pair<vector<int>, vector<int>> LNS::getSubmapAndAgents(int agent_id, int submap_
 
 bool LNS::generateNeighborBySAT() {
     cout << "SAT operator called." << endl;
-    int key_agent_id = findMostDelayedAgent();
+    std::pair<int, int> result = findMostDelayedAgent();
+    int key_agent_id = result.first;
+    int problematic_timestep = result.second;
     // TODO: find his most problematic place on the track
 
     if (key_agent_id < 0) {
@@ -696,7 +698,10 @@ bool LNS::generateNeighborByRandomWalk()
         return true;
     }
 
-    int a = findMostDelayedAgent();
+    std::pair<int, int> result = findMostDelayedAgent();
+    int a = result.first;
+    int time_step = result.second;
+
     if (a < 0)
         return false;
     
@@ -733,30 +738,21 @@ bool LNS::generateNeighborByRandomWalk()
     return true;
 }
 
-int LNS::findMostDelayedAgent()
-{
-    int a = -1;
+pair<int, int> LNS::findMostDelayedAgent() {
     int max_delays = -1;
-    for (int i = 0; i < agents.size(); i++)
-    {
-        if (tabu_list.find(i) != tabu_list.end())
-            continue;
-        int delays = agents[i].getNumOfDelays();
-        if (max_delays < delays)
-        {
-            a = i;
-            max_delays = delays;
+    int agent_with_max_delays = -1;
+    int most_problematic_timestep = -1;
+
+    for (const auto& agent : agents) {
+        auto [agent_max_delays, problematic_timestep] = agent.getMostProblematicDelay(path_table);
+        if (agent_max_delays > max_delays) {
+            max_delays = agent_max_delays;
+            agent_with_max_delays = agent.id;
+            most_problematic_timestep = problematic_timestep;
         }
     }
-    if (max_delays == 0)
-    {
-        tabu_list.clear();
-        return -1;
-    }
-    tabu_list.insert(a);
-    if (tabu_list.size() == agents.size())
-        tabu_list.clear();
-    return a;
+
+    return {agent_with_max_delays, most_problematic_timestep};
 }
 
 int LNS::findRandomAgent() const

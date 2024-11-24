@@ -75,7 +75,7 @@ private:
     bool generateNeighborByRandomWalk();
     bool generateNeighborByIntersection();
 
-    int findMostDelayedAgent();
+    pair<int, int> findMostDelayedAgent(); // the function is now returning the most problematic agent and his most problematic time step
     int findRandomAgent() const;
     void randomWalk(int agent_id, int start_location, int start_timestep,
                     set<int>& neighbor, int neighbor_size, int upperbound);

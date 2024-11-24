@@ -83,6 +83,12 @@ pair<vector<int>, vector<int>> LNS::getSubmapAndAgents(int agent_id, int submap_
     for (int loc : submap)
         path_table.get_agents(conflicting_agents, loc);
 
+    cout << "Agents in submap: ";
+    for (int agent : agents_in_submap) {
+        cout << agent << " ";
+    }
+    cout << endl;
+
     // add found agents to the vector
     agents_in_submap.assign(conflicting_agents.begin(), conflicting_agents.end());
 
@@ -94,15 +100,33 @@ bool LNS::generateNeighborBySAT() {
     cout << "SAT operator called." << endl;
     auto [key_agent_id, problematic_timestep] = findMostDelayedAgent();
 
+    cout << "Most delayed agent: " << key_agent_id
+         << ", Problematic timestep: " << problematic_timestep << endl;
+
     if (key_agent_id < 0) {
         cout << "No delayed agent found." << endl;
         return false;
     }
 
     int agent_loc = agents[key_agent_id].path[problematic_timestep].location;
-
     int submap_size = 10; // size of the submap (e.g. 10 cells)
+
+    cout << "Generating submap for agent at location: " << agent_loc << endl;
     auto [submap, agents_in_submap] = getSubmapAndAgents(key_agent_id, submap_size, agent_loc);
+
+    // =============================================
+    cout << "Submap generated (size = " << submap.size() << "): ";
+    for (int cell : submap) {
+        cout << cell << " ";
+    }
+    cout << endl;
+
+    cout << "Agents in submap: ";
+    for (int agent : agents_in_submap) {
+        cout << agent << " ";
+    }
+    cout << endl;
+    // =============================================
 
     neighbor.agents.clear();
     for (int agent : agents_in_submap)
@@ -115,18 +139,6 @@ bool LNS::generateNeighborBySAT() {
     cout << endl;
 
     return !neighbor.agents.empty(); // return true if non-empty
-
-
-    /*
-    // implementing random walk just for test run
-    neighbor.agents.resize(agents.size());
-    for (int i = 0; i < (int)agents.size(); i++)
-        neighbor.agents[i] = i;
-    if (neighbor.agents.size() > neighbor_size)
-    {
-        std::random_shuffle(neighbor.agents.begin(), neighbor.agents.end());
-        neighbor.agents.resize(neighbor_size);
-    }*/
 }
 
 bool LNS::run()
@@ -748,10 +760,15 @@ pair<int, int> LNS::findMostDelayedAgent() {
 
     for (const auto& agent : agents) {
         auto [agent_max_delays, problematic_timestep] = agent.getMostProblematicDelay(path_table);
+        cout << "Agent " << agent.id << ": Delays = " << agent_max_delays
+             << ", Problematic timestep = " << problematic_timestep << endl;
         if (agent_max_delays > max_delays) {
             max_delays = agent_max_delays;
             agent_with_max_delays = agent.id;
             most_problematic_timestep = problematic_timestep;
+            cout << "New most delayed agent: " << agent_with_max_delays
+                 << " with delays = " << max_delays
+                 << " at timestep = " << most_problematic_timestep << endl;
         }
     }
 

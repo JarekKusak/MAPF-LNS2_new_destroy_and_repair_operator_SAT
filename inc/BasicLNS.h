@@ -3,6 +3,8 @@
 #include "SpaceTimeAStar.h"
 #include "SIPP.h"
 
+class PathTable; // forward declaration
+
 struct Agent
 {
     int id;
@@ -21,6 +23,22 @@ struct Agent
     int getNumOfDelays() const
     {
         return (int) path.size() - 1 - path_planner->my_heuristic[path_planner->start_location];
+    }
+
+    /* analysis path of the agent and returns maximum delay count and the most problematic time step */
+    pair<int, int> getMostProblematicDelay(const PathTable& path_table) const {
+        int max_delays = 0;
+        int problematic_timestep = -1;
+
+        for (int t = 0; t < path.size(); t++) {
+            int delays = path_planner->getNumOfDelaysAtTimestep(path_table, path, path[t].location, t);
+            if (delays > max_delays) {
+                max_delays = delays;
+                problematic_timestep = t;
+            }
+        }
+
+        return {max_delays, problematic_timestep};
     }
 };
 

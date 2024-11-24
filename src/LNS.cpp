@@ -53,12 +53,13 @@ pair<vector<int>, vector<int>> LNS::getSubmapAndAgents(int agent_id, int submap_
     // left: index - 1 (if y > 0)
     // right: index + 1 (if y < 0)
 
-
     vector<int> submap; // cells of map that belong to the submap
     vector<int> agents_in_submap; // IDs of agents in the submap
     set<int> conflicting_agents; // set of agents that will be rescheduled
 
     // get location of the agent (passed in the parameter)
+
+    // we are finding the submap at the beginning of the most problematic agent, not in the most problematic place...
     int agent_loc = agents[agent_id].path[0].location; // beginning of the path of the agent
 
     // defy the submap using adjacent cells
@@ -88,6 +89,7 @@ pair<vector<int>, vector<int>> LNS::getSubmapAndAgents(int agent_id, int submap_
 bool LNS::generateNeighborBySAT() {
     cout << "SAT operator called." << endl;
     int key_agent_id = findMostDelayedAgent();
+    // TODO: find his most problematic place on the track
 
     if (key_agent_id < 0) {
         cout << "No delayed agent found." << endl;
@@ -101,10 +103,10 @@ bool LNS::generateNeighborBySAT() {
     for (int agent : agents_in_submap)
         neighbor.agents.push_back(agent);
 
-    cout << "Selected agents: ";
-    for (int agent : neighbor.agents) { // debug
+    cout << "selected agents: ";
+    for (int agent : neighbor.agents) // debug
         cout << agent << " ";
-    }
+
     cout << endl;
 
     return !neighbor.agents.empty(); // return true if non-empty

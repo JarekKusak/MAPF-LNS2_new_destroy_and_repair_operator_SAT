@@ -110,7 +110,15 @@ bool LNS::generateNeighborBySAT() {
     int agent_loc = agents[key_agent_id].path[problematic_timestep].location;
     int submap_size = 10; // size of the submap (e.g. 10 cells)
 
-    //cout << "Generating submap for agent at location: " << agent_loc << endl;
+    auto& path = agents[key_agent_id].path;
+
+    int stay_location = path.back().location; // last position of agent
+    for (int i = 0; i < 3; ++i)  // we'll add 3 "artificial" steps for agent
+        path.push_back(PathEntry(stay_location));
+
+    cout << "Agent " << key_agent_id << " path extended by 3 steps." << endl;
+
+        //cout << "Generating submap for agent at location: " << agent_loc << endl;
     auto [submap, agents_in_submap] = getSubmapAndAgents(key_agent_id, submap_size, agent_loc);
 
     /* =============================================
@@ -135,6 +143,9 @@ bool LNS::generateNeighborBySAT() {
     //for (int agent : neighbor.agents) // debug
     //    cout << agent << " ";
     //cout << endl;
+
+    // sum of cost
+    // _MAPFSAT_PassParallelSocAll* solver = new _MAPFSAT_PassParallelSocAll(); - optimalizace sum of cost
 
     return !neighbor.agents.empty(); // return true if non-empty
 }
@@ -766,7 +777,7 @@ pair<int, int> LNS::findMostDelayedAgent() {
 
         if (agent_max_delays > max_delays) {
             max_delays = agent_max_delays;
-            agent_with_max_delays = agent.id;
+            agent_with_max_delays = agent.id; // most problematic agent
             most_problematic_timestep = problematic_timestep;
 
             // debug

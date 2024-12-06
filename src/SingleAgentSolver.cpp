@@ -11,7 +11,6 @@ int SingleAgentSolver::getNumOfDelaysAtTimestep(const PathTable& path_table, con
         //     << ", timestep " << timestep << endl;
     }
 
-
     // transition conflict control (from previous node to current)
     if (timestep > 0) {
         int prev_location = path[timestep - 1].location;

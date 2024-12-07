@@ -107,53 +107,122 @@ bool LNS::generateNeighborBySAT() {
     }
 
     int agent_loc = agents[key_agent_id].path[problematic_timestep].location;
-    int submap_size = 10;
+    int submap_size = 16;
 
     auto [submap, agents_in_submap] = getSubmapAndAgents(key_agent_id, submap_size, agent_loc);
 
-    // transforming submap into the format of the library (2D vector)
+    cout << "Submap content (global positions): ";
+    for (int cell : submap) cout << cell << " ";
+    cout << endl;
+
+    if (submap.size() <= 0 || sqrt(submap.size()) != floor(sqrt(submap.size()))) {
+        cout << "Submap size is not a valid square: " << submap.size() << endl;
+        return false;
+    }
+
+    unordered_set<int> submap_set(submap.begin(), submap.end());
+
     int map_width = sqrt(submap.size());
     vector<vector<int>> map(map_width, vector<int>(map_width, -1));
-    for (int idx = 0; idx < submap.size(); ++idx) {
+    unordered_map<int, pair<int, int>> global_to_local;
+
+    for (size_t idx = 0; idx < submap.size(); ++idx) {
         int x = idx / map_width;
         int y = idx % map_width;
-        map[x][y] = 1; // Předpoklad: 1 = volné místo, -1 = překážka
+        map[x][y] = 1; // 1 = volné místo
+        global_to_local[submap[idx]] = {x, y};
+    }
+
+    cout << "Map content:" << endl;
+    for (const auto& row : map) {
+        for (int cell : row) cout << cell << " ";
+        cout << endl;
     }
 
     vector<pair<int, int>> start_positions;
     vector<pair<int, int>> goal_positions;
+    vector<int> agents_to_replan;
+
+    cout << "Agents in submap during time step " << problematic_timestep << ": ";
     for (int agent : agents_in_submap) {
-        start_positions.push_back({agents[agent].path[0].location % map_width, agents[agent].path[0].location / map_width});
-        goal_positions.push_back({agents[agent].path.back().location % map_width, agents[agent].path.back().location / map_width});
+        if (agents[agent].path.size() > problematic_timestep) { // Ověř, že agent má dost kroků
+            int agent_position_at_time = agents[agent].path[problematic_timestep].location;
+            if (submap_set.find(agent_position_at_time) != submap_set.end()) {
+                agents_to_replan.push_back(agent);
+                cout << agent << " ";
+            }
+        }
+    }
+    cout << endl;
+
+    if (agents_to_replan.empty()) {
+        cout << "No agents found in submap during time step " << problematic_timestep << "." << endl;
+        return false;
+    }
+
+    for (int agent : agents_to_replan) {
+        int start_global = -1, goal_global = -1;
+
+        for (size_t t = 0; t < agents[agent].path.size(); ++t) {
+            int location = agents[agent].path[t].location;
+            if (submap_set.find(location) != submap_set.end()) {
+                if (start_global == -1) start_global = location;
+                goal_global = location;
+            }
+        }
+
+        if (start_global == -1 || goal_global == -1) {
+            cout << "Agent " << agent << " does not have both start and goal positions in the submap." << endl;
+            continue;
+        }
+
+        start_positions.push_back(global_to_local[start_global]);
+        goal_positions.push_back(global_to_local[goal_global]);
+
+        cout << "Agent " << agent << "'s local start: ("
+             << global_to_local[start_global].first << ", " << global_to_local[start_global].second << "), "
+             << "local goal: ("
+             << global_to_local[goal_global].first << ", " << global_to_local[goal_global].second << ")" << endl;
+    }
+
+    if (start_positions.empty() || goal_positions.empty()) {
+        cout << "No valid agents found for replanning." << endl;
+        return false;
     }
 
     _MAPFSAT_Instance* inst = new _MAPFSAT_Instance(map, start_positions, goal_positions);
     _MAPFSAT_PassParallelSocAll* solver = new _MAPFSAT_PassParallelSocAll();
     _MAPFSAT_Logger* log = new _MAPFSAT_Logger(inst, "pass_parallel_soc_all", 2);
 
-    solver->SetData(inst, nullptr, 300, "", false, true);
-    inst->SetAgents(agents_in_submap.size());
+    cout << "SAT instance and solver created." << endl;
 
+    solver->SetData(inst, log, 300, "", false, true);
+    inst->SetAgents(start_positions.size());
 
-    // result of problem with the help of SAT
-    int res = solver->Solve(agents_in_submap.size(), 0, true);
-    if (res == 0) { // correct result
+    int res = solver->Solve(start_positions.size(), 0, true);
+    cout << "Solver returned: " << res << endl;
+
+    if (res == 0) {
         vector<vector<int>> plan = solver->GetPlan();
+        for (size_t a = 0; a < agents_to_replan.size(); ++a) {
+            if (a >= plan.size()) break;
 
-        // update of paths of agents according to the given plan
-        for (int a = 0; a < agents_in_submap.size(); ++a) {
-            agents[agents_in_submap[a]].path.clear();
-            for (int t = 0; t < plan[a].size(); ++t)
-                agents[agents_in_submap[a]].path.push_back(PathEntry(plan[a][t]));
+            agents[agents_to_replan[a]].path.clear();
+            for (int t = 0; t < plan[a].size(); ++t) {
+                int global_location = submap[plan[a][t]]; // back to global position
+                agents[agents_to_replan[a]].path.push_back(PathEntry(global_location));
+            }
         }
-        cout << "Plan successfully updated." << endl;
-    } else cout << "SAT solver failed with result: " << res << endl;
+        cout << "Paths successfully updated." << endl;
+    } else {
+        cout << "SAT solver failed." << endl;
+    }
 
     delete inst;
     delete log;
     delete solver;
 
-    return !agents_in_submap.empty(); // true, if there exists any agents in rescheduling
+    return res == 0;
 }
 
 bool LNS::run()

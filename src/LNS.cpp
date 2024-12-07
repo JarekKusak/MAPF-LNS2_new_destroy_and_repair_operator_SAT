@@ -2,6 +2,8 @@
 #include "ECBS.h"
 #include <queue>
 
+#include "../include/MAPF.hpp"
+
 LNS::LNS(const Instance& instance, double time_limit, const string & init_algo_name, const string & replan_algo_name,
          const string & destory_name, int neighbor_size, int num_of_iterations, bool use_init_lns,
          const string & init_destory_name, bool use_sipp, int screen, PIBTPPS_option pipp_option) :
@@ -97,57 +99,61 @@ pair<vector<int>, vector<int>> LNS::getSubmapAndAgents(int agent_id, int submap_
 
 bool LNS::generateNeighborBySAT() {
     cout << "SAT operator called." << endl;
+
     auto [key_agent_id, problematic_timestep] = findMostDelayedAgent();
-
-    //cout << "Most delayed agent: " << key_agent_id
-    //     << ", Problematic timestep: " << problematic_timestep << endl;
-
     if (key_agent_id < 0) {
         cout << "No delayed agent found." << endl;
         return false;
     }
 
     int agent_loc = agents[key_agent_id].path[problematic_timestep].location;
-    int submap_size = 10; // size of the submap (e.g. 10 cells)
+    int submap_size = 10;
 
-    auto& path = agents[key_agent_id].path;
-
-    int stay_location = path.back().location; // last position of agent
-    for (int i = 0; i < 3; ++i)  // we'll add 3 "artificial" steps for agent
-        path.push_back(PathEntry(stay_location));
-
-    cout << "Agent " << key_agent_id << " path extended by 3 steps." << endl;
-
-        //cout << "Generating submap for agent at location: " << agent_loc << endl;
     auto [submap, agents_in_submap] = getSubmapAndAgents(key_agent_id, submap_size, agent_loc);
 
-    /* =============================================
-    cout << "Submap generated (size = " << submap.size() << "): ";
-    for (int cell : submap)
-        cout << cell << " ";
+    // transforming submap into the format of the library (2D vector)
+    int map_width = sqrt(submap.size());
+    vector<vector<int>> map(map_width, vector<int>(map_width, -1));
+    for (int idx = 0; idx < submap.size(); ++idx) {
+        int x = idx / map_width;
+        int y = idx % map_width;
+        map[x][y] = 1; // Předpoklad: 1 = volné místo, -1 = překážka
+    }
 
-    cout << endl;
+    vector<pair<int, int>> start_positions;
+    vector<pair<int, int>> goal_positions;
+    for (int agent : agents_in_submap) {
+        start_positions.push_back({agents[agent].path[0].location % map_width, agents[agent].path[0].location / map_width});
+        goal_positions.push_back({agents[agent].path.back().location % map_width, agents[agent].path.back().location / map_width});
+    }
 
-    cout << "Agents in submap: ";
-    for (int agent : agents_in_submap)
-        cout << agent << " ";
+    _MAPFSAT_Instance* inst = new _MAPFSAT_Instance(map, start_positions, goal_positions);
+    _MAPFSAT_PassParallelSocAll* solver = new _MAPFSAT_PassParallelSocAll();
+    _MAPFSAT_Logger* log = new _MAPFSAT_Logger(inst, "pass_parallel_soc_all", 2);
 
-    cout << endl;
-    // ============================================= */
+    solver->SetData(inst, nullptr, 300, "", false, true);
+    inst->SetAgents(agents_in_submap.size());
 
-    neighbor.agents.clear();
-    for (int agent : agents_in_submap)
-        neighbor.agents.push_back(agent);
 
-    //cout << "selected agents: ";
-    //for (int agent : neighbor.agents) // debug
-    //    cout << agent << " ";
-    //cout << endl;
+    // result of problem with the help of SAT
+    int res = solver->Solve(agents_in_submap.size(), 0, true);
+    if (res == 0) { // correct result
+        vector<vector<int>> plan = solver->GetPlan();
 
-    // sum of cost
-    // _MAPFSAT_PassParallelSocAll* solver = new _MAPFSAT_PassParallelSocAll(); - optimalizace sum of cost
+        // update of paths of agents according to the given plan
+        for (int a = 0; a < agents_in_submap.size(); ++a) {
+            agents[agents_in_submap[a]].path.clear();
+            for (int t = 0; t < plan[a].size(); ++t)
+                agents[agents_in_submap[a]].path.push_back(PathEntry(plan[a][t]));
+        }
+        cout << "Plan successfully updated." << endl;
+    } else cout << "SAT solver failed with result: " << res << endl;
 
-    return !neighbor.agents.empty(); // return true if non-empty
+    delete inst;
+    delete log;
+    delete solver;
+
+    return !agents_in_submap.empty(); // true, if there exists any agents in rescheduling
 }
 
 bool LNS::run()

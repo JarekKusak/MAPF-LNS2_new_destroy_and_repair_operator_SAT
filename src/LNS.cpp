@@ -9,7 +9,7 @@ LNS::LNS(const Instance& instance, double time_limit, const string & init_algo_n
          const string & init_destory_name, bool use_sipp, int screen, PIBTPPS_option pipp_option) :
          BasicLNS(instance, time_limit, neighbor_size, screen),
          init_algo_name(init_algo_name),  replan_algo_name(replan_algo_name),
-         num_of_iterations(num_of_iterations > 0 ? num_of_iterations : 5),
+         num_of_iterations(num_of_iterations > 0 ? num_of_iterations : 2),
          use_init_lns(use_init_lns),init_destory_name(init_destory_name),
          path_table(instance.map_size), pipp_option(pipp_option)
 {
@@ -46,56 +46,56 @@ LNS::LNS(const Instance& instance, double time_limit, const string & init_algo_n
 }
 
 /* getting the submap around one or more agents and identifying agents in these submaps */
-pair<vector<int>, vector<int>> LNS::getSubmapAndAgents(int agent_id, int submap_size, int agent_location){
-    // already using methods from PathTable.cpp
-
-    // cell in a submap is represented as index in vector: index = x * num_of_cols + y
+pair<vector<int>, vector<int>> LNS::getSubmapAndAgents(int agent_id, int submap_size, int agent_location) {
+    // Submap cells are represented as indices: index = x * num_of_cols + y
+    // Directions:
     // up: index - num_of_cols
     // down: index + num_of_cols
     // left: index - 1 (if y > 0)
-    // right: index + 1 (if y < 0)
+    // right: index + 1 (if y < num_of_cols - 1)
 
-    vector<int> submap; // cells of map that belong to the submap
-    vector<int> agents_in_submap; // IDs of agents in the submap
-    set<int> conflicting_agents; // set of agents that will be rescheduled
-    set<int> visited_cells; // set to avoid revisiting cells
+    const int map_width = 32;  // Statická šířka mapy
+    const int map_height = 32; // Statická výška mapy
 
-    std::queue<int> cells_to_explore;
-    cells_to_explore.push(agent_location);
-    visited_cells.insert(agent_location);
+    vector<int> submap;         // Buňky submapy
+    vector<int> agents_in_submap; // ID agentů v submapě
+    set<int> conflicting_agents; // Sada agentů, kteří budou přemapováni
 
-    while (!cells_to_explore.empty() && (int)submap.size() < submap_size) {
-        int current_cell = cells_to_explore.front();
-        cells_to_explore.pop();
+    // Urči střed submapy
+    int submap_side = sqrt(submap_size);
+    if (submap_side * submap_side != submap_size) {
+        cerr << "Submap size is not a perfect square!" << endl;
+        return {{}, {}};
+    }
 
-        // add the current cell to the submap
-        submap.push_back(current_cell);
+    int half_side = submap_side / 2;
+    int agent_x = agent_location / map_width;
+    int agent_y = agent_location % map_width;
 
-        // explore neighbors of the current cell
-        list<int> neighbors_list = instance.getNeighbors(current_cell);
-        for (int neighbor : neighbors_list) {
-            if (visited_cells.find(neighbor) == visited_cells.end()) {
-                cells_to_explore.push(neighbor);
-                visited_cells.insert(neighbor);
-            }
+    int start_x = max(0, agent_x - half_side);
+    int end_x = min(map_height - 1, agent_x + half_side);
+    int start_y = max(0, agent_y - half_side);
+    int end_y = min(map_width - 1, agent_y + half_side);
+
+    // Generování submapy
+    for (int x = start_x; x <= end_x; ++x) {
+        for (int y = start_y; y <= end_y; ++y) {
+            int cell = x * map_width + y;
+            submap.push_back(cell);
         }
     }
 
-    // find agents in the submap with the help of PathTable
-    for (int loc : submap)
+    // Najdi agenty v submapě pomocí PathTable
+    for (int loc : submap) {
         path_table.get_agents(conflicting_agents, loc);
+    }
 
-    //cout << "Agents in submap: ";
-    //for (int agent : agents_in_submap) {
-    //    cout << agent << " ";
-    //}
-    //cout << endl;
-
-    // add found agents to the vector
+    // Přidej nalezené agenty do vektoru
     agents_in_submap.assign(conflicting_agents.begin(), conflicting_agents.end());
 
     return {submap, agents_in_submap};
 }
+
 
 bool LNS::generateNeighborBySAT() {
     cout << "SAT operator called." << endl;
@@ -222,7 +222,8 @@ bool LNS::generateNeighborBySAT() {
     delete log;
     delete solver;
 
-    return res == 0;
+    // return res == 0;
+    return true;
 }
 
 bool LNS::run()

@@ -50,7 +50,7 @@ pair<vector<vector<int>>, vector<int>> LNS::getSubmapAndAgents(int agent_id, int
     int map_width = 32; // Fixed for now
     int map_height = 32; // Fixed for now
 
-    vector<vector<int>> submap(5, vector<int>(5, -1)); // Assuming 5x5 submap for submap_size = 25
+    vector<vector<int>> submap(5, vector<int>(5, -1)); // assuming 5x5 submap for submap_size = 25
     vector<int> agents_in_submap;
     set<int> conflicting_agents;
 
@@ -64,7 +64,7 @@ pair<vector<vector<int>>, vector<int>> LNS::getSubmapAndAgents(int agent_id, int
 
             if (x >= 0 && x < map_height && y >= 0 && y < map_width) {
                 int global_pos = x * map_width + y;
-                submap[dx + 2][dy + 2] = global_pos; // Map to 2D submap index
+                submap[dx + 2][dy + 2] = global_pos; // map to 2D submap index
                 path_table.get_agents(conflicting_agents, global_pos);
             }
         }
@@ -77,16 +77,15 @@ pair<vector<vector<int>>, vector<int>> LNS::getSubmapAndAgents(int agent_id, int
 bool LNS::generateNeighborBySAT() {
     cout << "SAT operator called." << endl;
 
-    // Najdi agenta s největším zpožděním a jeho nejproblematičtější časový krok
     auto [key_agent_id, problematic_timestep] = findMostDelayedAgent();
     if (key_agent_id < 0) {
         cout << "No delayed agent found." << endl;
         return false;
     }
 
-    // Získej pozici agenta a vytvoř submapu kolem něj
+    // get the location of the agent and create the submap around him
     int agent_loc = agents[key_agent_id].path[problematic_timestep].location;
-    int submap_size = 25; // Nastav velikost submapy podle potřeby
+    int submap_size = 25; // the size of the submap (number of cells)
 
     auto [submap, agents_in_submap] = getSubmapAndAgents(key_agent_id, submap_size, agent_loc);
 
@@ -99,7 +98,8 @@ bool LNS::generateNeighborBySAT() {
     unordered_set<int> submap_set;
     for (const auto& row : submap) {
         for (int cell : row) {
-            if (cell != -1) submap_set.insert(cell);
+            if (cell != -1)
+                submap_set.insert(cell);
         }
     }
 
@@ -107,40 +107,38 @@ bool LNS::generateNeighborBySAT() {
     for (size_t x = 0; x < submap.size(); ++x) {
         for (size_t y = 0; y < submap[0].size(); ++y) {
             int global_pos = submap[x][y];
-            if (global_pos != -1) {
+            if (global_pos != -1)
                 global_to_local[global_pos] = {static_cast<int>(x), static_cast<int>(y)};
-            }
         }
     }
 
     cout << "Map content with agents and obstacles:" << endl;
-    vector<vector<int>> map(submap.size(), vector<int>(submap[0].size(), 1)); // Výchozí mapování na volné buňky
+    vector<vector<int>> map(submap.size(), vector<int>(submap[0].size(), 1)); // default mapping on free cells
     for (size_t x = 0; x < submap.size(); ++x) {
         for (size_t y = 0; y < submap[0].size(); ++y) {
             int global_pos = submap[x][y];
-            if (global_pos == -1) {
-                cout << ". "; // Mimo mapu
-            } else if (instance.isObstacle(global_pos)) {
-                cout << "X "; // Překážka
-                map[x][y] = -1; // Označení překážky
+            if (global_pos == -1)
+                cout << ". "; // out of map
+            else if (instance.isObstacle(global_pos)) {
+                cout << "X "; // obstacle
+                map[x][y] = -1; // marking the obstacle in the map
             } else {
                 bool is_agent = false;
                 for (int agent : agents_in_submap) {
                     if (agents[agent].path[problematic_timestep].location == global_pos) {
-                        cout << "A "; // Agent
+                        cout << "A "; // agent
                         is_agent = true;
                         break;
                     }
                 }
-                if (!is_agent) {
-                    cout << ". "; // Volné místo
-                }
+                if (!is_agent)
+                    cout << ". "; // free space
             }
         }
         cout << endl;
     }
 
-    // Připrav startovní a cílové pozice agentů pro SAT solver
+    // start and goal positions in the submap for SAT solver
     vector<pair<int, int>> start_positions;
     vector<pair<int, int>> goal_positions;
     vector<int> agents_to_replan;
@@ -192,11 +190,9 @@ bool LNS::generateNeighborBySAT() {
         return false;
     }
 
-
     vector<pair<int,int> > start = {{1,2},{4,1}};
     vector<pair<int,int> > goal = {{0,3},{4,1}};
 
-    // Vytvoření SAT instance a solveru
     _MAPFSAT_Instance* inst = new _MAPFSAT_Instance(map, start , goal); // {{4,1}, {4,1}}
     _MAPFSAT_PassParallelSocAll* solver = new _MAPFSAT_PassParallelSocAll();
     _MAPFSAT_Logger* log = new _MAPFSAT_Logger(inst, "pass_parallel_soc_all", 2);
@@ -223,17 +219,15 @@ bool LNS::generateNeighborBySAT() {
 
         }
         cout << "Paths successfully updated." << endl;
-    } else {
-        cout << "SAT solver failed." << endl;
-    }
+    } else cout << "SAT solver failed." << endl;
+
 
 
     delete inst;
     delete log;
     delete solver;
 
-    return true;
-    //return res == 0;
+    return res == 0; // solution has been found
 }
 
 bool LNS::run()

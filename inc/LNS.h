@@ -81,5 +81,5 @@ private:
                     set<int>& neighbor, int neighbor_size, int upperbound);
 
     bool generateNeighborBySAT(); // new destroy operator
-    pair<vector<int>, vector<int>> getSubmapAndAgents(int agent_id, int submap_size, int agent_location); // helper function for getting sub-map
+    pair<vector<vector<int>>, vector<int>> getSubmapAndAgents(int agent_id, int submap_size, int agent_location); // helper function for getting sub-map
 };

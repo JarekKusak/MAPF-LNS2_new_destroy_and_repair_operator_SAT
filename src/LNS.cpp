@@ -48,25 +48,43 @@ LNS::LNS(const Instance& instance, double time_limit, const string & init_algo_n
 
 /* getting the submap around one or more agents and identifying agents in these submaps */
 pair<vector<vector<int>>, vector<int>> LNS::getSubmapAndAgents(int agent_id, int submap_size, int agent_location) {
-    int map_width = 32; // Fixed for now
-    int map_height = 32; // Fixed for now
+    int map_width = 32;  // fixed for now...
+    int map_height = 32; // fixed for now...
 
-    vector<vector<int>> submap(5, vector<int>(5, -1)); // assuming 5x5 submap for submap_size = 25
+    int submap_side = sqrt(submap_size); // assuming submap_size is a perfect square
+    if (submap_side * submap_side != submap_size) {
+        cout << "Error: Submap size is not a perfect square!" << endl;
+        return {{}, {}};
+    }
+
+    // 2D submap initialized to -1
+    vector<vector<int>> submap(submap_side, vector<int>(submap_side, -1));
     vector<int> agents_in_submap;
     set<int> conflicting_agents;
 
+    // center of the submap
     int agent_x = agent_location / map_width;
     int agent_y = agent_location % map_width;
 
-    for (int dx = -2; dx <= 2; ++dx) {
-        for (int dy = -2; dy <= 2; ++dy) {
+    int half_side = submap_side / 2;
+
+    for (int dx = -half_side; dx <= half_side; ++dx) {
+        for (int dy = -half_side; dy <= half_side; ++dy) {
             int x = agent_x + dx;
             int y = agent_y + dy;
 
+            // ensure we are within map boundaries
             if (x >= 0 && x < map_height && y >= 0 && y < map_width) {
                 int global_pos = x * map_width + y;
-                submap[dx + 2][dy + 2] = global_pos; // map to 2D submap index
-                path_table.get_agents(conflicting_agents, global_pos);
+
+                // map (dx, dy) to submap indices
+                int submap_x = dx + half_side;
+                int submap_y = dy + half_side;
+
+                if (submap_x >= 0 && submap_x < submap_side && submap_y >= 0 && submap_y < submap_side) {
+                    submap[submap_x][submap_y] = global_pos;
+                    path_table.get_agents(conflicting_agents, global_pos); // collect all agents in the submap
+                }
             }
         }
     }
@@ -86,7 +104,7 @@ bool LNS::generateNeighborBySAT() {
 
     // get the location of the agent and create the submap around him
     int agent_loc = agents[key_agent_id].path[problematic_timestep].location;
-    int submap_size = 25; // the size of the submap (number of cells)
+    int submap_size = 64; // the size of the submap (number of cells)
 
     auto [submap, agents_in_submap] = getSubmapAndAgents(key_agent_id, submap_size, agent_loc);
 
@@ -221,7 +239,7 @@ bool LNS::generateNeighborBySAT() {
         cout << "Paths successfully updated." << endl;
     } else cout << "SAT solver failed." << endl;
 
-    return res == 0; // solution has been found
+    return true; // solution has been found
 }
 
 bool LNS::run()

@@ -1,6 +1,7 @@
 #include "LNS.h"
 #include "ECBS.h"
 #include <queue>
+#include <memory>
 
 #include "../include/MAPF.hpp"
 
@@ -193,16 +194,15 @@ bool LNS::generateNeighborBySAT() {
     vector<pair<int,int> > start = {{1,2},{4,1}};
     vector<pair<int,int> > goal = {{0,3},{4,1}};
 
-    _MAPFSAT_Instance* inst = new _MAPFSAT_Instance(map, start , goal); // {{4,1}, {4,1}}
-    _MAPFSAT_PassParallelSocAll* solver = new _MAPFSAT_PassParallelSocAll();
-    _MAPFSAT_Logger* log = new _MAPFSAT_Logger(inst, "pass_parallel_soc_all", 2);
-
+    auto inst = std::make_unique<_MAPFSAT_Instance>(map, start_positions, goal_positions);
+    auto solver = std::make_unique<_MAPFSAT_PassParallelSocAll>();
+    auto log = std::make_unique<_MAPFSAT_Logger>(inst.get(), "pass_parallel_soc_all", 2);
     cout << "SAT instance and solver created." << endl;
 
-    solver->SetData(inst, log, 300, "", false, true);
-    inst->SetAgents(2);
-    //log->NewInstance(2);
-    int res = solver->Solve(2, 0, true);
+    solver->SetData(inst.get(), log.get(), 300, "", false, true);
+    inst->SetAgents(start_positions.size());
+    log->NewInstance(start_positions.size());
+    int res = solver->Solve(start_positions.size(), 0, true);
 
     cout << "Solver returned: " << res << endl;
 
@@ -220,12 +220,6 @@ bool LNS::generateNeighborBySAT() {
         }
         cout << "Paths successfully updated." << endl;
     } else cout << "SAT solver failed." << endl;
-
-
-
-    delete inst;
-    delete log;
-    delete solver;
 
     return res == 0; // solution has been found
 }

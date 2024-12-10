@@ -240,6 +240,7 @@ bool LNS::generateNeighborBySAT() {
         cout << "Paths successfully updated." << endl;
     } else cout << "SAT solver failed." << endl;
 
+    //return res == 0;
     return true; // solution has been found
 }
 

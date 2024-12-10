@@ -94,6 +94,7 @@ pair<vector<vector<int>>, vector<int>> LNS::getSubmapAndAgents(int agent_id, int
 }
 
 bool LNS::generateNeighborBySAT() {
+    cout << "====================" << endl;
     cout << "SAT operator called." << endl;
 
     auto [key_agent_id, problematic_timestep] = findMostDelayedAgent();
@@ -104,7 +105,7 @@ bool LNS::generateNeighborBySAT() {
 
     // get the location of the agent and create the submap around him
     int agent_loc = agents[key_agent_id].path[problematic_timestep].location;
-    int submap_size = 64; // the size of the submap (number of cells)
+    int submap_size = 100; // the size of the submap (number of cells)
 
     auto [submap, agents_in_submap] = getSubmapAndAgents(key_agent_id, submap_size, agent_loc);
 

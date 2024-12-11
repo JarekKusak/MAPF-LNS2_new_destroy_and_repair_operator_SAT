@@ -105,7 +105,7 @@ bool LNS::generateNeighborBySAT() {
 
     // get the location of the agent and create the submap around him
     int agent_loc = agents[key_agent_id].path[problematic_timestep].location;
-    int submap_size = 100; // the size of the submap (number of cells)
+    int submap_size = 25; // the size of the submap (number of cells)
 
     auto [submap, agents_in_submap] = getSubmapAndAgents(key_agent_id, submap_size, agent_loc);
 
@@ -210,18 +210,28 @@ bool LNS::generateNeighborBySAT() {
         return false;
     }
 
-    vector<pair<int,int> > start = {{1,2},{4,1}};
-    vector<pair<int,int> > goal = {{0,3},{4,1}};
+    vector<pair<int,int> > start; //= {{1,2},{0,3}};
+    vector<pair<int,int> > goal; //= {{4,1},{4,1}};
 
-    auto inst = std::make_unique<_MAPFSAT_Instance>(map, start_positions, goal_positions);
+    for  (size_t i = 3; i < 5; ++i) {
+        start.push_back(start_positions[i]);
+        goal.push_back(goal_positions[i]);
+    }
+
+    for  (size_t i = 0; i < start.capacity(); ++i) {
+        cout << "{" << start[i].first << ", " << start[i].second << "}" << endl;
+        cout << "{" << goal[i].first << ", " << goal[i].second << "}" << endl;
+    }
+
+    auto inst = std::make_unique<_MAPFSAT_Instance>(map, start, goal);
     auto solver = std::make_unique<_MAPFSAT_PassParallelSocAll>();
     auto log = std::make_unique<_MAPFSAT_Logger>(inst.get(), "pass_parallel_soc_all", 2);
     cout << "SAT instance and solver created." << endl;
 
     solver->SetData(inst.get(), log.get(), 300, "", false, true);
-    inst->SetAgents(start_positions.size());
-    log->NewInstance(start_positions.size());
-    int res = solver->Solve(start_positions.size(), 0, true);
+    inst->SetAgents(2);
+    log->NewInstance(2);
+    int res = solver->Solve(2, 0, true);
 
     cout << "Solver returned: " << res << endl;
 
@@ -240,8 +250,8 @@ bool LNS::generateNeighborBySAT() {
         cout << "Paths successfully updated." << endl;
     } else cout << "SAT solver failed." << endl;
 
-    //return res == 0;
-    return true; // solution has been found
+    return res == 0;
+    //return true; // solution has been found
 }
 
 bool LNS::run()

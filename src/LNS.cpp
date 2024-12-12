@@ -70,12 +70,12 @@ pair<vector<vector<int>>, vector<int>> LNS::getSubmapAndAgents(int agent_id, int
 
     for (int dx = -half_side; dx <= half_side; ++dx) {
         for (int dy = -half_side; dy <= half_side; ++dy) {
-            int x = agent_x + dx;
-            int y = agent_y + dy;
+            int x = agent_x + dx; // relative displacement from the agent along the horizontal
+            int y = agent_y + dy; // relative displacement from the agent along the vertical
 
-            // ensure we are within map boundaries
+            // ensure we are within map boundaries (if not -> skip)
             if (x >= 0 && x < map_height && y >= 0 && y < map_width) {
-                int global_pos = x * map_width + y;
+                int global_pos = x * map_width + y; // the unique index of a cell in the global map
 
                 // map (dx, dy) to submap indices
                 int submap_x = dx + half_side;
@@ -123,7 +123,7 @@ bool LNS::generateNeighborBySAT() {
         }
     }
 
-    unordered_map<int, pair<int, int>> global_to_local;
+    unordered_map<int, pair<int, int>> global_to_local; // saving local (x,y) positions according to the global position
     for (size_t x = 0; x < submap.size(); ++x) {
         for (size_t y = 0; y < submap[0].size(); ++y) {
             int global_pos = submap[x][y];
@@ -142,7 +142,8 @@ bool LNS::generateNeighborBySAT() {
             else if (instance.isObstacle(global_pos)) {
                 cout << "X "; // obstacle
                 map[x][y] = -1; // marking the obstacle in the map
-            } else {
+            }
+            else {
                 bool is_agent = false;
                 for (int agent : agents_in_submap) {
                     if (agents[agent].path[problematic_timestep].location == global_pos) {
@@ -231,16 +232,16 @@ bool LNS::generateNeighborBySAT() {
     solver->SetData(inst.get(), log.get(), 300, "", false, true);
     inst->SetAgents(2);
     log->NewInstance(2);
-    int res = solver->Solve(2, 0, true);
+    int result = solver->Solve(2, 0, true);
 
-    cout << "Solver returned: " << res << endl;
+    cout << "Solver returned: " << result << endl;
 
-    if (res == 0) {
+    if (result == 0) {
         vector<vector<int>> plan = solver->GetPlan();
         for (size_t a = 0; a < agents_to_replan.size(); ++a) {
             if (a >= plan.size()) break;
 
-            agents[agents_to_replan[a]].path.clear();
+            agents[agents_to_replan[a]].path.clear(); // TODO: PROBLEM!!! Deletes whole path of the agent
             for (int t = 0; t < plan[a].size(); ++t) {
                 int global_location = submap[plan[a][t] / submap[0].size()][plan[a][t] % submap[0].size()];
                 agents[agents_to_replan[a]].path.push_back(PathEntry(global_location));
@@ -250,7 +251,7 @@ bool LNS::generateNeighborBySAT() {
         cout << "Paths successfully updated." << endl;
     } else cout << "SAT solver failed." << endl;
 
-    return res == 0;
+    return result == 0;
     //return true; // solution has been found
 }
 

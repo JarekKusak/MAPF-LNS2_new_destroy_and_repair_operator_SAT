@@ -82,4 +82,35 @@ private:
 
     bool generateNeighborBySAT(); // new destroy operator
     pair<vector<vector<int>>, vector<int>> getSubmapAndAgents(int agent_id, int submap_size, int agent_location); // helper function for getting sub-map
+    tuple<unordered_set<int>, unordered_map<int, pair<int, int>>, vector<vector<int>>>
+    processSubmap(const vector<vector<int>>& submap, const vector<int>& agents_in_submap,
+                       int problematic_timestep);
+    vector<int> getAgentsToReplan(const vector<int>& agents_in_submap,
+                                       const unordered_set<int>& submap_set,
+                                       int problematic_timestep);
+    int findSyncTimeAndEntryTimes(const vector<int>& agents_to_replan,
+                                       const unordered_set<int>& submap_set,
+                                       unordered_map<int, int>& agent_entry_time);
+    void synchronizeAgentPaths(vector<int>& agents_to_replan,
+                                    unordered_map<int, int>& agent_entry_time,
+                                    int T_sync);
+    void findStartAndGoalPositions(const vector<int>& agents_to_replan,
+                                        int T_sync,
+                                        const unordered_set<int>& submap_set,
+                                        const unordered_map<int, pair<int, int>>& global_to_local,
+                                        vector<pair<int, int>>& start_positions,
+                                        vector<pair<int, int>>& goal_positions);
+    void updateAgentPlans(const vector<int>& agents_to_replan,
+                               const vector<vector<int>>& plan,
+                               int T_sync,
+                               const vector<vector<int>>& submap);
+    void updateAgentPath(int agent_id,
+                              const vector<int>& new_plan,
+                              size_t T_sync,
+                              const vector<vector<int>>& submap);
+    void printUpdatedPlans(const vector<int>& agents_to_replan, size_t T_sync);
+    int runSATSolver(vector<vector<int>>& map,
+                          vector<pair<int, int>>& start_positions,
+                          vector<pair<int, int>>& goal_positions);
+
 };

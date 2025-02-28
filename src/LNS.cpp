@@ -109,27 +109,27 @@ bool LNS::generateNeighborBySAT() {
 
     auto [submap, agents_in_submap] = getSubmapAndAgents(key_agent_id, submap_size, agent_loc);
 
+    // Sloučení: výpis submapy, tvorba submap_set a tvorba global_to_local
     cout << "Submap content (global positions):" << endl;
-    for (const auto& row : submap) {
-        for (int cell : row) cout << cell << " ";
-        cout << endl;
-    }
-
     unordered_set<int> submap_set;
-    for (const auto& row : submap) {
-        for (int cell : row) {
-            if (cell != -1)
-                submap_set.insert(cell);
-        }
-    }
+    unordered_map<int, pair<int, int>> global_to_local;
 
-    unordered_map<int, pair<int, int>> global_to_local; // saving local (x,y) positions according to the global position
-    for (size_t x = 0; x < submap.size(); ++x) {
-        for (size_t y = 0; y < submap[0].size(); ++y) {
+    for (size_t x = 0; x < submap.size(); ++x)
+    {
+        for (size_t y = 0; y < submap[x].size(); ++y)
+        {
             int global_pos = submap[x][y];
+            // 1) Vypíšeme
+            cout << global_pos << " ";
+
+            // 2) Pokud není -1, patří do submapy
             if (global_pos != -1)
-                global_to_local[global_pos] = {static_cast<int>(x), static_cast<int>(y)};
+            {
+                submap_set.insert(global_pos);
+                global_to_local[global_pos] = { static_cast<int>(x), static_cast<int>(y) };
+            }
         }
+        cout << endl;
     }
 
     cout << "Map content with agents and obstacles:" << endl;

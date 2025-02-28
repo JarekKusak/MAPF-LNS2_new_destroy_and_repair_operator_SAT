@@ -109,7 +109,7 @@ bool LNS::generateNeighborBySAT() {
 
     auto [submap, agents_in_submap] = getSubmapAndAgents(key_agent_id, submap_size, agent_loc);
 
-    // Sloučení: výpis submapy, tvorba submap_set a tvorba global_to_local
+    // output of submap, creation of submap_set and creation of global_to_local
     cout << "Submap content (global positions):" << endl;
     unordered_set<int> submap_set;
     unordered_map<int, pair<int, int>> global_to_local;
@@ -119,10 +119,10 @@ bool LNS::generateNeighborBySAT() {
         for (size_t y = 0; y < submap[x].size(); ++y)
         {
             int global_pos = submap[x][y];
-            // 1) Vypíšeme
+            // output
             cout << global_pos << " ";
 
-            // 2) Pokud není -1, patří do submapy
+            // if not -1, he belongs to the submap
             if (global_pos != -1)
             {
                 submap_set.insert(global_pos);

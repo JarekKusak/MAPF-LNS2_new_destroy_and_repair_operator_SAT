@@ -181,7 +181,7 @@ bool LNS::generateNeighborBySAT() {
         return false;
     }
 
-    for (int agent : agents_to_replan) {
+    for (int agent : agents_to_replan) { // finding local start and local goal for each agent in the submap
         int start_global = -1, goal_global = -1;
 
         for (size_t t = 0; t < agents[agent].path.size(); ++t) {
@@ -251,6 +251,24 @@ bool LNS::generateNeighborBySAT() {
         cout << "Paths successfully updated." << endl;
     } else cout << "SAT solver failed." << endl;
 
+    // 1. problém:
+    // solver musí pracovat s jedním časovým úsekem - je třeba vzít maximum ze všech časů agentů v submapě a podle toho
+    // upravit pozice agentů, aby se srovnali do jednoho časového kroku t
+
+    // 2. problém:
+    // stejná cílová pozice ve stejný časový okamžik dvou agentů
+
+    // Potřeba nahradit verzi MAPF za novou
+    // _MAPFSAT_PassParallelMksAll* solver = new _MAPFSAT_PassParallelMksAll(); -- namísto toho disappear (dole v main)
+
+    // HEURISTIKA
+    // budu používat i jejich LNS operátory, budu je testovat souběžně s mým (např. občas se nevyplatí přeplánovat čtvereček, ale poslat agenta okolo) -> spolupráce operátorů
+    // měl bych si udržovat validní řešení během dělání heuristik v každém časovém kroku
+    // přečíst článek o jejich operátorech a vymyslet, zda by se nedalo vymyslet, jak je využít s mým operátorem
+    // porovnávat sum of cost operátorů
+    // zkusit různé způsoby vybírání čtverečků - můj vlastní kód a nápady (vymyslet několik a pak použít nejlepší)
+
+    //inst->map vrátí id pro (x,y), případně -1 překážka - převedení lokálních na globální souř.
     return result == 0;
     //return true; // solution has been found
 }

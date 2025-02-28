@@ -1,8 +1,0 @@
-{
-    "files.associations": {
-        "tuple": "cpp",
-        "queue": "cpp",
-        "iosfwd": "cpp",
-        "vector": "cpp"
-    }
-}

@@ -292,6 +292,7 @@ protected:
 
 	void CreatePossition_Start();
 	void CreatePossition_Goal();
+	void CreatePossition_Goal_Disappear();
 	void CreatePossition_NoneAtGoal();
 
 	void CreateConf_Vertex();
@@ -314,12 +315,14 @@ protected:
 	void CreateMove_NextVertex_At();
 	void CreateMove_EnterVertex_Pass();
 	void CreateMove_LeaveVertex_Pass();
+	void CreateMove_LeaveVertex_Pass_Disappear();
 	void CreateMove_ExactlyOne_Shift();
 	void CreateMove_NextVertex_Shift();
 
 	void CreateMove_Graph_MonosatPass();
 
 	int CreateConst_LimitSoc(int);
+	int CreateConst_LimitSoc_Disappear(int);
 	void CreateConst_Avoid();
 
 	// solving
@@ -335,6 +338,7 @@ protected:
 
 	// plan outputting functions
 	int NormalizePlan();
+	void PrintPlan();
 	void VerifyPlan();
 	void GenerateConflicts();
 
@@ -635,6 +639,19 @@ class _MAPFSAT_MonosatPebbleSocLazy : public _MAPFSAT_ISolver
 public:
 	_MAPFSAT_MonosatPebbleSocLazy(std::string name = "monosat_pebble_soc_lazy");
 	~_MAPFSAT_MonosatPebbleSocLazy() {};
+private:
+	int CreateFormula(int);
+};
+
+/**************************************************************************/
+/*********************** Disappear at goal encoding ***********************/
+/**************************************************************************/
+
+class _MAPFSAT_DisappearAtGoal : public _MAPFSAT_ISolver
+{
+public:
+	_MAPFSAT_DisappearAtGoal(std::string name = "disappear_at_goal");
+	~_MAPFSAT_DisappearAtGoal() {};
 private:
 	int CreateFormula(int);
 };

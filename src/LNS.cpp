@@ -225,7 +225,7 @@ bool LNS::generateNeighborBySAT() {
     }
 
     auto inst = std::make_unique<_MAPFSAT_Instance>(map, start, goal);
-    auto solver = std::make_unique<_MAPFSAT_PassParallelSocAll>();
+    auto solver = std::make_unique<_MAPFSAT_DisappearAtGoal>();
     auto log = std::make_unique<_MAPFSAT_Logger>(inst.get(), "pass_parallel_soc_all", 2);
     cout << "SAT instance and solver created." << endl;
 

@@ -162,18 +162,23 @@ vector<int> LNS::getAgentsToReplan(const vector<int>& agents_in_submap,
     return agents_to_replan;
 }
 
+/*
+ * T_sync is the point in time when we start rescheduling all agents in the submap.
+ * Each agent enters the submap at a different time. T_sync is the latest time of entry between all agents.
+ * This means that we schedule all agents to the same time step T_sync so that they have a uniform rescheduling start.
+ */
 int LNS::findSyncTimeAndEntryTimes(const vector<int>& agents_to_replan,
                                    const unordered_set<int>& submap_set,
                                    unordered_map<int, int>& agent_entry_time) {
-    int T_sync = 0;
+    int T_sync = 0; // T_sync is the latest time of entry between all agents
     cout << "Agent entry times:\n";
 
     for (int agent : agents_to_replan) {
         for (size_t t = 0; t < agents[agent].path.size(); ++t) {
             int loc = agents[agent].path[t].location;
             if (submap_set.find(loc) != submap_set.end()) {
-                agent_entry_time[agent] = t; // Uložíme čas vstupu agenta do submapy
-                T_sync = std::max(T_sync, (int)t); // Najdeme maximální čas vstupu
+                agent_entry_time[agent] = t; // we will save agents entry time
+                T_sync = std::max(T_sync, (int)t); // maximum time of entry
                 cout << "Agent " << agent << " enters at time " << t << endl;
                 break;
             }
@@ -184,16 +189,20 @@ int LNS::findSyncTimeAndEntryTimes(const vector<int>& agents_to_replan,
     return T_sync;
 }
 
+/*
+ * If the agent entered the submap before T_sync, we need to stop it there and wait.
+ * This guarantees that at time T_sync all agents start rescheduling from the same time step.
+*/
 void LNS::synchronizeAgentPaths(vector<int>& agents_to_replan,
                                 unordered_map<int, int>& agent_entry_time,
                                 int T_sync) {
     for (int agent : agents_to_replan) {
-        int entry_time = agent_entry_time[agent]; // Čas, kdy agent poprvé vstoupil do submapy
-        int last_loc = agents[agent].path[entry_time].location; // Poslední známá pozice v submapě
+        int entry_time = agent_entry_time[agent]; // time, when agent firstly entered the submap
+        int last_loc = agents[agent].path[entry_time].location; // last known position in submap
 
         cout << "Synchronizing agent " << agent << " from time " << entry_time << " to " << T_sync << endl;
 
-        // Pokud agent vstoupil dříve než T_sync, necháme ho stát na místě
+        // if agent entered submap earlier than T_sync, he will stay still
         for (int t = entry_time; t < T_sync; ++t) {
             cout << "Agent " << agent << " waits at " << last_loc << " at time " << t << endl;
             agents[agent].path.insert(agents[agent].path.begin() + t, PathEntry(last_loc));
@@ -210,12 +219,12 @@ void LNS::findStartAndGoalPositions(const vector<int>& agents_to_replan,
     for (int agent : agents_to_replan) {
         int start_global = -1, goal_global = -1;
 
-        // Najdeme startovní pozici v čase T_sync
+        // find start position of agent at time T_sync
         if (T_sync < agents[agent].path.size()) {
             start_global = agents[agent].path[T_sync].location;
         }
 
-        // Najdeme poslední lokaci agenta v submapě od T_sync dál
+        // find last position of agent in submap from T_sync onwards
         for (size_t t = T_sync; t < agents[agent].path.size(); ++t) {
             int location = agents[agent].path[t].location;
             if (submap_set.find(location) != submap_set.end()) {
@@ -315,6 +324,7 @@ void LNS::printUpdatedPlans(const vector<int>& agents_to_replan, size_t T_sync) 
     cout << "Paths successfully updated." << endl;
 }
 
+/*
 int LNS::runSATSolver(vector<vector<int>>& map,
                       vector<pair<int, int>>& start_positions,
                       vector<pair<int, int>>& goal_positions) {
@@ -334,6 +344,7 @@ int LNS::runSATSolver(vector<vector<int>>& map,
     cout << "Solver returned: " << result << endl;
     return result;
 }
+ */
 
 bool LNS::generateNeighborBySAT() {
     cout << "====================" << endl;

@@ -112,5 +112,11 @@ private:
     int runSATSolver(vector<vector<int>>& map,
                           vector<pair<int, int>>& start_positions,
                           vector<pair<int, int>>& goal_positions);
+    void updateGlobalToLocal(const vector<int>& agents_to_replan,
+                                  unordered_map<int, pair<int, int>>& global_to_local,
+                                  unordered_set<int>& submap_set,
+                                  const vector<vector<int>>& submap, int T_sync);
+    pair<int, int> computeLocalCoordinates(int global_position,
+                                                const vector<vector<int>>& submap);
 
 };

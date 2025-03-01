@@ -146,7 +146,7 @@ vector<int> LNS::getAgentsToReplan(const vector<int>& agents_in_submap,
                                    const unordered_set<int>& submap_set,
                                    int problematic_timestep) {
     vector<int> agents_to_replan;
-    cout << "Agents in submap during time step " << problematic_timestep << ": ";
+    cout << "\n [INFO] Identifikace agentů v submapě pro přeplánování (čas " << problematic_timestep << "):\n";
 
     for (int agent : agents_in_submap) {
         if (agents[agent].path.size() > problematic_timestep) {
@@ -171,7 +171,7 @@ int LNS::findSyncTimeAndEntryTimes(const vector<int>& agents_to_replan,
                                    const unordered_set<int>& submap_set,
                                    unordered_map<int, int>& agent_entry_time) {
     int T_sync = 0; // T_sync is the latest time of entry between all agents
-    cout << "Agent entry times:\n";
+    cout << "\n [SYNC] Výpočet synchronizačního času (T_sync):\n";
 
     for (int agent : agents_to_replan) {
         for (size_t t = 0; t < agents[agent].path.size(); ++t) {
@@ -185,7 +185,7 @@ int LNS::findSyncTimeAndEntryTimes(const vector<int>& agents_to_replan,
         }
     }
 
-    cout << "Final synchronization time (T_sync): " << T_sync << endl;
+    cout << " [SYNC] Finální synchronizační čas: T_sync = " << T_sync << "\n";
     return T_sync;
 }
 
@@ -196,17 +196,19 @@ int LNS::findSyncTimeAndEntryTimes(const vector<int>& agents_to_replan,
 void LNS::synchronizeAgentPaths(vector<int>& agents_to_replan,
                                 unordered_map<int, int>& agent_entry_time,
                                 int T_sync) {
-    cout << "=== Debug: Synchronizing agents to T_sync ===" << endl;
+    cout << "\n [SYNC] Synchronizace agentů do společného časového kroku (T_sync = " << T_sync << ")\n";
 
     for (int agent : agents_to_replan) {
         int entry_time = agent_entry_time[agent];  // time of the entering the submap
         int target_location = agents[agent].path[T_sync].location; // where should the agent go
 
-        cout << "Agent " << agent << " was at " << agents[agent].path[entry_time].location
-             << " moving to " << target_location << " at T_sync=" << T_sync << endl;
-        // move agent to his location at time T_sync
-        for (int t = entry_time; t < T_sync; ++t) {
-            agents[agent].path[t] = PathEntry(target_location);
+        cout << " Agent " << agent << " byl na " << agents[agent].path[entry_time].location
+             << " → synchronizován na " << target_location << " (T_sync = " << T_sync << ")\n";
+        // move agent to his location at time T_sync;
+        if (entry_time < T_sync) { // only moving agents, who are not synchronized
+            for (int t = entry_time; t < T_sync; ++t) {
+                agents[agent].path[t] = PathEntry(target_location);
+            }
         }
     }
 }
@@ -217,7 +219,7 @@ void LNS::findStartAndGoalPositions(const vector<int>& agents_to_replan,
                                     const unordered_map<int, pair<int, int>>& global_to_local,
                                     vector<pair<int, int>>& start_positions,
                                     vector<pair<int, int>>& goal_positions) {
-    cout << "=== Debug: Start & Goal positions after sync ===" << endl;
+    cout << "\n [GOALS] Startovní a cílové pozice agentů po synchronizaci:\n";
     for (int agent : agents_to_replan) {
         /*
         int start_global = -1, goal_global = -1;
@@ -242,7 +244,7 @@ void LNS::findStartAndGoalPositions(const vector<int>& agents_to_replan,
 
         if (T_sync < agents[agent].path.size()) {
             start_global = agents[agent].path[T_sync].location;
-            cout << "🔍 Agent " << agent << " new start (T_sync " << T_sync << "): " << start_global << endl;
+            cout << " Agent " << agent << " new start (T_sync " << T_sync << "): " << start_global << endl;
         }
 
         for (size_t t = T_sync; t < agents[agent].path.size(); ++t) {
@@ -252,7 +254,7 @@ void LNS::findStartAndGoalPositions(const vector<int>& agents_to_replan,
             }
         }
 
-        cout << "Agent " << agent << " start global: " << start_global << ", goal global: " << goal_global;
+        cout << " Agent " << agent << " | Start: " << start_global << " | Cíl: " << goal_global;
 
         if (global_to_local.find(start_global) != global_to_local.end()) {
             auto local_start = global_to_local.at(start_global);
@@ -268,10 +270,20 @@ void LNS::findStartAndGoalPositions(const vector<int>& agents_to_replan,
             cout << " | Local goal: (not found)";
         }
 
+        cout << "\n [VALIDATE] Kontrola správnosti global_to_local mappingu:\n";
+        for (auto& entry : global_to_local) {
+            cout << " Globální: " << entry.first << " → Lokální: ("
+                 << entry.second.first << ", " << entry.second.second << ")\n";
+        }
+
         cout << endl;
 
         if (start_global != -1 && goal_global != -1) {
-            start_positions.push_back(global_to_local.at(start_global));
+            if (global_to_local.find(start_global) != global_to_local.end()) {
+                start_positions.push_back(global_to_local.at(start_global));
+            } else {
+                cout << "Warning: start_global " << start_global << " not in global_to_local!" << endl;
+            }
             goal_positions.push_back(global_to_local.at(goal_global));
         }
     }
@@ -344,7 +356,7 @@ void LNS::updateAgentPath(int agent_id,
 }
 
 void LNS::printUpdatedPlans(const vector<int>& agents_to_replan, size_t T_sync) {
-    cout << "=== Final agent plans after SAT solver ===\n";
+    cout << "\n [PLANS] Finální aktualizované plány agentů po přeplánování:\n";
     for (int agent_id : agents_to_replan) {
         cout << "Agent " << agent_id << ":\n";
         for (size_t t = T_sync; t < agents[agent_id].path.size(); ++t) {
@@ -375,6 +387,38 @@ int LNS::runSATSolver(vector<vector<int>>& map,
     return result;
 }
 */
+
+pair<int, int> LNS::computeLocalCoordinates(int global_position,
+                                            const vector<vector<int>>& submap) {
+    for (size_t x = 0; x < submap.size(); ++x) {
+        for (size_t y = 0; y < submap[0].size(); ++y) {
+            if (submap[x][y] == global_position) {
+                return {static_cast<int>(x), static_cast<int>(y)};
+            }
+        }
+    }
+    return {-1, -1}; // Pokud se nenašlo
+}
+
+void LNS::updateGlobalToLocal(const vector<int>& agents_to_replan,
+                              unordered_map<int, pair<int, int>>& global_to_local,
+                              unordered_set<int>& submap_set,
+                              const vector<vector<int>>& submap, int T_sync) {
+    global_to_local.clear();
+
+    cout << "\n [MAP] Aktualizace global_to_local po synchronizaci:\n";
+
+    for (int agent : agents_to_replan) {
+        auto new_pos = agents[agent].path[T_sync].location;
+        if (submap_set.find(new_pos) != submap_set.end()) {
+            global_to_local[new_pos] = computeLocalCoordinates(new_pos, submap);
+            cout << " Agent " << agent << " nyní na " << new_pos
+                 << " → Lokální souřadnice: (" << global_to_local[new_pos].first
+                 << ", " << global_to_local[new_pos].second << ")\n";
+        }
+
+    }
+}
 
 bool LNS::generateNeighborBySAT() {
     cout << "====================" << endl;
@@ -414,6 +458,8 @@ bool LNS::generateNeighborBySAT() {
     int T_sync = findSyncTimeAndEntryTimes(agents_to_replan, submap_set, agent_entry_time);
     synchronizeAgentPaths(agents_to_replan, agent_entry_time, T_sync);
 
+    updateGlobalToLocal(agents_to_replan, global_to_local, submap_set, submap, T_sync);
+
     // start and goal positions in the submap for SAT solver
     vector<pair<int, int>> start_positions;
     vector<pair<int, int>> goal_positions;
@@ -446,8 +492,6 @@ bool LNS::generateNeighborBySAT() {
     cout << "Solver returned: " << result << endl;
 
     //result = runSATSolver(map, start_positions, goal_positions); ??????
-
-
 
     if (result == 0) {
         vector<vector<int>> plan = solver->GetPlan();

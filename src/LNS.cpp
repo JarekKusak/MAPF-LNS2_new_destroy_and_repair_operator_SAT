@@ -282,14 +282,17 @@ void LNS::synchronizeAgentPaths(vector<int>& agents_to_replan,
     cout << "\n[SYNC] Synchronizace agentů do společného časového kroku (T_sync = " << T_sync << ")\n";
 
     for (int agent : agents_to_replan) {
-        int entry_time = agent_entry_time[agent];
-        int last_loc = agents[agent].path[entry_time].location;
+        int entry_time = agent_entry_time[agent];  // Čas, kdy agent vstoupil do submapy
+        int target_location = agents[agent].path[T_sync].location; // Lokace v čase T_sync
 
-        cout << "  - Agent " << agent << " čeká od času " << entry_time << " do " << T_sync
-             << " na pozici " << last_loc << endl;
+        cout << "  - Agent " << agent << " byl na " << agents[agent].path[entry_time].location
+             << " → synchronizován na " << target_location << " (T_sync = " << T_sync << ")\n";
 
-        for (int t = entry_time; t < T_sync; ++t) {
-            agents[agent].path.insert(agents[agent].path.begin() + t, PathEntry(last_loc));
+        // **Posun agenta na lokaci v čase T_sync pro všechny časové kroky od vstupu po T_sync**
+        if (entry_time < T_sync) {
+            for (int t = entry_time; t < T_sync; ++t) {
+                agents[agent].path[t] = PathEntry(target_location);
+            }
         }
     }
 }

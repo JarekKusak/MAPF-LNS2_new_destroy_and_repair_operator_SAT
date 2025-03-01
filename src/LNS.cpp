@@ -220,6 +220,25 @@ void LNS::findStartAndGoalPositions(const vector<int>& agents_to_replan,
                                     vector<pair<int, int>>& goal_positions) {
     cout << "=== Debug: Start & Goal positions after sync ===" << endl;
     for (int agent : agents_to_replan) {
+        /*
+        int start_global = -1, goal_global = -1;
+
+        for (size_t t = 0; t < agents[agent].path.size(); ++t) {
+            int location = agents[agent].path[t].location;
+            if (submap_set.find(location) != submap_set.end()) {
+                if (start_global == -1) start_global = location;
+                goal_global = location;
+            }
+        }
+
+        if (start_global == -1 || goal_global == -1) {
+            cout << "Agent " << agent << " does not have both start and goal positions in the submap." << endl;
+            continue;
+        }
+
+        start_positions.push_back(global_to_local.at(start_global));
+        goal_positions.push_back(global_to_local.at(goal_global));*/
+
         int start_global = -1, goal_global = -1;
 
         if (T_sync < agents[agent].path.size()) {
@@ -356,7 +375,7 @@ int LNS::runSATSolver(vector<vector<int>>& map,
     cout << "Solver returned: " << result << endl;
     return result;
 }
- */
+*/
 
 bool LNS::generateNeighborBySAT() {
     cout << "====================" << endl;

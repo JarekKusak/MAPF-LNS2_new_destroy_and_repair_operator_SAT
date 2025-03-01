@@ -196,18 +196,17 @@ int LNS::findSyncTimeAndEntryTimes(const vector<int>& agents_to_replan,
 void LNS::synchronizeAgentPaths(vector<int>& agents_to_replan,
                                 unordered_map<int, int>& agent_entry_time,
                                 int T_sync) {
-    cout << "=== Debug: Synchronizing agent paths ===" << endl;
+    cout << "=== Debug: Synchronizing agents to T_sync ===" << endl;
+
     for (int agent : agents_to_replan) {
-        int entry_time = agent_entry_time[agent]; // time, when agent firstly entered the submap
-        int last_loc = agents[agent].path[entry_time].location; // last known position in submap
+        int entry_time = agent_entry_time[agent];  // time of the entering the submap
+        int target_location = agents[agent].path[T_sync].location; // where should the agent go
 
-        cout << "Agent " << agent << " syncing from time " << entry_time << " to " << T_sync
-             << " (waiting at " << last_loc << ")" << endl;
-
-        // if agent entered submap earlier than T_sync, he will stay still
+        cout << "Agent " << agent << " was at " << agents[agent].path[entry_time].location
+             << " moving to " << target_location << " at T_sync=" << T_sync << endl;
+        // move agent to his location at time T_sync
         for (int t = entry_time; t < T_sync; ++t) {
-            agents[agent].path.insert(agents[agent].path.begin() + t, PathEntry(last_loc));
-            cout << "🔧 Agent " << agent << " now at time " << t << " in location " << agents[agent].path[t].location << endl;
+            agents[agent].path[t] = PathEntry(target_location);
         }
     }
 }
@@ -418,6 +417,12 @@ bool LNS::generateNeighborBySAT() {
     // start and goal positions in the submap for SAT solver
     vector<pair<int, int>> start_positions;
     vector<pair<int, int>> goal_positions;
+
+    cout << "=== Debug: Agents in submap before sync ===" << endl;
+    for (int agent : agents_in_submap) {
+        cout << "Agent " << agent << " in submap at time " << problematic_timestep
+             << " at global location: " << agents[agent].path[problematic_timestep].location << endl;
+    }
 
     // TODO: Tady v této funkci je ten problém s lokálními/globálními souřadnicemi, agenti po srovnání časového kroku mají stále stejnou lokální startovací pozici
     findStartAndGoalPositions(agents_to_replan, T_sync, submap_set, global_to_local, start_positions, goal_positions);

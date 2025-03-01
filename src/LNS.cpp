@@ -220,8 +220,9 @@ bool LNS::solveWithSAT(vector<vector<int>>& map,
              << " | Nová lokální cesta v submapě: ";
 
         for (size_t t = 0; t < plan[a].size(); ++t) {
-            int global_location = submap[plan[a][t] / submap[0].size()][plan[a][t] % submap[0].size()];
-            cout << "(" << global_location / submap[0].size() << ", " << global_location % submap[0].size() << ") ";
+            int local_x = plan[a][t] / submap[0].size();
+            int local_y = plan[a][t] % submap[0].size();
+            cout << "(" << local_x << ", " << local_y << ") ";
         }
 
         cout << " | Nová délka: " << plan[a].size() << endl;
@@ -230,21 +231,20 @@ bool LNS::solveWithSAT(vector<vector<int>>& map,
     for (size_t a = 0; a < std::min(agents_to_replan.size(), plan.size()); ++a) {
         int agent_id = agents_to_replan[a];
 
-        int original_local_length = agents[agent_id].path.size() - T_sync; // Původní délka lokální části cesty
-        int new_local_length = plan[a].size();  // Nová přeplánovaná délka
-        int submap_end_time = T_sync + new_local_length;  // Nový konec lokálního plánu
+        int original_local_length = agents[agent_id].path.size() - T_sync;
+        int new_local_length = plan[a].size();
+        int submap_end_time = T_sync + new_local_length;
 
         cout << "[INFO] Aktualizace cesty pro agenta " << agent_id
              << " | Původní lokální délka: " << original_local_length
              << " | Nová lokální délka: " << new_local_length << endl;
 
-        // Zachováme plán před T_sync
+        // Zachováme část plánu před T_sync
         vector<PathEntry> updated_path(agents[agent_id].path.begin(), agents[agent_id].path.begin() + T_sync);
 
-        // Přidáme přeplánovanou část
+        // Přidání přeplánované části - BEZ PŘEVODU
         for (int t = 0; t < new_local_length; ++t) {
-            int global_location = submap[plan[a][t] / submap[0].size()][plan[a][t] % submap[0].size()];
-            updated_path.push_back(PathEntry(global_location));
+            updated_path.push_back(PathEntry(plan[a][t]));  // Použití hodnot přímo ze SAT solveru
         }
 
         // Pokud agent skončil dříve, posuneme zbývající plán dopředu
@@ -254,7 +254,7 @@ bool LNS::solveWithSAT(vector<vector<int>>& map,
                  << " kroků, posouváme zbytek plánu dopředu." << endl;
 
             for (int t = T_sync + new_local_length; t < agents[agent_id].path.size(); ++t) {
-                updated_path.push_back(agents[agent_id].path[t]);  // Zkopírujeme zbývající část
+                updated_path.push_back(agents[agent_id].path[t]);
             }
         } else if (new_local_length > original_local_length) {
             int delay = new_local_length - original_local_length;

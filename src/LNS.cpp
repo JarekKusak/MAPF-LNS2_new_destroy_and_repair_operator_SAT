@@ -144,7 +144,8 @@ bool LNS::solveWithSAT(vector<vector<int>>& map,
                        vector<pair<int, int>>& start_positions,
                        vector<pair<int, int>>& goal_positions,
                        vector<int>& agents_to_replan,
-                       const vector<vector<int>>& submap) {
+                       const vector<vector<int>>& submap,
+                       int T_sync) {
 
     cout << "\n[DEBUG] Kontrola vstupních dat pro SAT solver:" << endl;
     cout << "  - Počet agentů k přeplánování: " << agents_to_replan.size() << endl;
@@ -157,15 +158,28 @@ bool LNS::solveWithSAT(vector<vector<int>>& map,
         cout << "[DEBUG] Startovní a cílové pozice odpovídají." << endl;
     }
 
-    auto inst = std::make_unique<_MAPFSAT_Instance>(map, start_positions, goal_positions);
+    vector<pair<int,int> > start; //= {{1,2},{0,3}};
+    vector<pair<int,int> > goal; //= {{4,1},{4,1}};
+
+    for  (size_t i = 3; i < 5; ++i) {
+        start.push_back(start_positions[i]);
+        goal.push_back(goal_positions[i]);
+    }
+
+    for  (size_t i = 0; i < start.capacity(); ++i) {
+        cout << "{" << start[i].first << ", " << start[i].second << "}" << endl;
+        cout << "{" << goal[i].first << ", " << goal[i].second << "}" << endl;
+    }
+
+    auto inst = std::make_unique<_MAPFSAT_Instance>(map, start, goal);
     auto solver = std::make_unique<_MAPFSAT_DisappearAtGoal>();
-    auto log = std::make_unique<_MAPFSAT_Logger>(inst.get(), "pass_parallel_soc_all", start_positions.size());
+    auto log = std::make_unique<_MAPFSAT_Logger>(inst.get(), "pass_parallel_soc_all", 2);
     cout << "SAT instance and solver created." << endl;
 
     solver->SetData(inst.get(), log.get(), 300, "", false, true);
-    inst->SetAgents(start_positions.size());
-    log->NewInstance(start_positions.size());
-    int result = solver->Solve(start_positions.size(), 0, true);
+    inst->SetAgents(2);
+    log->NewInstance(2);
+    int result = solver->Solve(2, 0, true);
 
     cout << "Solver returned: " << result << endl;
     if (result != 0) {
@@ -174,13 +188,47 @@ bool LNS::solveWithSAT(vector<vector<int>>& map,
     }
 
     vector<vector<int>> plan = solver->GetPlan();
-    for (size_t a = 0; a < agents_to_replan.size(); ++a) {
-        if (a >= plan.size()) break;
-        agents[agents_to_replan[a]].path.clear();
-        for (int t : plan[a]) {
-            int global_location = submap[t / submap[0].size()][t % submap[0].size()];
-            agents[agents_to_replan[a]].path.push_back(PathEntry(global_location));
+    for (size_t a = 0; a < std::min(agents_to_replan.size(), plan.size()); ++a) {
+        int agent_id = agents_to_replan[a];
+        int old_path_size = agents[agent_id].path.size();  // Původní délka cesty
+        int new_path_size = plan[a].size();  // Nová délka cesty ze SAT solveru
+
+        cout << "[INFO] Aktualizace cesty pro agenta " << agent_id
+             << " | Původní délka: " << old_path_size
+             << " | Nová délka: " << new_path_size << endl;
+
+        // Zachování původní části cesty před T_sync
+        vector<PathEntry> updated_path;
+        for (int t = 0; t < T_sync; ++t) {
+            updated_path.push_back(agents[agent_id].path[t]);  // Kopie cesty před přeplánováním
         }
+
+        // Aktualizace části cesty podle SAT solveru
+        for (int t = 0; t < new_path_size; ++t) {
+            int global_location = submap[plan[a][t] / submap[0].size()][plan[a][t] % submap[0].size()];
+            updated_path.push_back(PathEntry(global_location));
+        }
+
+        // Pokud nový plán skončil dříve než starý, doplníme čekáním
+        if (new_path_size < old_path_size) {
+            cout << "[INFO] Agent " << agent_id << " skončil dřív. Doplníme cestu čekáním." << endl;
+            int last_location = updated_path.back().location;
+            for (int t = new_path_size; t < old_path_size; ++t) {
+                updated_path.push_back(PathEntry(last_location));  // Čeká na místě
+            }
+        }
+
+        // Pokud nový plán skončil později, posuneme zbytek plánu
+        else if (new_path_size > old_path_size) {
+            cout << "[INFO] Agent " << agent_id << " dorazil později. Posouváme zbytek plánu." << endl;
+            for (int t = old_path_size; t < new_path_size; ++t) {
+                updated_path.push_back(agents[agent_id].path.back());  // Posuneme zbytek cesty
+            }
+        }
+
+        // Uložíme aktualizovanou cestu zpět do agenta
+        agents[agent_id].path = updated_path;
+
     }
     cout << "Paths successfully updated." << endl;
     return true;
@@ -281,7 +329,6 @@ int LNS::findSyncTimeAndEntryTimes(const vector<int>& agents_to_replan,
                                    const unordered_set<int>& submap_set,
                                    unordered_map<int, int>& agent_entry_time) {
     int T_sync = 0;
-    cout << "\n[SYNC] Výpočet synchronizačního času T_sync:\n";
 
     for (int agent : agents_to_replan) {
         for (size_t t = 0; t < agents[agent].path.size(); ++t) {
@@ -289,13 +336,12 @@ int LNS::findSyncTimeAndEntryTimes(const vector<int>& agents_to_replan,
             if (submap_set.find(loc) != submap_set.end()) {
                 agent_entry_time[agent] = t;
                 T_sync = std::max(T_sync, (int)t);
-                cout << "  - Agent " << agent << " vstoupil do submapy v čase " << t << endl;
                 break;
             }
         }
     }
 
-    cout << "[SYNC] Finální synchronizační čas: T_sync = " << T_sync << endl;
+    cout << "\n[SYNC] Finální synchronizační čas: T_sync = " << T_sync << endl;
     return T_sync;
 }
 
@@ -352,7 +398,7 @@ bool LNS::generateNeighborBySAT() {
     findStartAndGoalPositions(agents_to_replan, submap_set, global_to_local, start_positions, goal_positions, T_sync);
     if (start_positions.empty() || goal_positions.empty()) return false;
 
-    return (solveWithSAT(map, start_positions, goal_positions, agents_to_replan, submap) == -1) ? 0 : -1;
+    return (solveWithSAT(map, start_positions, goal_positions, agents_to_replan, submap, T_sync) == -1) ? 0 : -1;
 }
 
 bool LNS::run()

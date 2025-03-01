@@ -96,7 +96,8 @@ private:
                            vector<pair<int, int>>& start_positions,
                            vector<pair<int, int>>& goal_positions,
                            vector<int>& agents_to_replan,
-                           const vector<vector<int>>& submap);
+                           const vector<vector<int>>& submap,
+                           int T_sync);
     void findStartAndGoalPositions(const vector<int>& agents_to_replan,
                                         const unordered_set<int>& submap_set,
                                         const unordered_map<int, pair<int, int>>& global_to_local,

@@ -430,6 +430,8 @@ bool LNS::generateNeighborBySAT() {
         return false;
     }
 
+    cout << problematic_timestep << endl;
+
     // get the location of the agent and create the submap around him
     int agent_loc = agents[key_agent_id].path[problematic_timestep].location;
     int submap_size = 25; // the size of the submap (number of cells)

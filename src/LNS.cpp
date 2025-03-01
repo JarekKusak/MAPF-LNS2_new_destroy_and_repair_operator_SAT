@@ -145,6 +145,18 @@ bool LNS::solveWithSAT(vector<vector<int>>& map,
                        vector<pair<int, int>>& goal_positions,
                        vector<int>& agents_to_replan,
                        const vector<vector<int>>& submap) {
+
+    cout << "\n[DEBUG] Kontrola vstupních dat pro SAT solver:" << endl;
+    cout << "  - Počet agentů k přeplánování: " << agents_to_replan.size() << endl;
+    cout << "  - Velikost start_positions: " << start_positions.size() << endl;
+    cout << "  - Velikost goal_positions: " << goal_positions.size() << endl;
+
+    if (start_positions.size() != goal_positions.size()) {
+        cout << "[ERROR] Počet startovních a cílových pozic se neshoduje!" << endl;
+    } else {
+        cout << "[DEBUG] Startovní a cílové pozice odpovídají." << endl;
+    }
+
     auto inst = std::make_unique<_MAPFSAT_Instance>(map, start_positions, goal_positions);
     auto solver = std::make_unique<_MAPFSAT_DisappearAtGoal>();
     auto log = std::make_unique<_MAPFSAT_Logger>(inst.get(), "pass_parallel_soc_all", start_positions.size());

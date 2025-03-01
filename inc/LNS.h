@@ -82,4 +82,24 @@ private:
 
     bool generateNeighborBySAT(); // new destroy operator
     pair<vector<vector<int>>, vector<int>> getSubmapAndAgents(int agent_id, int submap_size, int agent_location); // helper function for getting sub-map
+    vector<int> getAgentsToReplan(const vector<int>& agents_in_submap,
+                                       const unordered_set<int>& submap_set,
+                                       int problematic_timestep);
+    void initializeSubmapData(const vector<vector<int>>& submap,
+                                   unordered_set<int>& submap_set,
+                                   unordered_map<int, pair<int, int>>& global_to_local);
+    vector<vector<int>> generateMapRepresentation(const vector<vector<int>>& submap,
+                                                       const unordered_set<int>& submap_set,
+                                                       const vector<int>& agents_in_submap,
+                                                       int problematic_timestep);
+    bool solveWithSAT(vector<vector<int>>& map,
+                           vector<pair<int, int>>& start_positions,
+                           vector<pair<int, int>>& goal_positions,
+                           vector<int>& agents_to_replan,
+                           const vector<vector<int>>& submap);
+    void findStartAndGoalPositions(const vector<int>& agents_to_replan,
+                                        const unordered_set<int>& submap_set,
+                                        const unordered_map<int, pair<int, int>>& global_to_local,
+                                        vector<pair<int, int>>& start_positions,
+                                        vector<pair<int, int>>& goal_positions);
 };

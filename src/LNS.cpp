@@ -196,16 +196,18 @@ int LNS::findSyncTimeAndEntryTimes(const vector<int>& agents_to_replan,
 void LNS::synchronizeAgentPaths(vector<int>& agents_to_replan,
                                 unordered_map<int, int>& agent_entry_time,
                                 int T_sync) {
+    cout << "=== Debug: Synchronizing agent paths ===" << endl;
     for (int agent : agents_to_replan) {
         int entry_time = agent_entry_time[agent]; // time, when agent firstly entered the submap
         int last_loc = agents[agent].path[entry_time].location; // last known position in submap
 
-        cout << "Synchronizing agent " << agent << " from time " << entry_time << " to " << T_sync << endl;
+        cout << "Agent " << agent << " syncing from time " << entry_time << " to " << T_sync
+             << " (waiting at " << last_loc << ")" << endl;
 
         // if agent entered submap earlier than T_sync, he will stay still
         for (int t = entry_time; t < T_sync; ++t) {
-            cout << "Agent " << agent << " waits at " << last_loc << " at time " << t << endl;
             agents[agent].path.insert(agents[agent].path.begin() + t, PathEntry(last_loc));
+            cout << "🔧 Agent " << agent << " now at time " << t << " in location " << agents[agent].path[t].location << endl;
         }
     }
 }
@@ -216,15 +218,15 @@ void LNS::findStartAndGoalPositions(const vector<int>& agents_to_replan,
                                     const unordered_map<int, pair<int, int>>& global_to_local,
                                     vector<pair<int, int>>& start_positions,
                                     vector<pair<int, int>>& goal_positions) {
+    cout << "=== Debug: Start & Goal positions after sync ===" << endl;
     for (int agent : agents_to_replan) {
         int start_global = -1, goal_global = -1;
 
-        // find start position of agent at time T_sync
         if (T_sync < agents[agent].path.size()) {
             start_global = agents[agent].path[T_sync].location;
+            cout << "🔍 Agent " << agent << " new start (T_sync " << T_sync << "): " << start_global << endl;
         }
 
-        // find last position of agent in submap from T_sync onwards
         for (size_t t = T_sync; t < agents[agent].path.size(); ++t) {
             int location = agents[agent].path[t].location;
             if (submap_set.find(location) != submap_set.end()) {
@@ -232,20 +234,28 @@ void LNS::findStartAndGoalPositions(const vector<int>& agents_to_replan,
             }
         }
 
-        if (start_global == -1 || goal_global == -1) {
-            cout << "Agent " << agent << " does not have both start and goal positions in the submap." << endl;
-            continue;
+        cout << "Agent " << agent << " start global: " << start_global << ", goal global: " << goal_global;
+
+        if (global_to_local.find(start_global) != global_to_local.end()) {
+            auto local_start = global_to_local.at(start_global);
+            cout << " | Local start: (" << local_start.first << ", " << local_start.second << ")";
+        } else {
+            cout << " | Local start: (not found)";
         }
 
-        //start_positions.push_back(global_to_local[start_global])
-        //goal_positions.push_back(global_to_local[goal_global]);
-        start_positions.push_back(global_to_local.at(start_global));
-        goal_positions.push_back(global_to_local.at(goal_global));
+        if (global_to_local.find(goal_global) != global_to_local.end()) {
+            auto local_goal = global_to_local.at(goal_global);
+            cout << " | Local goal: (" << local_goal.first << ", " << local_goal.second << ")";
+        } else {
+            cout << " | Local goal: (not found)";
+        }
 
-        cout << "Agent " << agent << "'s local start: ("
-             << global_to_local.at(start_global).first << ", " << global_to_local.at(start_global).second << "), "
-             << "local goal: ("
-             << global_to_local.at(goal_global).first << ", " << global_to_local.at(goal_global).second << ")" << endl;
+        cout << endl;
+
+        if (start_global != -1 && goal_global != -1) {
+            start_positions.push_back(global_to_local.at(start_global));
+            goal_positions.push_back(global_to_local.at(goal_global));
+        }
     }
 }
 
@@ -295,7 +305,7 @@ void LNS::updateAgentPath(int agent_id,
         t++;
     }
 
-    // 1️⃣ Pokud byla cesta prodloužena → doplníme čekací kroky na konci
+    // Pokud byla cesta prodloužena → doplníme čekací kroky na konci
     if (t > agents[agent_id].path.size()) {
         cout << "Agent " << agent_id << " has a longer path, extending waiting at final position." << endl;
         int last_location = agents[agent_id].path.back().location;
@@ -304,7 +314,7 @@ void LNS::updateAgentPath(int agent_id,
         }
     }
 
-    // 2️⃣ Pokud byla cesta zkrácena → agent čeká v poslední naplánované pozici
+    // Pokud byla cesta zkrácena → agent čeká v poslední naplánované pozici
     if (t < agents[agent_id].path.size()) {
         cout << "Agent " << agent_id << " has a shorter path, keeping final position static." << endl;
         int last_location = agents[agent_id].path[t - 1].location;
@@ -368,6 +378,20 @@ bool LNS::generateNeighborBySAT() {
     vector<int> agents_to_replan = getAgentsToReplan(agents_in_submap, submap_set, problematic_timestep);
     if (agents_to_replan.empty()) return false;
 
+    cout << "=== Debug: Initial positions before sync ===" << endl;
+    for (int agent : agents_to_replan) {
+        int initial_loc = agents[agent].path[0].location;
+        cout << "Agent " << agent << " initial global location: " << initial_loc;
+
+        if (global_to_local.find(initial_loc) != global_to_local.end()) {
+            auto local = global_to_local.at(initial_loc);
+            cout << " (local: " << local.first << ", " << local.second << ")";
+        } else {
+            cout << " (not found in global_to_local)";
+        }
+        cout << endl;
+    }
+
     unordered_map<int, int> agent_entry_time;
     int T_sync = findSyncTimeAndEntryTimes(agents_to_replan, submap_set, agent_entry_time);
     synchronizeAgentPaths(agents_to_replan, agent_entry_time, T_sync);
@@ -399,8 +423,23 @@ bool LNS::generateNeighborBySAT() {
 
     //result = runSATSolver(map, start_positions, goal_positions); ??????
 
+
+
     if (result == 0) {
         vector<vector<int>> plan = solver->GetPlan();
+
+        cout << "=== Debug: Plans after SAT solver ===" << endl;
+        for (size_t a = 0; a < agents_to_replan.size(); ++a) {
+            if (a >= plan.size()) continue;
+            int agent_id = agents_to_replan[a];
+            cout << "Agent " << agent_id << " path: ";
+
+            for (size_t t = T_sync; t < agents[agent_id].path.size(); ++t) {
+                cout << agents[agent_id].path[t].location << " ";
+            }
+            cout << endl;
+
+        }
 
         for (size_t a = 0; a < agents_to_replan.size(); ++a) {
             if (a >= plan.size()) break;

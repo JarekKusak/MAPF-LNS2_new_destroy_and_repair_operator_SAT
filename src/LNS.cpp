@@ -207,13 +207,18 @@ void LNS::findStartAndGoalPositions(const vector<int>& agents_to_replan,
 
     for (int agent : agents_to_replan) {
         int start_global = -1, goal_global = -1;
+        int start_time = -1, goal_time = -1;
 
         // Prohledáme celý path agenta a zjistíme jeho první a poslední výskyt v submapě
         for (size_t t = 0; t < agents[agent].path.size(); ++t) {
             int location = agents[agent].path[t].location;
             if (submap_set.find(location) != submap_set.end()) {
-                if (start_global == -1) start_global = location;  // První výskyt je start
-                goal_global = location;  // Poslední výskyt je cíl
+                if (start_global == -1) {
+                    start_global = location;
+                    start_time = t; // První výskyt agenta v submapě
+                }
+                goal_global = location;
+                goal_time = t; // Poslední výskyt agenta v submapě
             }
         }
 
@@ -235,10 +240,13 @@ void LNS::findStartAndGoalPositions(const vector<int>& agents_to_replan,
             cout << "[ERROR] Cílová pozice agenta " << agent << " není v global_to_local!\n";
         }
 
+        // Výpis startovní a cílové pozice včetně časových kroků
         cout << "Agent " << agent << " | Start (globální): " << start_global
              << " → (lokální): (" << global_to_local.at(start_global).first << ", " << global_to_local.at(start_global).second << ")"
+             << " v čase " << start_time
              << " | Cíl (globální): " << goal_global
-             << " → (lokální): (" << global_to_local.at(goal_global).first << ", " << global_to_local.at(goal_global).second << ")\n";
+             << " → (lokální): (" << global_to_local.at(goal_global).first << ", " << global_to_local.at(goal_global).second << ")"
+             << " v čase " << goal_time << endl;
     }
 
     if (start_positions.empty() || goal_positions.empty()) {

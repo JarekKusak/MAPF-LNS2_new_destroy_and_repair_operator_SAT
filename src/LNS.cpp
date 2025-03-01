@@ -213,6 +213,11 @@ bool LNS::solveWithSAT(vector<vector<int>>& map,
         return false;
     }
 
+    cout << "[DEBUG] Předáváme SAT solveru tyto startovní pozice:" << endl;
+    for (size_t i = 0; i < start.size(); ++i) {
+        cout << "  - Agent " << i << ": Start = (" << start[i].first << ", " << start[i].second << ")" << endl;
+    }
+
     vector<vector<int>> plan = solver->GetPlan();
 
     for (size_t a = 0; a < plan.size(); ++a) {

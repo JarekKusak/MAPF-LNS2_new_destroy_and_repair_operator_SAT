@@ -237,6 +237,8 @@ void LNS::findStartAndGoalPositions(const vector<int>& agents_to_replan,
             continue;
         }
 
+        //start_positions.push_back(global_to_local[start_global])
+        //goal_positions.push_back(global_to_local[goal_global]);
         start_positions.push_back(global_to_local.at(start_global));
         goal_positions.push_back(global_to_local.at(goal_global));
 

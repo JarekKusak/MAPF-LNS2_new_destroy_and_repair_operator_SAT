@@ -102,4 +102,10 @@ private:
                                         const unordered_map<int, pair<int, int>>& global_to_local,
                                         vector<pair<int, int>>& start_positions,
                                         vector<pair<int, int>>& goal_positions);
+    int findSyncTimeAndEntryTimes(const vector<int>& agents_to_replan,
+                                       const unordered_set<int>& submap_set,
+                                       unordered_map<int, int>& agent_entry_time);
+    void synchronizeAgentPaths(vector<int>& agents_to_replan,
+                                    unordered_map<int, int>& agent_entry_time,
+                                    int T_sync);
 };

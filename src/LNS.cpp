@@ -254,6 +254,46 @@ void LNS::findStartAndGoalPositions(const vector<int>& agents_to_replan,
     }
 }
 
+int LNS::findSyncTimeAndEntryTimes(const vector<int>& agents_to_replan,
+                                   const unordered_set<int>& submap_set,
+                                   unordered_map<int, int>& agent_entry_time) {
+    int T_sync = 0;
+    cout << "\n[SYNC] Výpočet synchronizačního času T_sync:\n";
+
+    for (int agent : agents_to_replan) {
+        for (size_t t = 0; t < agents[agent].path.size(); ++t) {
+            int loc = agents[agent].path[t].location;
+            if (submap_set.find(loc) != submap_set.end()) {
+                agent_entry_time[agent] = t;
+                T_sync = std::max(T_sync, (int)t);
+                cout << "  - Agent " << agent << " vstoupil do submapy v čase " << t << endl;
+                break;
+            }
+        }
+    }
+
+    cout << "[SYNC] Finální synchronizační čas: T_sync = " << T_sync << endl;
+    return T_sync;
+}
+
+void LNS::synchronizeAgentPaths(vector<int>& agents_to_replan,
+                                unordered_map<int, int>& agent_entry_time,
+                                int T_sync) {
+    cout << "\n[SYNC] Synchronizace agentů do společného časového kroku (T_sync = " << T_sync << ")\n";
+
+    for (int agent : agents_to_replan) {
+        int entry_time = agent_entry_time[agent];
+        int last_loc = agents[agent].path[entry_time].location;
+
+        cout << "  - Agent " << agent << " čeká od času " << entry_time << " do " << T_sync
+             << " na pozici " << last_loc << endl;
+
+        for (int t = entry_time; t < T_sync; ++t) {
+            agents[agent].path.insert(agents[agent].path.begin() + t, PathEntry(last_loc));
+        }
+    }
+}
+
 bool LNS::generateNeighborBySAT() {
     cout << "====================" << endl;
     cout << "SAT operator called." << endl;
@@ -276,6 +316,11 @@ bool LNS::generateNeighborBySAT() {
 
     vector<int> agents_to_replan = getAgentsToReplan(agents_in_submap, submap_set, problematic_timestep);
     if (agents_to_replan.empty()) return false;
+
+    // **SYNCHRONIZACE AGENTŮ**
+    unordered_map<int, int> agent_entry_time;
+    int T_sync = findSyncTimeAndEntryTimes(agents_to_replan, submap_set, agent_entry_time);
+    synchronizeAgentPaths(agents_to_replan, agent_entry_time, T_sync);
 
     vector<pair<int, int>> start_positions, goal_positions;
     findStartAndGoalPositions(agents_to_replan, submap_set, global_to_local, start_positions, goal_positions);

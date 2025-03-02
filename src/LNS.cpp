@@ -111,7 +111,6 @@ void LNS::initializeSubmapData(const vector<vector<int>>& submap,
 }
 
 vector<vector<int>> LNS::generateMapRepresentation(const vector<vector<int>>& submap,
-                                                   const unordered_set<int>& submap_set,
                                                    const vector<int>& agents_in_submap,
                                                    int problematic_timestep) {
     cout << "Map content with agents and obstacles:" << endl;
@@ -324,23 +323,25 @@ void LNS::findStartAndGoalPositions(const vector<int>& agents_to_replan,
 
     for (int agent : agents_to_replan) {
         int start_global = -1, goal_global = -1;
-        int start_time = T_sync, goal_time = -1;  // Start je teď v čase T_sync
+        int start_time = T_sync, goal_time = -1;  // start je teď v čase T_sync
 
-        // Startovní pozice je nyní definována v čase T_sync
+        // startovní pozice je nyní definována v čase T_sync
         if (agents[agent].path.size() > T_sync) {
             int location_at_Tsync = agents[agent].path[T_sync].location;
             if (submap_set.find(location_at_Tsync) != submap_set.end()) {
                 start_global = location_at_Tsync;
-            } else {
-                cout << "[WARNING] Agent " << agent << " není v submapě v čase T_sync!\n";
-                continue; // Tento agent už není v submapě, neřešíme ho
             }
-        } else {
+            else {
+                cout << "[WARNING] Agent " << agent << " není v submapě v čase T_sync!\n";
+                continue; // tento agent už není v submapě, neřešíme ho
+            }
+        }
+        else {
             cout << "[ERROR] Agent " << agent << " nemá definovanou pozici v čase T_sync!\n";
             continue;
         }
 
-        // Cílová pozice je poslední výskyt agenta v submapě
+        // cílová pozice je poslední výskyt agenta v submapě
         for (size_t t = T_sync; t < agents[agent].path.size(); ++t) {
             int location = agents[agent].path[t].location;
             if (submap_set.find(location) != submap_set.end()) {
@@ -354,20 +355,17 @@ void LNS::findStartAndGoalPositions(const vector<int>& agents_to_replan,
             continue;
         }
 
-        // Převod globálních souřadnic na lokální
-        if (global_to_local.find(start_global) != global_to_local.end()) {
+        // převod globálních souřadnic na lokální
+        if (global_to_local.find(start_global) != global_to_local.end())
             start_positions.push_back(global_to_local.at(start_global));
-        } else {
-            cout << "[ERROR] Startovní pozice agenta " << agent << " není v global_to_local!\n";
-        }
+        else cout << "[ERROR] Startovní pozice agenta " << agent << " není v global_to_local!\n";
 
-        if (global_to_local.find(goal_global) != global_to_local.end()) {
+        if (global_to_local.find(goal_global) != global_to_local.end())
             goal_positions.push_back(global_to_local.at(goal_global));
-        } else {
-            cout << "[ERROR] Cílová pozice agenta " << agent << " není v global_to_local!\n";
-        }
+        else cout << "[ERROR] Cílová pozice agenta " << agent << " není v global_to_local!\n";
 
-        // Výpis startovní a cílové pozice včetně časových kroků
+
+        // výpis startovní a cílové pozice včetně časových kroků
         cout << "Agent " << agent << " | Start (globální): " << start_global
              << " → (lokální): (" << global_to_local.at(start_global).first << ", " << global_to_local.at(start_global).second << ")"
              << " v čase " << T_sync
@@ -376,9 +374,8 @@ void LNS::findStartAndGoalPositions(const vector<int>& agents_to_replan,
              << " v čase " << goal_time << endl;
     }
 
-    if (start_positions.empty() || goal_positions.empty()) {
+    if (start_positions.empty() || goal_positions.empty())
         cout << "[WARNING] Někteří agenti nemají validní start/cíl pro přeplánování.\n";
-    }
 }
 
 int LNS::findSyncTimeAndEntryTimes(const vector<int>& agents_to_replan,
@@ -389,9 +386,9 @@ int LNS::findSyncTimeAndEntryTimes(const vector<int>& agents_to_replan,
     for (int agent : agents_to_replan) {
         for (size_t t = 0; t < agents[agent].path.size(); ++t) {
             int loc = agents[agent].path[t].location;
-            if (submap_set.find(loc) != submap_set.end()) {
+            if (submap_set.find(loc) != submap_set.end()) { // pokud je loc v submapě, najdi čas
                 agent_entry_time[agent] = t;
-                T_sync = std::max(T_sync, (int)t);
+                T_sync = std::max(T_sync, (int)t); // vybíráme maximální synchronizační čas
                 break;
             }
         }
@@ -407,18 +404,15 @@ void LNS::synchronizeAgentPaths(vector<int>& agents_to_replan,
     cout << "\n[SYNC] Synchronizace agentů do společného časového kroku (T_sync = " << T_sync << ")\n";
 
     for (int agent : agents_to_replan) {
-        int entry_time = agent_entry_time[agent];  // Čas, kdy agent vstoupil do submapy
-        int target_location = agents[agent].path[T_sync].location; // Lokace v čase T_sync
+        int entry_time = agent_entry_time[agent];  // čas, kdy agent vstoupil do submapy
+        int target_location = agents[agent].path[T_sync].location; // lokace v čase T_sync
 
         cout << "  - Agent " << agent << " byl na " << agents[agent].path[entry_time].location
              << " → synchronizován na " << target_location << " (T_sync = " << T_sync << ")\n";
 
-        // **Posun agenta na lokaci v čase T_sync pro všechny časové kroky od vstupu po T_sync**
-        if (entry_time < T_sync) {
-            for (int t = entry_time; t < T_sync; ++t) {
+        if (entry_time < T_sync)  // posun agenta na lokaci v čase T_sync pro všechny časové kroky od vstupu po T_sync
+            for (int t = entry_time; t < T_sync; ++t)
                 agents[agent].path[t] = PathEntry(target_location);
-            }
-        }
     }
 }
 
@@ -440,7 +434,7 @@ bool LNS::generateNeighborBySAT() {
     unordered_map<int, pair<int, int>> global_to_local;
     initializeSubmapData(submap, submap_set, global_to_local);
 
-    vector<vector<int>> map = generateMapRepresentation(submap, submap_set, agents_in_submap, problematic_timestep);
+    vector<vector<int>> map = generateMapRepresentation(submap, agents_in_submap, problematic_timestep);
 
     vector<int> agents_to_replan = getAgentsToReplan(agents_in_submap, submap_set, problematic_timestep);
     if (agents_to_replan.empty()) return false;

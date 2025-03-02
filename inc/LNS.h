@@ -89,7 +89,6 @@ private:
                                    unordered_set<int>& submap_set,
                                    unordered_map<int, pair<int, int>>& global_to_local);
     vector<vector<int>> generateMapRepresentation(const vector<vector<int>>& submap,
-                                                       const unordered_set<int>& submap_set,
                                                        const vector<int>& agents_in_submap,
                                                        int problematic_timestep);
     bool solveWithSAT(vector<vector<int>>& map,

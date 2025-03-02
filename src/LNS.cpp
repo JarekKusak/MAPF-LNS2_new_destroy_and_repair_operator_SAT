@@ -158,8 +158,8 @@ bool LNS::solveWithSAT(vector<vector<int>>& map,
         cout << "[DEBUG] Startovní a cílové pozice odpovídají." << endl;
     }
 
-    vector<pair<int,int> > start; //= {{1,2},{0,3}};
-    vector<pair<int,int> > goal; //= {{4,1},{4,1}};
+    vector<pair<int,int> > start; //= {{3,1},{0,0}};
+    vector<pair<int,int> > goal; //= {{0,4},{4,1}};
 
     for  (size_t i = 3; i < 5; ++i) {
         start.push_back(start_positions[i]);
@@ -180,6 +180,8 @@ bool LNS::solveWithSAT(vector<vector<int>>& map,
     inst->SetAgents(2);
     log->NewInstance(2);
 
+    std::map<int, int> original_local_lengths; // Uložíme původní délky lokálních cest
+
     for (size_t a = 0; a < start.size(); ++a) {
         cout << "[DEBUG] Agent " << a << " | Původní lokální cesta v submapě: ";
 
@@ -191,7 +193,6 @@ bool LNS::solveWithSAT(vector<vector<int>>& map,
             local_path.push_back({x, y});
             cout << "(" << x << ", " << y << ") ";
 
-            // Přiblížení k cíli (zjednodušený odhad původní cesty)
             if (x < goal[a].first) x++;
             else if (x > goal[a].first) x--;
 
@@ -200,11 +201,14 @@ bool LNS::solveWithSAT(vector<vector<int>>& map,
         }
 
         local_path.push_back({x, y});
-        cout << "(" << x << ", " << y << ")";  // Přidání cílového bodu
+        cout << "(" << x << ", " << y << ")";
 
         int local_path_length = local_path.size();
+        original_local_lengths[a] = local_path_length; // Uložíme délku
+
         cout << " | Skutečná délka: " << local_path_length << endl;
     }
+
     int result = solver->Solve(2, 0, true);
 
     cout << "Solver returned: " << result << endl;
@@ -233,12 +237,14 @@ bool LNS::solveWithSAT(vector<vector<int>>& map,
         cout << " | Nová délka: " << plan[a].size() << endl;
     }
 
+
+    // CREATING NEW (LOCALLY) UPDATED AGENT PATH
     for (size_t a = 0; a < std::min(agents_to_replan.size(), plan.size()); ++a) {
         int agent_id = agents_to_replan[a];
 
-        int original_local_length = agents[agent_id].path.size() - T_sync;
+        int original_local_length = original_local_lengths[a]; // Správná původní délka
         int new_local_length = plan[a].size();
-        int submap_end_time = T_sync + new_local_length;
+        //int submap_end_time = T_sync + new_local_length;
 
         cout << "[INFO] Aktualizace cesty pro agenta " << agent_id
              << " | Původní lokální délka: " << original_local_length
@@ -264,10 +270,13 @@ bool LNS::solveWithSAT(vector<vector<int>>& map,
         } else if (new_local_length > original_local_length) {
             int delay = new_local_length - original_local_length;
             cout << "[INFO] Agent " << agent_id << " skončil později o " << delay
-                 << " kroků, přidáváme čekání." << endl;
+                 << " kroků, posouváme zbytek jeho globálního plánu." << endl;
 
-            for (int t = 0; t < delay; ++t) {
-                updated_path.push_back(updated_path.back());  // Čekání na místě
+            // Posuneme zbývající plán agenta dopředu
+            if (T_sync + original_local_length < agents[agent_id].path.size()) {
+                for (size_t t = T_sync + original_local_length; t < agents[agent_id].path.size(); ++t) {
+                    updated_path.push_back(agents[agent_id].path[t]);  // Posun zbytku plánu
+                }
             }
         }
 

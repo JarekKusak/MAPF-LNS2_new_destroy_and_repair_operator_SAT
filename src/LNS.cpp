@@ -68,6 +68,7 @@ pair<vector<vector<int>>, vector<int>> LNS::getSubmapAndAgents(int agent_id, int
 
     int half_side = submap_side / 2;
 
+    // TODO: překázka není očíslovaná (= -1)
     for (int dx = -half_side; dx <= half_side; ++dx) {
         for (int dy = -half_side; dy <= half_side; ++dy) {
             int x = agent_x + dx; // relative displacement from the agent along the horizontal
@@ -151,11 +152,10 @@ bool LNS::solveWithSAT(vector<vector<int>>& map,
     cout << "  - Velikost start_positions: " << start_positions.size() << endl;
     cout << "  - Velikost goal_positions: " << goal_positions.size() << endl;
 
-    if (start_positions.size() != goal_positions.size()) {
+    if (start_positions.size() != goal_positions.size())
         cout << "[ERROR] Počet startovních a cílových pozic se neshoduje!" << endl;
-    } else {
+    else
         cout << "[DEBUG] Startovní a cílové pozice odpovídají." << endl;
-    }
 
     vector<pair<int,int> > start; //= {{3,1},{0,0}};
     vector<pair<int,int> > goal; //= {{0,4},{4,1}};
@@ -188,6 +188,7 @@ bool LNS::solveWithSAT(vector<vector<int>>& map,
         int x = start[a].first;
         int y = start[a].second;
 
+        // TODO: předělat
         while (x != goal[a].first || y != goal[a].second) { // hledání cíle
             local_path.push_back({x, y});
             cout << "(" << x << ", " << y << ") ";
@@ -229,9 +230,8 @@ bool LNS::solveWithSAT(vector<vector<int>>& map,
     // debug: vypsat lokální cesty, co solver vrátil
     for (size_t a = 0; a < plan.size(); ++a) {
         cout << "[DEBUG] Agent " << agents_to_replan[a+3] << " | Nová lokální cesta (submap idx): ";
-        for (size_t t = 0; t < plan[a].size(); ++t) {
+        for (size_t t = 0; t < plan[a].size(); ++t)
             cout << plan[a][t] << " ";
-        }
         cout << endl;
     }
 
@@ -247,18 +247,18 @@ bool LNS::solveWithSAT(vector<vector<int>>& map,
              << " | Původní lokální délka: " << original_local_length
              << " | Nová lokální délka: " << new_local_length << endl;
 
-        // 1) Zkopírujeme prefix (před T_sync)
+        // 1) zkopírujeme prefix (před T_sync)
         vector<PathEntry> updated_path(agents[agent_id].path.begin(),
                                        agents[agent_id].path.begin() + T_sync);
 
-        // 2) Vložíme novou lokální cestu (převedenou na globální ID)
+        // 2) vložíme novou lokální cestu (převedenou na globální ID)
         int submap_width = (int)submap[0].size();
         int submap_height = (int)submap.size();
 
         for (int t = 0; t < (int)plan[a].size(); ++t) {
             int local_id = plan[a][t];
 
-            // --- Debug: dekódování submap ID ---
+            // --- debug: dekódování submap ID ---
             if (local_id < 0 || local_id >= submap_width * submap_height) {
                 cout << "[ERROR] agent " << agent_id
                      << " local_id=" << local_id
@@ -279,9 +279,9 @@ bool LNS::solveWithSAT(vector<vector<int>>& map,
             }
 
             int global_id = submap[sx][sy];
-            // Případná další kontrola global_id >= 0, atd.
+            // případná další kontrola global_id >= 0, atd.
 
-            // Debug výpis
+            // debug výpis
             cout << "[DEBUG] agent " << agent_id
                  << " step " << t << ": local_id=" << local_id
                  << " => (sx, sy)=(" << sx << "," << sy
@@ -290,7 +290,7 @@ bool LNS::solveWithSAT(vector<vector<int>>& map,
             updated_path.push_back(PathEntry(global_id));
         }
 
-        // 3) Doplníme sufix podle toho, zda se agent zrychlil / zpomalil
+        // 3) doplníme sufix podle toho, zda se agent zrychlil / zpomalil
         if (new_local_length < original_local_length) {
             int time_shift = original_local_length - new_local_length;
             cout << "[INFO] Agent " << agent_id
@@ -319,26 +319,26 @@ bool LNS::solveWithSAT(vector<vector<int>>& map,
                 cout << "[WARN] agent " << agent_id
                      << " | prefix->lokální navaznost se liší! "
                      << prefix_last << " != " << local_first << endl;
-            } else {
+            }
+            else {
                 cout << "[DEBUG] agent " << agent_id
                      << " | prefix->lokální navaznost OK (" << prefix_last << ")." << endl;
             }
         }
 
         // ověříme, zda lokální plán navazuje na sufix
-        int local_end_idx = T_sync + new_local_length - 1;
+        int local_end_idx = T_sync + new_local_length;
         int sufix_start_idx = T_sync + new_local_length;
         if (sufix_start_idx < (int)updated_path.size()) {
             int local_last = updated_path[local_end_idx].location;
             int sufix_start = updated_path[sufix_start_idx].location;
             if (local_last != sufix_start) {
                 cout << "[WARN] agent " << agent_id
-                     << " | lokální->sufix navaznost se liší! "
+                     << " | lokální->sufix návaznost se liší! "
                      << local_last << " != " << sufix_start << endl;
-            } else {
-                cout << "[DEBUG] agent " << agent_id
-                     << " | lokální->sufix navaznost OK (" << local_last << ")." << endl;
             }
+            else cout << "[DEBUG] agent " << agent_id
+                     << " | lokální->sufix návaznost OK (" << local_last << ")." << endl;
         }
 
         // nakonec přiřadíme
@@ -358,9 +358,9 @@ vector<int> LNS::getAgentsToReplan(const vector<int>& agents_in_submap,
 
     for (int agent : agents_in_submap)
     {
-        // Najdeme, kdy agent vstupuje do submapy a kdy ji opouští
-        // (t_min = první čas, kdy agentovy location ∈ submap_set,
-        //  t_max = poslední čas, kdy location ∈ submap_set)
+        // najdeme, kdy agent vstupuje do submapy a kdy ji opouští
+        // (t_min = první čas, kdy agentovy location leží v submap_set,
+        //  t_max = poslední čas, kdy location leží v submap_set)
         int t_min = -1, t_max = -1;
         const auto& path = agents[agent].path; // agentova trajektorie
 
@@ -369,19 +369,18 @@ vector<int> LNS::getAgentsToReplan(const vector<int>& agents_in_submap,
             int loc = path[t].location;
             if (submap_set.find(loc) != submap_set.end())
             {
-                if (t_min < 0) {
+                if (t_min < 0)
                     t_min = t; // poprvé nalezen
-                }
                 t_max = t;    // průběžně aktualizujeme poslední výskyt
             }
         }
 
-        // Pokud agent v submapě nebyl nikdy, t_min zůstane -1
+        // pokud agent v submapě nebyl nikdy, t_min zůstane -1
         if (t_min == -1)
             continue;
 
-        // Nyní ověříme, zda interval [t_min, t_max] zahrnuje problematický čas
-        // Tím pádem v čase "problematic_timestep" je agent v submapě zároveň
+        // nyní ověříme, zda interval [t_min, t_max] zahrnuje problematický čas
+        // tím pádem v čase "problematic_timestep" je agent v submapě zároveň
         if (t_min <= problematic_timestep && problematic_timestep <= t_max)
         {
             agents_to_replan.push_back(agent);
@@ -393,10 +392,8 @@ vector<int> LNS::getAgentsToReplan(const vector<int>& agents_in_submap,
     }
 
     if (agents_to_replan.empty())
-    {
         cout << "[INFO] Žádný další agent nebyl v submapě v čase "
              << problematic_timestep << ".\n";
-    }
 
     return agents_to_replan;
 }
@@ -510,7 +507,7 @@ bool LNS::generateNeighborBySAT() {
     auto [key_agent_id, problematic_timestep] = findMostDelayedAgent();
     if (key_agent_id < 0) {
         cout << "No delayed agent found." << endl;
-        return false;
+        return false; // return true?
     }
 
     int agent_loc = agents[key_agent_id].path[problematic_timestep].location;
@@ -523,8 +520,13 @@ bool LNS::generateNeighborBySAT() {
 
     vector<vector<int>> map = generateMapRepresentation(submap, agents_in_submap, problematic_timestep);
 
-    vector<int> agents_to_replan = getAgentsToReplan(agents_in_submap, submap_set, problematic_timestep); // ?????
-    if (agents_to_replan.empty()) return false;
+    // TODO: synchronizace podle nejkonfliktnějšího agenta
+    // sum of cost známe, spočítáme optimální sum of cost od startu do cíle (DFS) každého agenta
+    // podle toho můžeme říkat solveru, aby našel řešení s nějakou danou cenou (inkrementálně navyšujem) - delta
+    // pokud to bude vyšší než to co známe, tak zahodíme submapu (nemá cenu řešit)
+    // avoid existuje
+    vector<int> agents_to_replan = getAgentsToReplan(agents_in_submap, submap_set, problematic_timestep);
+    if (agents_to_replan.empty()) return false; // return true?
 
     // **SYNCHRONIZACE AGENTŮ**
     unordered_map<int, int> agent_entry_time;
@@ -535,7 +537,7 @@ bool LNS::generateNeighborBySAT() {
     findStartAndGoalPositions(agents_to_replan, submap_set, global_to_local, start_positions, goal_positions, T_sync);
     if (start_positions.empty() || goal_positions.empty()) return false;
 
-    return (solveWithSAT(map, start_positions, goal_positions, agents_to_replan, submap, T_sync) == -1) ? 0 : -1;
+    return solveWithSAT(map, start_positions, goal_positions, agents_to_replan, submap, T_sync);
 }
 
 bool LNS::run()

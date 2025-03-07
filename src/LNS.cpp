@@ -462,26 +462,6 @@ void LNS::findStartAndGoalPositions(const vector<int>& agents_to_replan,
         cout << "[WARNING] Někteří agenti nemají validní start/cíl pro přeplánování.\n";
 }
 
-int LNS::findSyncTimeAndEntryTimes(const vector<int>& agents_to_replan,
-                                   const unordered_set<int>& submap_set,
-                                   unordered_map<int, int>& agent_entry_time) {
-    int T_sync = 0;
-
-    for (int agent : agents_to_replan) {
-        for (size_t t = 0; t < agents[agent].path.size(); ++t) {
-            int loc = agents[agent].path[t].location;
-            if (submap_set.find(loc) != submap_set.end()) { // pokud je loc v submapě, najdi čas
-                agent_entry_time[agent] = t;
-                T_sync = std::max(T_sync, (int)t); // vybíráme maximální synchronizační čas
-                break;
-            }
-        }
-    }
-
-    cout << "\n[SYNC] Finální synchronizační čas: T_sync = " << T_sync << endl;
-    return T_sync;
-}
-
 void LNS::synchronizeAgentPaths(vector<int>& agents_to_replan,
                                 unordered_map<int, int>& agent_entry_time,
                                 int T_sync) {
@@ -530,7 +510,7 @@ bool LNS::generateNeighborBySAT() {
 
     // **SYNCHRONIZACE AGENTŮ**
     unordered_map<int, int> agent_entry_time;
-    int T_sync = findSyncTimeAndEntryTimes(agents_to_replan, submap_set, agent_entry_time);
+    int T_sync = problematic_timestep; // bude se synchronizovat podle nejproblematičtějšího agenta
     synchronizeAgentPaths(agents_to_replan, agent_entry_time, T_sync);
 
     vector<pair<int, int>> start_positions, goal_positions;

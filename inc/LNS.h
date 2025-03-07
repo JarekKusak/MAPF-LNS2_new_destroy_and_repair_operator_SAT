@@ -103,9 +103,6 @@ private:
                                         vector<pair<int, int>>& start_positions,
                                         vector<pair<int, int>>& goal_positions,
                                         int T_sync);
-    int findSyncTimeAndEntryTimes(const vector<int>& agents_to_replan,
-                                       const unordered_set<int>& submap_set,
-                                       unordered_map<int, int>& agent_entry_time);
     void synchronizeAgentPaths(vector<int>& agents_to_replan,
                                     unordered_map<int, int>& agent_entry_time,
                                     int T_sync);

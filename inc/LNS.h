@@ -104,6 +104,5 @@ private:
                                         vector<pair<int, int>>& goal_positions,
                                         int T_sync);
     void synchronizeAgentPaths(vector<int>& agents_to_replan,
-                                    unordered_map<int, int>& agent_entry_time,
                                     int T_sync);
 };

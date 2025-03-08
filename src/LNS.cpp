@@ -10,7 +10,7 @@ LNS::LNS(const Instance& instance, double time_limit, const string & init_algo_n
          const string & init_destory_name, bool use_sipp, int screen, PIBTPPS_option pipp_option) :
          BasicLNS(instance, time_limit, neighbor_size, screen),
          init_algo_name(init_algo_name),  replan_algo_name(replan_algo_name),
-         num_of_iterations(num_of_iterations > 0 ? num_of_iterations : 2),
+         num_of_iterations(num_of_iterations > 0 ? num_of_iterations : 1),
          use_init_lns(use_init_lns),init_destory_name(init_destory_name),
          path_table(instance.map_size), pipp_option(pipp_option)
 {
@@ -44,6 +44,24 @@ LNS::LNS(const Instance& instance, double time_limit, const string & init_algo_n
     preprocessing_time = ((fsec)(Time::now() - start_time)).count();
     if (screen >= 2)
         cout << "Pre-processing time = " << preprocessing_time << " seconds." << endl;
+}
+
+// Vrací (sx, sy) odpovídající local_id v pořadí volných buněk v 'map' (2D pole s 1=volno, -1=prekážka)
+pair<int, int> decodeLocalID(int local_id, const vector<vector<int>>& map) {
+    int count = 0;
+    int rows = map.size();
+    int cols = map[0].size();
+    for (int i = 0; i < rows; i++) {
+        for (int j = 0; j < cols; j++) {
+            if (map[i][j] == 1) { // pokud je volná
+                if (count == local_id)
+                    return {i, j};
+                count++;
+            }
+        }
+    }
+    // Pokud se index nepodaří nalézt, vrátíme chybový výsledek (můžete případně vyhodit výjimku)
+    return {-1, -1};
 }
 
 /* getting the submap around one or more agents and identifying agents in these submaps */
@@ -216,8 +234,9 @@ vector<int> LNS::getAgentsToReplan(const vector<int>& agents_in_submap,
 }
 
 void LNS::synchronizeAgentPaths(vector<int>& agents_to_replan,
-                                int T_sync)
-{
+                                int T_sync) {
+    //TODO: agents[agent_id].path_planner->start_location = agents[agent_id].path.front().location; kvůli validaci
+
     cout << "\n[SYNC] Synchronizace agentů do společného časového kroku (T_sync = "
          << T_sync << ")\n";
 
@@ -245,6 +264,9 @@ void LNS::synchronizeAgentPaths(vector<int>& agents_to_replan,
         // Pro t=earliest..T_sync-1 => replikujeme loc_at_Tsync
         for (int t = earliest; t < T_sync && t < (int)agents[agent].path.size(); t++)
             agents[agent].path[t] = PathEntry(loc_at_Tsync);
+
+        //TODO: problém s validací, nicméně takhle přeplánujeme globální start/cíl agenta, to asi nechceme
+        //agents[agent].path_planner->start_location = loc_at_Tsync;
     }
 }
 
@@ -344,24 +366,6 @@ LNS::findLocalPaths(const vector<int>& agents_to_replan,
     return local_paths;
 }
 
-// Vrací (sx, sy) odpovídající local_id v pořadí volných buněk v 'map' (2D pole s 1=volno, -1=prekážka)
-pair<int, int> decodeLocalID(int local_id, const vector<vector<int>>& map) {
-    int count = 0;
-    int rows = map.size();
-    int cols = map[0].size();
-    for (int i = 0; i < rows; i++) {
-        for (int j = 0; j < cols; j++) {
-            if (map[i][j] == 1) { // pokud je volná
-                if (count == local_id)
-                    return {i, j};
-                count++;
-            }
-        }
-    }
-    // Pokud se index nepodaří nalézt, vrátíme chybový výsledek (můžete případně vyhodit výjimku)
-    return {-1, -1};
-}
-
 bool LNS::solveWithSAT(
         vector<vector<int>>& map,
         const unordered_map<int, vector<pair<int,int>>>& local_paths,
@@ -383,7 +387,7 @@ bool LNS::solveWithSAT(
 
     for (int agent : agents_to_replan) {
 
-        if (agent != 0 && agent != 18) // DOČASNÉ
+        if (agent != agents_to_replan[0] && agent != agents_to_replan[1]) // DOČASNÉ
             continue;
 
         // Najdeme jeho sekvenci lokálních souřadnic (sx, sy)
@@ -436,8 +440,6 @@ bool LNS::solveWithSAT(
     // 4) Získáme nové cesty od solveru
     vector<vector<int>> plan = solver->GetPlan();
 
-    // TODO: zkontrolovat výpis nových lokálních souřadnic a jejich převod na globální
-    // TODO: Podle debugu pod "Solver returned: 0" to nesedí, možná špatný převod na global_id?
     // Debug: vypsat novou lokální cestu (v 1D indexech submapy).
     for (size_t a = 0; a < plan.size(); ++a) {
         cout << "[DEBUG] Agent (index) " << agents_to_replan[a]

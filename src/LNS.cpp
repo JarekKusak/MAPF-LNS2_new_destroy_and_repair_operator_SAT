@@ -315,8 +315,7 @@ LNS::findLocalPaths(const vector<int>& agents_to_replan,
             // Dokud je glob_loc v submapě, posouváme last_time_in_submap
             if (submap_set.find(glob_loc) != submap_set.end())
                 last_time_in_submap = t;
-            else
-                break; // agent submapu opustil
+            else break; // agent submapu opustil
         }
 
         if (last_time_in_submap == -1) {
@@ -350,10 +349,9 @@ LNS::findLocalPaths(const vector<int>& agents_to_replan,
             path_local.emplace_back(sx, sy);
         }
 
-        // 5) Uložíme do mapy
+        // 5) uložíme do mapy
         local_paths[agent] = path_local;
 
-        // 6) Debug výpis
         cout << "  Agent " << agent
              << " (globální cesty od T=" << T_sync
              << " do " << last_time_in_submap << ") má lokální dráhu: ";
@@ -646,7 +644,7 @@ bool LNS::generateNeighborBySAT() {
     synchronizeAgentPaths(agents_to_replan, T_sync);
     auto local_paths = findLocalPaths(agents_to_replan, submap, submap_set, global_to_local, T_sync);
 
-    return (solveWithSAT(map, local_paths, agents_to_replan, submap, T_sync) == -1) ? 0 : -1;
+    return solveWithSAT(map, local_paths, agents_to_replan, submap, T_sync);
 }
 
 bool LNS::run()

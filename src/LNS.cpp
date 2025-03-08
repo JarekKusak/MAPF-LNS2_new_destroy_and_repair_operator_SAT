@@ -344,6 +344,24 @@ LNS::findLocalPaths(const vector<int>& agents_to_replan,
     return local_paths;
 }
 
+// Vrací (sx, sy) odpovídající local_id v pořadí volných buněk v 'map' (2D pole s 1=volno, -1=prekážka)
+pair<int, int> decodeLocalID(int local_id, const vector<vector<int>>& map) {
+    int count = 0;
+    int rows = map.size();
+    int cols = map[0].size();
+    for (int i = 0; i < rows; i++) {
+        for (int j = 0; j < cols; j++) {
+            if (map[i][j] == 1) { // pokud je volná
+                if (count == local_id)
+                    return {i, j};
+                count++;
+            }
+        }
+    }
+    // Pokud se index nepodaří nalézt, vrátíme chybový výsledek (můžete případně vyhodit výjimku)
+    return {-1, -1};
+}
+
 bool LNS::solveWithSAT(
         vector<vector<int>>& map,
         const unordered_map<int, vector<pair<int,int>>>& local_paths,
@@ -364,6 +382,10 @@ bool LNS::solveWithSAT(
     std::map<int,int> original_local_lengths;
 
     for (int agent : agents_to_replan) {
+
+        if (agent != 0 && agent != 18) // DOČASNÉ
+            continue;
+
         // Najdeme jeho sekvenci lokálních souřadnic (sx, sy)
         auto it = local_paths.find(agent);
         if (it == local_paths.end() || it->second.empty()) {
@@ -405,6 +427,7 @@ bool LNS::solveWithSAT(
     // 3) Spustíme solver
     int result = solver->Solve((int)start_positions.size(), 0, true);
     cout << "Solver returned: " << result << endl;
+
     if (result != 0) {
         cout << "SAT solver failed.\n";
         return false;
@@ -413,9 +436,11 @@ bool LNS::solveWithSAT(
     // 4) Získáme nové cesty od solveru
     vector<vector<int>> plan = solver->GetPlan();
 
+    // TODO: zkontrolovat výpis nových lokálních souřadnic a jejich převod na globální
+    // TODO: Podle debugu pod "Solver returned: 0" to nesedí, možná špatný převod na global_id?
     // Debug: vypsat novou lokální cestu (v 1D indexech submapy).
     for (size_t a = 0; a < plan.size(); ++a) {
-        cout << "[DEBUG] Agent (index) " << a
+        cout << "[DEBUG] Agent (index) " << agents_to_replan[a]
         << " | Nová lokální cesta (submap idx): ";
         for (auto lid : plan[a]) cout << lid << " ";
             cout << endl;
@@ -456,21 +481,18 @@ bool LNS::solveWithSAT(
 
         for (int t = 0; t < new_local_length; t++) {
             int local_id = plan[a][t];
-            // Dekódování
-            int sx = local_id / submap_width;
-            int sy = local_id % submap_width;
-            if (sx < 0 || sx >= submap_height || sy < 0 || sy >= submap_width) {
-                cout << "[ERROR] agent " << agent_id
-                << ": (sx, sy)=(" << sx << "," << sy
-                << ") out of submap range.\n";
+            // Místo dělení a zbytku použijeme funkci decodeLocalID
+            pair<int, int> coords = decodeLocalID(local_id, map);
+            int sx = coords.first;
+            int sy = coords.second;
+            if (sx == -1 || sy == -1) {
+                cout << "[ERROR] agent " << agent_id << " local_id=" << local_id << " nelze dekódovat do platných souřadnic.\n";
                 continue;
             }
             int global_id = submap[sx][sy];
-            // debug
-            cout << "[DEBUG] agent " << agent_id
-            << " t=" << t << " => (sx,sy)=(" << sx << "," << sy
-            << ") => global_id=" << global_id << endl;
-
+            cout << "[DEBUG] agent " << agent_id << " t=" << t
+                 << " => decoded (sx,sy)=(" << sx << "," << sy
+                 << ") => global_id=" << global_id << endl;
             updated_path.push_back(PathEntry(global_id));
         }
 
@@ -529,7 +551,7 @@ bool LNS::generateNeighborBySAT() {
 
     vector<vector<int>> map = generateMapRepresentation(submap, agents_in_submap, problematic_timestep);
 
-    // TODO: synchronizace podle nejkonfliktnějšího agenta
+    // NOTE
     // sum of cost známe, spočítáme optimální sum of cost od startu do cíle (DFS) každého agenta
     // podle toho můžeme říkat solveru, aby našel řešení s nějakou danou cenou (inkrementálně navyšujem) - delta
     // pokud to bude vyšší než to co známe, tak zahodíme submapu (nemá cenu řešit)

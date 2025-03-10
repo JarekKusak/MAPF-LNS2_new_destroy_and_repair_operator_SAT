@@ -81,12 +81,11 @@ pair<vector<vector<int>>, vector<int>> LNS::getSubmapAndAgents(int agent_id, int
     set<int> conflicting_agents;
 
     // center of the submap
-    int agent_x = agent_location / map_width;
+    int agent_x = agent_location / map_width; // most delayed agent is the center of submap
     int agent_y = agent_location % map_width;
 
     int half_side = submap_side / 2;
 
-    // TODO: překázka není očíslovaná (= -1)
     for (int dx = -half_side; dx <= half_side; ++dx) {
         for (int dy = -half_side; dy <= half_side; ++dy) {
             int x = agent_x + dx; // relative displacement from the agent along the horizontal
@@ -102,7 +101,8 @@ pair<vector<vector<int>>, vector<int>> LNS::getSubmapAndAgents(int agent_id, int
 
                 if (submap_x >= 0 && submap_x < submap_side && submap_y >= 0 && submap_y < submap_side) {
                     submap[submap_x][submap_y] = global_pos;
-                    path_table.get_agents(conflicting_agents, global_pos); // collect all agents in the submap
+                    // TODO: možná půjde využít?
+                    path_table.get_agents(conflicting_agents, global_pos); // collect all agents in the submap (at EVERY timestep)
                 }
             }
         }
@@ -144,6 +144,7 @@ vector<vector<int>> LNS::generateMapRepresentation(const vector<vector<int>>& su
             } else {
                 bool is_agent = false;
                 for (int agent : agents_in_submap) {
+                    // TODO: agenti jsou zachytávání v problematic_timestep v submapě, ale ve skutečnosti tam mohou být v submapě v různé časy
                     if (agents[agent].path[problematic_timestep].location == global_pos) {
                         cout << "A ";
                         is_agent = true;
@@ -168,6 +169,7 @@ vector<int> LNS::getAgentsToReplan(const vector<int>& agents_in_submap,
 
     for (int agent : agents_in_submap)
     {
+        // TODO: co když je to ale druhý/třetí/... průchod agenta submapou, jehož interval už pokrývá problematic_timestep?
         // Najdeme PRVNÍ souvislý interval [t_min..t_max], ve kterém je agent v submapě.
         // Kdyby agent submapu opustil a pak se znovu vrátil, ignorujeme ten návrat.
 
@@ -177,7 +179,6 @@ vector<int> LNS::getAgentsToReplan(const vector<int>& agents_in_submap,
         int t_min = -1;
         int t_max = -1;
 
-        // TODO: co když je to ale druhý/třetí/... průchod agenta submapou, jehož interval už pokrývá problematic_timestep?
         // Projdeme celé path:
         //  1) hledáme první t, kdy je agent v submapě -> t_min
         //  2) dokud je agent v submapě, posouváme t_max
@@ -278,11 +279,11 @@ LNS::findLocalPaths(const vector<int>& agents_to_replan,
                     const vector<vector<int>>& submap,
                     const unordered_set<int>& submap_set,
                     const unordered_map<int, pair<int,int>>& global_to_local,
-                    int T_sync)
-{
-    // Pro každý agent vytvoříme sekvenci (sx, sy) lokálních souřadnic.
-    // Pokud agent není v submapě v čase T_sync, vynecháme ho.
-    // Jakmile agent submapu opustí, končíme.
+                    int T_sync) {
+    // TODO: co když agent prochází submapou opakovaně? Musíme vybrat ten souvislý úsek lokální cesty, která má v intervalu problematic_timestep
+    // pro každého agent vytvoříme sekvenci (sx, sy) lokálních souřadnic
+    // pokud agent není v submapě v čase T_sync, vynecháme ho
+    // jakmile agent submapu opustí, končíme
 
     unordered_map<int, vector<pair<int,int>>> local_paths;
 
@@ -310,8 +311,7 @@ LNS::findLocalPaths(const vector<int>& agents_to_replan,
 
         // 3) Najdeme poslední čas, dokdy agent v submapě zůstává
         int last_time_in_submap = -1;
-        for (int t = T_sync; t < (int)agents[agent].path.size(); t++)
-        {
+        for (int t = T_sync; t < (int)agents[agent].path.size(); t++) {
             int glob_loc = agents[agent].path[t].location;
             // Dokud je glob_loc v submapě, posouváme last_time_in_submap
             if (submap_set.find(glob_loc) != submap_set.end())
@@ -542,14 +542,15 @@ bool LNS::generateNeighborBySAT() {
         return false; // return true?
     }
 
-    int agent_loc = agents[key_agent_id].path[problematic_timestep].location;
+    int agent_loc = agents[key_agent_id].path[problematic_timestep].location; // globalID of the cell in 1D matrix
     int submap_size = 25;
     auto [submap, agents_in_submap] = getSubmapAndAgents(key_agent_id, submap_size, agent_loc);
 
     unordered_set<int> submap_set;
     unordered_map<int, pair<int, int>> global_to_local;
-    initializeSubmapData(submap, submap_set, global_to_local);
+    initializeSubmapData(submap, submap_set, global_to_local); // +submap -submap_set -global_to_local
 
+    // TODO: chyba v zaznamenávání agentů
     vector<vector<int>> map = generateMapRepresentation(submap, agents_in_submap, problematic_timestep);
 
     // NOTE
@@ -642,7 +643,7 @@ bool LNS::generateNeighborBySAT() {
     // =================== DEBUG ======================
     // =================== DEBUG ======================
 
-    synchronizeAgentPaths(agents_to_replan, T_sync);
+    synchronizeAgentPaths(agents_to_replan, T_sync); // momentálně se synchronizuje podle key_agent_id
     auto local_paths = findLocalPaths(agents_to_replan, submap, submap_set, global_to_local, T_sync);
 
     return solveWithSAT(map, local_paths, agents_to_replan, submap, T_sync);

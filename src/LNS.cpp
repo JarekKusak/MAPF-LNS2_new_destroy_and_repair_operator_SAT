@@ -159,30 +159,24 @@ vector<vector<int>> LNS::generateMapRepresentation(const vector<vector<int>>& su
     return map;
 }
 
-vector<int> LNS::getAgentsToReplan(const vector<int>& agents_in_submap,
-                                   const unordered_set<int>& submap_set,
-                                   int problematic_timestep)
+vector<tuple<int, int, int>> LNS::getAgentsToReplan(
+        const vector<int>& agents_in_submap,
+        const unordered_set<int>& submap_set,
+        int problematic_timestep)
 {
-    vector<int> agents_to_replan;
+    vector<tuple<int, int, int>> agents_timestamps; // (agent_id, global_location, time)
     cout << "\n[INFO] Identifikace agentů v submapě pro přeplánování "
          << "(kdy key_agent je tam v čase " << problematic_timestep << "):\n";
 
     for (int agent : agents_in_submap)
     {
-        // TODO: co když je to ale druhý/třetí/... průchod agenta submapou, jehož interval už pokrývá problematic_timestep?
-        // Najdeme PRVNÍ souvislý interval [t_min..t_max], ve kterém je agent v submapě.
-        // Kdyby agent submapu opustil a pak se znovu vrátil, ignorujeme ten návrat.
-
         const auto& path = agents[agent].path;
         if (path.empty()) continue;
 
         int t_min = -1;
         int t_max = -1;
 
-        // Projdeme celé path:
-        //  1) hledáme první t, kdy je agent v submapě -> t_min
-        //  2) dokud je agent v submapě, posouváme t_max
-        //  3) jakmile agent submapu opustí, končíme (break)
+        // Najdeme první souvislý interval pobytu agenta v submapě
         for (int t = 0; t < (int)path.size(); t++)
         {
             int loc = path[t].location;
@@ -190,50 +184,42 @@ vector<int> LNS::getAgentsToReplan(const vector<int>& agents_in_submap,
 
             if (t_min < 0)
             {
-                // Ještě jsme žádný interval nezačali
                 if (inSubmap)
                 {
                     t_min = t;
                     t_max = t;
                 }
-                // jinak jen pokračujeme, dokud agent nevkročí do submapy
             }
             else
             {
-                // Už jsme v intervalu
                 if (inSubmap)
-                    t_max = t; // agent stále uvnitř submapy
-                else break; // Agent poprvé opustil submapu => skončíme
+                    t_max = t;
+                else break;
             }
         }
 
-        // Pokud t_min zůstalo -1, agent do submapy vůbec nevkročil
-        if (t_min == -1) {
-            // vynecháváme
-            continue;
-        }
+        if (t_min == -1) continue; // Agent nikdy nebyl v submapě
 
-        // Tady máme interval [t_min..t_max], kde agent poprvé pobývá v submapě
-        // a nepouštíme se do dalších potenciálních návratů
-
-        // Ověříme, zda [t_min..t_max] obsahuje problematický čas
-        if (t_min <= problematic_timestep && problematic_timestep <= t_max)
+        // Najdeme přesné časy, kdy byl agent na konkrétních pozicích submapy
+        for (int loc : submap_set)
         {
-            agents_to_replan.push_back(agent);
-            cout << "  Agent " << agent
-                 << " (první interval v submapě je ["
-                 << t_min << ".." << t_max << "]),"
-                 << " pokrývá i čas " << problematic_timestep
-                 << ", přidán k přeplánování.\n";
+            int holding_time = path_table.getHoldingTime(loc, 0); // Najdeme první čas pobytu
+            if (holding_time != -1 && t_min <= holding_time && holding_time <= t_max)
+            {
+                agents_timestamps.emplace_back(agent, loc, holding_time);
+                cout << "  Agent " << agent
+                     << " byl v lokaci " << loc
+                     << " v čase " << holding_time << "\n";
+            }
         }
     }
 
-    if (agents_to_replan.empty())
-        cout << "[INFO] Žádný agent nebyl v submapě ve stejnou chvíli (čas "
-             << problematic_timestep << ").\n";
+    if (agents_timestamps.empty())
+        cout << "[INFO] Žádný agent nebyl v submapě ve stejnou chvíli.\n";
 
-    return agents_to_replan;
+    return agents_timestamps;
 }
+
 
 void LNS::synchronizeAgentPaths(vector<int>& agents_to_replan,
                                 int T_sync) {
@@ -558,7 +544,16 @@ bool LNS::generateNeighborBySAT() {
     // podle toho můžeme říkat solveru, aby našel řešení s nějakou danou cenou (inkrementálně navyšujem) - delta
     // pokud to bude vyšší než to co známe, tak zahodíme submapu (nemá cenu řešit)
     // avoid existuje
-    vector<int> agents_to_replan = getAgentsToReplan(agents_in_submap, submap_set, problematic_timestep);
+    vector<tuple<int, int, int>> agent_data =
+            getAgentsToReplan(agents_in_submap, submap_set, problematic_timestep);
+
+    // Extrahujeme pouze unikátní agent_id
+    unordered_set<int> agent_set;
+    for (const auto& [agent_id, _, __] : agent_data) // Ignorujeme location a time
+    {
+        agent_set.insert(agent_id);
+    }
+    vector<int> agents_to_replan(agent_set.begin(), agent_set.end());
     if (agents_to_replan.empty()) return false; // return true?
 
     // **SYNCHRONIZACE AGENTŮ**

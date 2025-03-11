@@ -41,6 +41,7 @@ find_package(Eigen3 3.3 REQUIRED NO_MODULE)
 # Add linker flags for GMP and Zlib
 set(GMP_LIBRARIES /opt/homebrew/Cellar/gmp/6.3.0/lib/libgmp.a /opt/homebrew/Cellar/gmp/6.3.0/lib/libgmpxx.a)
 set(ZLIB_LIBRARIES /opt/homebrew/Cellar/zlib/1.3.1/lib/libz.a)
+set(CMAKE_CXX_FLAGS "-w") # později vymazat
 
 # Link all libraries
 target_link_libraries(lns ${Boost_LIBRARIES} Eigen3::Eigen ${GMP_LIBRARIES} ${ZLIB_LIBRARIES} ${MAPF_LIBRARIES})

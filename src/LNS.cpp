@@ -525,7 +525,7 @@ bool LNS::solveWithSAT(
             }
         }
 
-        // (5) Přiřadíme
+        // (5) přiřadíme
         agents[agent_id].path = updated_path;
     }
 

@@ -386,7 +386,8 @@ bool LNS::solveWithSAT(
 
     for (int agent : agents_to_replan) {
 
-        if (agent != agents_to_replan[0] && agent != agents_to_replan[1]) // DOČASNÉ
+        if (agent != agents_to_replan[0] &&agent != agents_to_replan[1] && agent != agents_to_replan[2]
+        && agent != agents_to_replan[3])// DOČASNÉ
             continue;
 
         // Najdeme jeho sekvenci lokálních souřadnic (sx, sy)
@@ -418,7 +419,7 @@ bool LNS::solveWithSAT(
     // Pozor, aby se velikost start_positions == goal_positions == # agentů,
     //   to řešíte tak, že agenty bez local_path vynecháte i z replan.
     auto inst = std::make_unique<_MAPFSAT_Instance>(map, start_positions, goal_positions);
-    auto solver = std::make_unique<_MAPFSAT_DisappearAtGoal>();
+    auto solver = std::make_unique<_MAPFSAT_DisappearAtGoal>(); // TODO: jak funguje?
     auto log    = std::make_unique<_MAPFSAT_Logger>(inst.get(), "disappear_at_goal", 2);
 
     cout << "SAT instance and solver created.\n";

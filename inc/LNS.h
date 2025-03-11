@@ -82,7 +82,7 @@ private:
 
     bool generateNeighborBySAT(); // new destroy operator
     pair<vector<vector<int>>, vector<int>> getSubmapAndAgents(int agent_id, int submap_size, int agent_location); // helper function for getting sub-map
-    vector<tuple<int, int, int>> getAgentsToReplan(const vector<int>& agents_in_submap,
+    vector<int> getAgentsToReplan(const vector<int>& agents_in_submap,
                                        const unordered_set<int>& submap_set,
                                        int problematic_timestep);
     void initializeSubmapData(const vector<vector<int>>& submap,

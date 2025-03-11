@@ -458,6 +458,12 @@ bool LNS::solveWithSAT(
     //   agent_id = agents_to_replan[a] (shodné pořadí).
     //   Případně byste si musel držet, kolik agentů mělo local_path atd.
 
+    /*
+     *
+     * cout << "[DEBUG] agent " << agent_id << " t=" << t
+                 << " => decoded (sx,sy)=(" << sx << "," << sy
+                 << ") => global_id=" << global_id << endl;*/
+
     for (size_t a = 0; a < plan.size(); ++a) {
         int agent_id = agents_to_replan[a];
 
@@ -498,15 +504,20 @@ bool LNS::solveWithSAT(
             updated_path.push_back(PathEntry(global_id));
         }
 
-       // (3) Připojíme suffix. Původní suffix začínal na indexu T_sync + old_local_length
-        // (tj. tam končila stará lokální část). V nové cestě jsme skončili na indexu T_sync + new_local_length - 1
-        // => suffix nalepíme od původního suffix_start dále.
-        int old_suffix_start = T_sync + original_local_length;
-        if (old_suffix_start < (int)agents[agent_id].path.size())
-        {
-            for (int t = old_suffix_start; t < (int)agents[agent_id].path.size(); t++) {
-                updated_path.push_back(PathEntry(agents[agent_id].path[t].location));
-            }
+        // (3) Doplníme sufix, pokud agent skončil dřív/později
+        if (new_local_length < original_local_length) {
+            int time_shift = original_local_length - new_local_length;
+            cout << "[INFO] agent " << agent_id
+            << " zrychlil o " << time_shift << " kroků.\n";
+            for (int t = submap_end_time; t < (int)agents[agent_id].path.size(); t++)
+                updated_path.push_back(agents[agent_id].path[t]);
+
+        } else if (new_local_length > original_local_length) {
+            int delay = new_local_length - original_local_length;
+            cout << "[INFO] agent " << agent_id
+            << " zpomalil o " << delay << " kroků.\n";
+            for (int t = submap_end_time; t < (int)agents[agent_id].path.size(); t++)
+                updated_path.push_back(agents[agent_id].path[t]);
         }
 
         // (4) Návaznost

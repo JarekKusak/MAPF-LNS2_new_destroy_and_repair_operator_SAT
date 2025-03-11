@@ -501,7 +501,7 @@ bool LNS::solveWithSAT(
        // (3) Připojíme suffix. Původní suffix začínal na indexu T_sync + old_local_length
         // (tj. tam končila stará lokální část). V nové cestě jsme skončili na indexu T_sync + new_local_length - 1
         // => suffix nalepíme od původního suffix_start dále.
-        int old_suffix_start = T_sync + old_local_length;
+        int old_suffix_start = T_sync + original_local_length;
         if (old_suffix_start < (int)agents[agent_id].path.size())
         {
             for (int t = old_suffix_start; t < (int)agents[agent_id].path.size(); t++) {

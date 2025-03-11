@@ -387,7 +387,7 @@ bool LNS::solveWithSAT(
     for (int agent : agents_to_replan) {
 
         if (agent != agents_to_replan[0] &&agent != agents_to_replan[1] && agent != agents_to_replan[2]
-        && agent != agents_to_replan[3])// DOČASNÉ
+        && agent != agents_to_replan[3]&& agent != agents_to_replan[4])// DOČASNÉ
             continue;
 
         // Najdeme jeho sekvenci lokálních souřadnic (sx, sy)

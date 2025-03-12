@@ -483,6 +483,13 @@ bool LNS::solveWithSAT(
     return true;
 }
 
+/* NOTE:
+ * náš operátor by se měl správně volat na vyřešení konfliktů, jakmile se konflikty vyřeší,
+ * bude se volat optimalizace (na to máme nějaký určený čas, třeba 10 s), nicméně náš operátor při optimalizaci
+ * může působit nové konflikty, což ostatní operátory nedělají, proto je potřeba najít v projektu flag,
+ * který přepíná z řešení konfliktů na optimalizaci, u našeho operátoru by bylo třeba přepínat mezi
+ * naším optimalizačním operátorem a řešením konfliktů (na přeskáčku přepínat: je konflikt -> vyřeš -> optimalizace -> ...)
+ * */
 
 bool LNS::generateNeighborBySAT() {
     cout << "====================" << endl;

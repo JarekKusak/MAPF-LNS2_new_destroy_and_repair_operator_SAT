@@ -10,7 +10,7 @@ LNS::LNS(const Instance& instance, double time_limit, const string & init_algo_n
          const string & init_destory_name, bool use_sipp, int screen, PIBTPPS_option pipp_option) :
          BasicLNS(instance, time_limit, neighbor_size, screen),
          init_algo_name(init_algo_name),  replan_algo_name(replan_algo_name),
-         num_of_iterations(num_of_iterations > 0 ? num_of_iterations : 1),
+         num_of_iterations(num_of_iterations > 0 ? num_of_iterations : 1), // TODO: proč to nejede?
          use_init_lns(use_init_lns),init_destory_name(init_destory_name),
          path_table(instance.map_size), pipp_option(pipp_option)
 {
@@ -102,6 +102,7 @@ pair<vector<vector<int>>, vector<int>> LNS::getSubmapAndAgents(int agent_id, int
                 if (submap_x >= 0 && submap_x < submap_side && submap_y >= 0 && submap_y < submap_side) {
                     submap[submap_x][submap_y] = global_pos;
                     // TODO: možná půjde využít?
+                    // TODO: nastavit avoid na agenty, co submapou prochází a nemají v intervalu problematic_timestep
                     path_table.get_agents(conflicting_agents, global_pos); // collect all agents in the submap (at EVERY timestep)
                 }
             }
@@ -707,6 +708,8 @@ bool LNS::generateNeighborBySAT() {
     synchronizeAgentPathsLocally(agents_to_replan, T_sync, submap_set); // momentálně se synchronizuje podle key_agent_id
     auto local_paths = findLocalPaths(agents_to_replan, submap, submap_set, global_to_local, T_sync);
 
+    // SAT solveru vadí dva agenti na jednom startovacím místě -> přeskočit/posunout
+    // TODO: avoid na agenty, kteří submapou prochází v budoucnosti
     return solveWithSAT(map, local_paths, agents_to_replan, submap, T_sync);
 }
 

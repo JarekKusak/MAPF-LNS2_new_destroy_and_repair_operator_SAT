@@ -382,8 +382,9 @@ bool LNS::solveWithSAT(
 
     for (int agent : agents_to_replan) {
 
-        // (POZN. Tohle "if (agent != ...)" je dočasné omezení – nechávám jak máte.)
-        if (agent != agents_to_replan[0] && agent != agents_to_replan[1])
+        // DOČASNÉ
+        if (agent != agents_to_replan[0] && agent != agents_to_replan[1] && agent != agents_to_replan[2] &&
+        agent != agents_to_replan[3] && agent != agents_to_replan[4])
             continue;
 
         auto it = local_paths.find(agent);

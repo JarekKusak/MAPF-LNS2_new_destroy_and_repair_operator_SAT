@@ -235,40 +235,94 @@ vector<int> LNS::getAgentsToReplan(const vector<int>& agents_in_submap,
     return agents_to_replan;
 }
 
-void LNS::synchronizeAgentPaths(vector<int>& agents_to_replan,
-                                int T_sync) {
-    //TODO: agents[agent_id].path_planner->start_location = agents[agent_id].path.front().location; kvůli validaci
-
-    cout << "\n[SYNC] Synchronizace agentů do společného časového kroku (T_sync = "
+void LNS::synchronizeAgentPathsLocally(
+        vector<int>& agents_to_replan,
+        int T_sync,
+        const unordered_set<int>& submap_set)
+{
+    cout << "\n[SYNC] Lokální synchronizace agentů v submapě (T_sync = "
          << T_sync << ")\n";
 
     for (int agent : agents_to_replan)
     {
-        // Zjistíme, kde je agent v čase T_sync
-        if ((size_t)T_sync >= agents[agent].path.size())
+        auto& path = agents[agent].path;
+        if (path.empty())
+        {
+            cout << "[WARN] Agent " << agent << " nemá žádnou cestu.\n";
+            continue;
+        }
+        if ((size_t)T_sync >= path.size())
         {
             cout << "[WARN] Agent " << agent
                  << " nemá definovanou pozici v čase T_sync=" << T_sync
-                 << ", nelze synchronizovat!\n";
+                 << ", vynecháváme.\n";
             continue;
         }
 
-        int loc_at_Tsync = agents[agent].path[T_sync].location;
-        cout << "  - Agent " << agent << " v čase T_sync=" << T_sync
-             << " je na pozici " << loc_at_Tsync << ".\n";
+        // 1) Najdeme první čas, kdy agent vstoupí do submapy.
+        int t_in = -1;
+        for (int t = 0; t < (int)path.size(); t++)
+        {
+            if (submap_set.count(path[t].location) > 0)
+            {
+                t_in = t;
+                break;
+            }
+        }
+        if (t_in == -1)
+        {
+            // Agent do submapy nikdy nevstoupil.
+            cout << "  Agent " << agent << " do submapy nevstoupil.\n";
+            continue;
+        }
 
-        // Najdeme nejdřívější čas, kdy vstoupí do submapy (abychom odtud reálně replikovali)
-        // Pokud to nechceme hledat, klidně to můžete nechat tak,
-        // že pro T=0..T_sync-1 bude agent stát na loc_at_Tsync.
-        // Ale často děláme:
-        int earliest = 0; // default
+        // 2) Najdeme poslední čas, kdy agent ještě je v submapě (bez přerušení).
+        //    Tj. pro t_in..t_out je agent uvnitř submapy.
+        int t_out = t_in;
+        for (int t = t_in; t < (int)path.size(); t++)
+        {
+            if (submap_set.count(path[t].location) == 0)
+                break; // agent submapu opustil
+            t_out = t;
+        }
 
-        // Pro t=earliest..T_sync-1 => replikujeme loc_at_Tsync
-        for (int t = earliest; t < T_sync && t < (int)agents[agent].path.size(); t++)
-            agents[agent].path[t] = PathEntry(loc_at_Tsync);
+        cout << "  Agent " << agent
+             << " vstupuje do submapy v t=" << t_in
+             << ", opouští ji v t=" << t_out
+             << ", T_sync=" << T_sync << endl;
 
-        //TODO: problém s validací, nicméně takhle přeplánujeme globální start/cíl agenta, to asi nechceme
-        //agents[agent].path_planner->start_location = loc_at_Tsync;
+        // 3) Pokud agent je v submapě už v čase < T_sync,
+        //    a my chceme "sladit" pohyb od T_sync dál, můžeme
+        //    prefix [t_in..T_sync-1] "umrtvit" (tj. agent bude stát).
+        if (t_in < T_sync && T_sync <= t_out)
+        {
+            // Agent se reálně dostal do submapy ještě před T_sync
+            // => v čase T_sync je stále uvnitř submapy.
+
+            int loc_at_Tsync = path[T_sync].location; // sem dorazil v T_sync
+
+            // Přepíšeme [t_in..(T_sync-1)] na tu samou polohu, kterou má v T_sync
+            for (int t = t_in; t < T_sync; t++)
+            {
+                path[t] = PathEntry(loc_at_Tsync);
+            }
+
+            cout << "    => Prefix " << t_in << ".." << (T_sync-1)
+                 << " přepsán tak, aby agent " << agent
+                 << " stál na " << loc_at_Tsync << "\n";
+        }
+        else
+        {
+            // Buď agent do submapy vstupuje až v čase >= T_sync,
+            // nebo v T_sync už submapu zase opustil.
+            // => není co "lokálně" synchronizovat v prefixu.
+            cout << "    => Není třeba upravovat lokální prefix (agent přišel v t="
+                 << t_in << " a T_sync=" << T_sync << " mu nezasahuje do submapy)\n";
+        }
+
+        // 4) Zbytek prefixu [0..t_in-1], kdy agent vůbec nebyl v submapě, necháváme beze změny.
+        //    Také interval [T_sync..t_out] necháváme beze změny (nebo ho řeší solver).
+        //    Suffix [t_out+1..end] se už submapy netýká.
     }
 }
 
@@ -650,7 +704,7 @@ bool LNS::generateNeighborBySAT() {
     // =================== DEBUG ======================
     // =================== DEBUG ======================
 
-    synchronizeAgentPaths(agents_to_replan, T_sync); // momentálně se synchronizuje podle key_agent_id
+    synchronizeAgentPathsLocally(agents_to_replan, T_sync, submap_set); // momentálně se synchronizuje podle key_agent_id
     auto local_paths = findLocalPaths(agents_to_replan, submap, submap_set, global_to_local, T_sync);
 
     return solveWithSAT(map, local_paths, agents_to_replan, submap, T_sync);

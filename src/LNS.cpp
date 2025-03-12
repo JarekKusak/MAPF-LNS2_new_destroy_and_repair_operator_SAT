@@ -458,10 +458,9 @@ bool LNS::solveWithSAT(
             }
         }
 
-        // TODO: začínáme jinde, takže lokální návaznost musíme kontrolovat jinak
         // (4) Volitelná kontrola navázání prefix->lokální
         if (T_sync > 0 && (size_t)T_sync < updated_path.size()) {
-            int prefix_last = updated_path[T_sync - 1].location;
+            int prefix_last = agents[agent_id].path[T_sync].location; // TODO: nevím, jestli dává smysl kontrola návaznosti prefixu
             int local_first = updated_path[T_sync].location;
             if (prefix_last != local_first) {
                 cout << "[WARN] agent " << agent_id

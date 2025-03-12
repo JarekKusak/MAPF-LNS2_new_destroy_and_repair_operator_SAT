@@ -474,7 +474,7 @@ bool LNS::solveWithSAT(
     // Pozor, aby se velikost start_positions == goal_positions == # agentů,
     //   to řešíte tak, že agenty bez local_path vynecháte i z replan.
     auto inst = std::make_unique<_MAPFSAT_Instance>(map, start_positions, goal_positions);
-    auto solver = std::make_unique<_MAPFSAT_DisappearAtGoal>(); // TODO: jak funguje?
+    auto solver = std::make_unique<_MAPFSAT_DisappearAtGoal>();
     auto log    = std::make_unique<_MAPFSAT_Logger>(inst.get(), "disappear_at_goal", 2);
 
     cout << "SAT instance and solver created.\n";

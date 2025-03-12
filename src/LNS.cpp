@@ -384,7 +384,7 @@ bool LNS::solveWithSAT(
 
         // DOČASNÉ
         if (agent != agents_to_replan[0] && agent != agents_to_replan[1] && agent != agents_to_replan[2] &&
-        agent != agents_to_replan[3] && agent != agents_to_replan[4])
+        agent != agents_to_replan[3] && agent != agents_to_replan[4]) // u agenta 3 to začne házet segfault?
             continue;
 
         auto it = local_paths.find(agent);

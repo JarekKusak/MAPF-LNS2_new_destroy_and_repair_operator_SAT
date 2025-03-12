@@ -10,7 +10,7 @@ LNS::LNS(const Instance& instance, double time_limit, const string & init_algo_n
          const string & init_destory_name, bool use_sipp, int screen, PIBTPPS_option pipp_option) :
          BasicLNS(instance, time_limit, neighbor_size, screen),
          init_algo_name(init_algo_name),  replan_algo_name(replan_algo_name),
-         num_of_iterations(num_of_iterations > 0 ? num_of_iterations : 1),
+         num_of_iterations(num_of_iterations > 0 ? num_of_iterations : 1), // TODO: proč nefunguje?
          use_init_lns(use_init_lns),init_destory_name(init_destory_name),
          path_table(instance.map_size), pipp_option(pipp_option)
 {
@@ -392,6 +392,7 @@ bool LNS::solveWithSAT(
     }
 
     // 4) Získáme nové cesty od solveru (v indexech submapy)
+    // TODO: odseknout opakující se konečné pozice
     vector<vector<int>> plan = solver->GetPlan();
 
     // Debug: vypsat novou lokální cestu (v 1D indexech submapy).
@@ -457,6 +458,7 @@ bool LNS::solveWithSAT(
             }
         }
 
+        // TODO: začínáme jinde, takže lokální návaznost musíme kontrolovat jinak
         // (4) Volitelná kontrola navázání prefix->lokální
         if (T_sync > 0 && (size_t)T_sync < updated_path.size()) {
             int prefix_last = updated_path[T_sync - 1].location;
@@ -508,10 +510,11 @@ bool LNS::generateNeighborBySAT() {
     // podle toho můžeme říkat solveru, aby našel řešení s nějakou danou cenou (inkrementálně navyšujem) - delta
     // pokud to bude vyšší než to co známe, tak zahodíme submapu (nemá cenu řešit)
     // avoid existuje
+
+    // TODO: avoid na agenty, kteří submapou prochází v budoucnosti pomocí path_table.getAgents
     vector<int> agents_to_replan = getAgentsToReplan(agents_in_submap, submap_set, problematic_timestep);
     if (agents_to_replan.empty()) return false; // return true?
 
-    // **SYNCHRONIZACE AGENTŮ**
     int T_sync = problematic_timestep; // bude se synchronizovat podle nejproblematičtějšího agenta
 
     // =================== DEBUG ======================
@@ -594,7 +597,6 @@ bool LNS::generateNeighborBySAT() {
     // =================== DEBUG ======================
 
     auto local_paths = findLocalPaths(agents_to_replan, submap, submap_set, global_to_local, T_sync);
-
     return solveWithSAT(map, local_paths, agents_to_replan, submap, T_sync);
 }
 

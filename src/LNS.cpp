@@ -235,43 +235,6 @@ vector<int> LNS::getAgentsToReplan(const vector<int>& agents_in_submap,
     return agents_to_replan;
 }
 
-void LNS::synchronizeAgentPaths(vector<int>& agents_to_replan,
-                                int T_sync) {
-    //TODO: agents[agent_id].path_planner->start_location = agents[agent_id].path.front().location; kvůli validaci
-
-    cout << "\n[SYNC] Synchronizace agentů do společného časového kroku (T_sync = "
-         << T_sync << ")\n";
-
-    for (int agent : agents_to_replan)
-    {
-        // Zjistíme, kde je agent v čase T_sync
-        if ((size_t)T_sync >= agents[agent].path.size())
-        {
-            cout << "[WARN] Agent " << agent
-                 << " nemá definovanou pozici v čase T_sync=" << T_sync
-                 << ", nelze synchronizovat!\n";
-            continue;
-        }
-
-        int loc_at_Tsync = agents[agent].path[T_sync].location;
-        cout << "  - Agent " << agent << " v čase T_sync=" << T_sync
-             << " je na pozici " << loc_at_Tsync << ".\n";
-
-        // Najdeme nejdřívější čas, kdy vstoupí do submapy (abychom odtud reálně replikovali)
-        // Pokud to nechceme hledat, klidně to můžete nechat tak,
-        // že pro T=0..T_sync-1 bude agent stát na loc_at_Tsync.
-        // Ale často děláme:
-        int earliest = 0; // default
-
-        // Pro t=earliest..T_sync-1 => replikujeme loc_at_Tsync
-        for (int t = earliest; t < T_sync && t < (int)agents[agent].path.size(); t++)
-            agents[agent].path[t] = PathEntry(loc_at_Tsync);
-
-        //TODO: problém s validací, nicméně takhle přeplánujeme globální start/cíl agenta, to asi nechceme
-        //agents[agent].path_planner->start_location = loc_at_Tsync;
-    }
-}
-
 // Vrátí mapu [agent -> vektor dvojic (sx, sy) v submapě],
 // od T_sync do doby, kdy agent submapu opustí.
 unordered_map<int, vector<pair<int,int>>>
@@ -630,7 +593,6 @@ bool LNS::generateNeighborBySAT() {
     // =================== DEBUG ======================
     // =================== DEBUG ======================
 
-    //synchronizeAgentPaths(agents_to_replan, T_sync); // momentálně se synchronizuje podle key_agent_id
     auto local_paths = findLocalPaths(agents_to_replan, submap, submap_set, global_to_local, T_sync);
 
     return solveWithSAT(map, local_paths, agents_to_replan, submap, T_sync);

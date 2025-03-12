@@ -97,8 +97,6 @@ private:
             vector<int>& agents_to_replan,
             const vector<vector<int>>& submap,
             int T_sync);
-    void synchronizeAgentPaths(vector<int>& agents_to_replan,
-                                    int T_sync);
     unordered_map<int, vector<pair<int,int>>> findLocalPaths(const vector<int>& agents_to_replan,
                                                              const vector<vector<int>>& submap,
                                                              const unordered_set<int>& submap_set,

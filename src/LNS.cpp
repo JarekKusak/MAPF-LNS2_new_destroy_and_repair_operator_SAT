@@ -476,6 +476,9 @@ bool LNS::solveWithSAT(
             }
             // Globální ID z submapy:
             int global_id = submap[sx][sy];
+            cout << "[DEBUG] agent " << agent_id << " t=" << t
+            << " => decoded (sx,sy)=(" << sx << "," << sy
+            << ") => global_id=" << global_id << endl;
             updated_path.push_back(PathEntry(global_id));
         }
 

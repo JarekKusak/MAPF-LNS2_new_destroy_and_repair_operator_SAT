@@ -10,7 +10,7 @@ LNS::LNS(const Instance& instance, double time_limit, const string & init_algo_n
          const string & init_destory_name, bool use_sipp, int screen, PIBTPPS_option pipp_option) :
          BasicLNS(instance, time_limit, neighbor_size, screen),
          init_algo_name(init_algo_name),  replan_algo_name(replan_algo_name),
-         num_of_iterations(num_of_iterations > 0 ? num_of_iterations : 1), // TODO: proč nefunguje?
+         num_of_iterations(num_of_iterations > 0 ? 0 : 1), // TODO: proč nefunguje?
          use_init_lns(use_init_lns),init_destory_name(init_destory_name),
          path_table(instance.map_size), pipp_option(pipp_option)
 {
@@ -346,8 +346,8 @@ bool LNS::solveWithSAT(
     for (int agent : agents_to_replan) {
 
         // DOČASNÉ
-        if (agent != agents_to_replan[0] && agent != agents_to_replan[1] && agent != agents_to_replan[2] &&
-        agent != agents_to_replan[3] && agent != agents_to_replan[4] && agent != agents_to_replan[5]) // u agenta 3 to začne házet segfault?
+        // TODO: u agenta 3 to začne házet segfault?
+        if (agent != agents_to_replan[0] && agent != agents_to_replan[1] && agent != agents_to_replan[2])
             continue;
 
         auto it = local_paths.find(agent);
@@ -489,7 +489,6 @@ bool LNS::solveWithSAT(
  * který přepíná z řešení konfliktů na optimalizaci, u našeho operátoru by bylo třeba přepínat mezi
  * naším optimalizačním operátorem a řešením konfliktů (na přeskáčku přepínat: je konflikt -> vyřeš -> optimalizace -> ...)
  * */
-
 bool LNS::generateNeighborBySAT() {
     cout << "====================" << endl;
     cout << "SAT operator called." << endl;

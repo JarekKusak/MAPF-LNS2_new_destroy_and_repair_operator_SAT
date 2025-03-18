@@ -101,7 +101,6 @@ pair<vector<vector<int>>, vector<int>> LNS::getSubmapAndAgents(int agent_id, int
 
                 if (submap_x >= 0 && submap_x < submap_side && submap_y >= 0 && submap_y < submap_side) {
                     submap[submap_x][submap_y] = global_pos;
-                    // TODO: možná půjde využít?
                     path_table.get_agents(conflicting_agents, global_pos); // collect all agents in the submap (at EVERY timestep)
                 }
             }
@@ -145,6 +144,7 @@ vector<vector<int>> LNS::generateMapRepresentation(const vector<vector<int>>& su
                 bool is_agent = false;
                 for (int agent : agents_in_submap) {
                     // TODO: agenti jsou zachytávání v problematic_timestep v submapě, ale ve skutečnosti tam mohou být v submapě v různé časy
+                    // teoreticky nám to nevadí, ukazuje to místa, kde se agenti budou pohybovat v problematic_timestep
                     if (agents[agent].path[problematic_timestep].location == global_pos) {
                         cout << "A ";
                         is_agent = true;
@@ -395,6 +395,16 @@ bool LNS::solveWithSAT(
     // TODO: odseknout opakující se konečné pozice
     vector<vector<int>> plan = solver->GetPlan();
 
+    for (auto& path_for_agent : plan) {
+        if (path_for_agent.empty()) continue;
+        // Smaž opakované indexy na úplném konci (dokud se opakují v cíli):
+        while (path_for_agent.size() > 1 &&
+               path_for_agent.back() == path_for_agent[path_for_agent.size() - 2])
+        {
+            path_for_agent.pop_back();
+        }
+    }
+
     // Debug: vypsat novou lokální cestu (v 1D indexech submapy).
     for (size_t a = 0; a < plan.size(); ++a) {
         cout << "[DEBUG] Agent (index) " << agents_to_replan[a]
@@ -507,7 +517,6 @@ bool LNS::generateNeighborBySAT() {
     unordered_map<int, pair<int, int>> global_to_local;
     initializeSubmapData(submap, submap_set, global_to_local); // +submap -submap_set -global_to_local
 
-    // TODO: chyba v zaznamenávání agentů
     vector<vector<int>> map = generateMapRepresentation(submap, agents_in_submap, problematic_timestep);
 
     // NOTE

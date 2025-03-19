@@ -333,8 +333,7 @@ bool LNS::solveWithSAT(
         const unordered_map<int, vector<pair<int,int>>>& local_paths,
         vector<int>& agents_to_replan,
         const vector<vector<int>>& submap,
-        int T_sync)
-{
+        int T_sync) {
     cout << "\n[DEBUG] Kontrola vstupních dat pro SAT solver:\n";
     cout << "  - Počet agentů k přeplánování: " << agents_to_replan.size() << endl;
 
@@ -347,8 +346,11 @@ bool LNS::solveWithSAT(
 
         // DOČASNÉ
         // TODO: u agenta 3 to začne házet segfault?
-        if (agent != agents_to_replan[0] && agent != agents_to_replan[1] && agent != agents_to_replan[2])
-            continue;
+        if (agent != agents_to_replan[0] && agent != agents_to_replan[1] && agent != agents_to_replan[2]
+        && agent != agents_to_replan[3] && agent != agents_to_replan[4] && agent != agents_to_replan[5]
+        && agent != agents_to_replan[6] && agent != agents_to_replan[7] && agent != agents_to_replan[8]
+        && agent != agents_to_replan[9] && agent != agents_to_replan[10])
+        continue;
 
         auto it = local_paths.find(agent);
         if (it == local_paths.end() || it->second.empty()) {
@@ -399,8 +401,7 @@ bool LNS::solveWithSAT(
         if (path_for_agent.empty()) continue;
         // Smaž opakované indexy na úplném konci (dokud se opakují v cíli):
         while (path_for_agent.size() > 1 &&
-               path_for_agent.back() == path_for_agent[path_for_agent.size() - 2])
-        {
+               path_for_agent.back() == path_for_agent[path_for_agent.size() - 2]) {
             path_for_agent.pop_back();
         }
     }

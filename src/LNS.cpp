@@ -349,7 +349,7 @@ bool LNS::solveWithSAT(
         if (agent != agents_to_replan[0] && agent != agents_to_replan[1] && agent != agents_to_replan[2]
         && agent != agents_to_replan[3] && agent != agents_to_replan[4] && agent != agents_to_replan[5]
         && agent != agents_to_replan[6] && agent != agents_to_replan[7] && agent != agents_to_replan[8]
-        && agent != agents_to_replan[9] && agent != agents_to_replan[10])
+        && agent != agents_to_replan[9] && agent != agents_to_replan[10] && agent != agents_to_replan[12])
         continue;
 
         auto it = local_paths.find(agent);
@@ -400,8 +400,7 @@ bool LNS::solveWithSAT(
     for (auto& path_for_agent : plan) {
         if (path_for_agent.empty()) continue;
         // Smaž opakované indexy na úplném konci (dokud se opakují v cíli):
-        while (path_for_agent.size() > 1 &&
-               path_for_agent.back() == path_for_agent[path_for_agent.size() - 2]) {
+        while (path_for_agent.size() > 1 && path_for_agent.back() == path_for_agent[path_for_agent.size() - 2]) {
             path_for_agent.pop_back();
         }
     }
@@ -453,8 +452,8 @@ bool LNS::solveWithSAT(
             // Globální ID z submapy:
             int global_id = submap[sx][sy];
             cout << "[DEBUG] agent " << agent_id << " t=" << t
-            << " => decoded (sx,sy)=(" << sx << "," << sy
-            << ") => global_id=" << global_id << endl;
+                 << " => decoded (sx,sy)=(" << sx << "," << sy
+                 << ") => global_id=" << global_id << endl;
             updated_path.push_back(PathEntry(global_id));
         }
 

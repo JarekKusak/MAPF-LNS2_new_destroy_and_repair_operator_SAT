@@ -10,7 +10,7 @@ LNS::LNS(const Instance& instance, double time_limit, const string & init_algo_n
          const string & init_destory_name, bool use_sipp, int screen, PIBTPPS_option pipp_option) :
          BasicLNS(instance, time_limit, neighbor_size, screen),
          init_algo_name(init_algo_name),  replan_algo_name(replan_algo_name),
-         num_of_iterations(num_of_iterations > 0 ? num_of_iterations : 1), // TODO: proč to nejede?
+         num_of_iterations(num_of_iterations > 0 ? 0 : 2), // TODO: proč nefunguje?
          use_init_lns(use_init_lns),init_destory_name(init_destory_name),
          path_table(instance.map_size), pipp_option(pipp_option)
 {
@@ -101,8 +101,6 @@ pair<vector<vector<int>>, vector<int>> LNS::getSubmapAndAgents(int agent_id, int
 
                 if (submap_x >= 0 && submap_x < submap_side && submap_y >= 0 && submap_y < submap_side) {
                     submap[submap_x][submap_y] = global_pos;
-                    // TODO: možná půjde využít?
-                    // TODO: nastavit avoid na agenty, co submapou prochází a nemají v intervalu problematic_timestep
                     path_table.get_agents(conflicting_agents, global_pos); // collect all agents in the submap (at EVERY timestep)
                 }
             }
@@ -146,6 +144,7 @@ vector<vector<int>> LNS::generateMapRepresentation(const vector<vector<int>>& su
                 bool is_agent = false;
                 for (int agent : agents_in_submap) {
                     // TODO: agenti jsou zachytávání v problematic_timestep v submapě, ale ve skutečnosti tam mohou být v submapě v různé časy
+                    // teoreticky nám to nevadí, ukazuje to místa, kde se agenti budou pohybovat v problematic_timestep
                     if (agents[agent].path[problematic_timestep].location == global_pos) {
                         cout << "A ";
                         is_agent = true;
@@ -234,97 +233,6 @@ vector<int> LNS::getAgentsToReplan(const vector<int>& agents_in_submap,
              << problematic_timestep << ").\n";
 
     return agents_to_replan;
-}
-
-void LNS::synchronizeAgentPathsLocally(
-        vector<int>& agents_to_replan,
-        int T_sync,
-        const unordered_set<int>& submap_set)
-{
-    cout << "\n[SYNC] Lokální synchronizace agentů v submapě (T_sync = "
-         << T_sync << ")\n";
-
-    for (int agent : agents_to_replan)
-    {
-        auto& path = agents[agent].path;
-        if (path.empty())
-        {
-            cout << "[WARN] Agent " << agent << " nemá žádnou cestu.\n";
-            continue;
-        }
-        if ((size_t)T_sync >= path.size())
-        {
-            cout << "[WARN] Agent " << agent
-                 << " nemá definovanou pozici v čase T_sync=" << T_sync
-                 << ", vynecháváme.\n";
-            continue;
-        }
-
-        // 1) Najdeme první čas, kdy agent vstoupí do submapy.
-        int t_in = -1;
-        for (int t = 0; t < (int)path.size(); t++)
-        {
-            if (submap_set.count(path[t].location) > 0)
-            {
-                t_in = t;
-                break;
-            }
-        }
-        if (t_in == -1)
-        {
-            // Agent do submapy nikdy nevstoupil.
-            cout << "  Agent " << agent << " do submapy nevstoupil.\n";
-            continue;
-        }
-
-        // 2) Najdeme poslední čas, kdy agent ještě je v submapě (bez přerušení).
-        //    Tj. pro t_in..t_out je agent uvnitř submapy.
-        int t_out = t_in;
-        for (int t = t_in; t < (int)path.size(); t++)
-        {
-            if (submap_set.count(path[t].location) == 0)
-                break; // agent submapu opustil
-            t_out = t;
-        }
-
-        cout << "  Agent " << agent
-             << " vstupuje do submapy v t=" << t_in
-             << ", opouští ji v t=" << t_out
-             << ", T_sync=" << T_sync << endl;
-
-        // 3) Pokud agent je v submapě už v čase < T_sync,
-        //    a my chceme "sladit" pohyb od T_sync dál, můžeme
-        //    prefix [t_in..T_sync-1] "umrtvit" (tj. agent bude stát).
-        if (t_in < T_sync && T_sync <= t_out)
-        {
-            // Agent se reálně dostal do submapy ještě před T_sync
-            // => v čase T_sync je stále uvnitř submapy.
-
-            int loc_at_Tsync = path[T_sync].location; // sem dorazil v T_sync
-
-            // Přepíšeme [t_in..(T_sync-1)] na tu samou polohu, kterou má v T_sync
-            for (int t = t_in; t < T_sync; t++)
-            {
-                path[t] = PathEntry(loc_at_Tsync);
-            }
-
-            cout << "    => Prefix " << t_in << ".." << (T_sync-1)
-                 << " přepsán tak, aby agent " << agent
-                 << " stál na " << loc_at_Tsync << "\n";
-        }
-        else
-        {
-            // Buď agent do submapy vstupuje až v čase >= T_sync,
-            // nebo v T_sync už submapu zase opustil.
-            // => není co "lokálně" synchronizovat v prefixu.
-            cout << "    => Není třeba upravovat lokální prefix (agent přišel v t="
-                 << t_in << " a T_sync=" << T_sync << " mu nezasahuje do submapy)\n";
-        }
-
-        // 4) Zbytek prefixu [0..t_in-1], kdy agent vůbec nebyl v submapě, necháváme beze změny.
-        //    Také interval [T_sync..t_out] necháváme beze změny (nebo ho řeší solver).
-        //    Suffix [t_out+1..end] se už submapy netýká.
-    }
 }
 
 // Vrátí mapu [agent -> vektor dvojic (sx, sy) v submapě],
@@ -426,34 +334,21 @@ bool LNS::solveWithSAT(
         vector<int>& agents_to_replan,
         const vector<vector<int>>& submap,
         int T_sync) {
-
     cout << "\n[DEBUG] Kontrola vstupních dat pro SAT solver:\n";
     cout << "  - Počet agentů k přeplánování: " << agents_to_replan.size() << endl;
 
-    // 1) Sestavení start/goal pro solver
-    // V solveru očekáváme "start_positions" a "goal_positions" ve formě (sx, sy)
-    // Vezmeme je z local_paths[agent] (první a poslední krok).
-
+    // 1) Sestavení start/goal pro solver (z local_paths)
     vector<pair<int,int>> start_positions;
     vector<pair<int,int>> goal_positions;
-    // A také si uložíme původní délky local_paths do original_local_lengths
     std::map<int,int> original_local_lengths;
 
     for (int agent : agents_to_replan) {
-
-        if (agent != agents_to_replan[0] &&agent != agents_to_replan[1] && agent != agents_to_replan[2]
-        && agent != agents_to_replan[3]&& agent != agents_to_replan[4])// DOČASNÉ
-            continue;
-
-        // Najdeme jeho sekvenci lokálních souřadnic (sx, sy)
         auto it = local_paths.find(agent);
         if (it == local_paths.end() || it->second.empty()) {
-            // Agent nemá definovanou cestu => přeskočíme
             cout << "[WARN] Agent " << agent
-            << " nemá local_path => vynecháváme.\n";
+                 << " nemá local_path => vynecháváme.\n";
             continue;
         }
-
         const auto& path = it->second; // vector<pair<int,int>>
         // start = path.front(), goal = path.back()
         start_positions.push_back(path.front());
@@ -461,18 +356,15 @@ bool LNS::solveWithSAT(
         original_local_lengths[agent] = (int) path.size();
 
         cout << "[DEBUG] Agent " << agent
-        << " má původní lokální dráhu délky: "
-        << path.size()
-        << " => Start ("
-        << path.front().first << "," << path.front().second << "), "
-        << "Goal ("
-        << path.back().first << "," << path.back().second << ")\n";
+             << " má původní lokální dráhu délky: "
+             << path.size()
+             << " => Start ("
+             << path.front().first << "," << path.front().second << "), "
+             << "Goal ("
+             << path.back().first << "," << path.back().second << ")\n";
     }
 
     // 2) Vytvoření SAT instance
-    // (Zde předáváme solveru start_positions, goal_positions).
-    // Pozor, aby se velikost start_positions == goal_positions == # agentů,
-    //   to řešíte tak, že agenty bez local_path vynecháte i z replan.
     auto inst = std::make_unique<_MAPFSAT_Instance>(map, start_positions, goal_positions);
     auto solver = std::make_unique<_MAPFSAT_DisappearAtGoal>();
     auto log    = std::make_unique<_MAPFSAT_Logger>(inst.get(), "disappear_at_goal", 2);
@@ -492,66 +384,63 @@ bool LNS::solveWithSAT(
         return false;
     }
 
-    // 4) Získáme nové cesty od solveru
+    // 4) Získáme nové cesty od solveru (v indexech submapy)
+    // TODO: odseknout opakující se konečné pozice
     vector<vector<int>> plan = solver->GetPlan();
+
+    for (auto& path_for_agent : plan) {
+        if (path_for_agent.empty()) continue;
+        // Smaž opakované indexy na úplném konci (dokud se opakují v cíli):
+        while (path_for_agent.size() > 1 && path_for_agent.back() == path_for_agent[path_for_agent.size() - 2]) {
+            path_for_agent.pop_back();
+        }
+    }
 
     // Debug: vypsat novou lokální cestu (v 1D indexech submapy).
     for (size_t a = 0; a < plan.size(); ++a) {
         cout << "[DEBUG] Agent (index) " << agents_to_replan[a]
-        << " | Nová lokální cesta (submap idx): ";
-        for (auto lid : plan[a]) cout << lid << " ";
-            cout << endl;
+             << " | Nová lokální cesta (submap idx): ";
+        for (auto lid : plan[a]) {
+            cout << lid << " ";
+        }
+        cout << endl;
     }
 
-    // 5) Aktualizujeme updated_path pro každého agenta
-    //    (prefix do T_sync, nová lokální dráha, sufix)
-
-    // Pozor: teď musíte nějak mapovat a -> agent_id
-    //        buď držíte stejný pořadí, v "start_positions" apod.
-    //        anebo si uložíte do solveWithSAT i "matching" seznam.
-    // Tady pro příklad řekneme,
-    //   agent_id = agents_to_replan[a] (shodné pořadí).
-    //   Případně byste si musel držet, kolik agentů mělo local_path atd.
-
-    /*
-     *
-     * cout << "[DEBUG] agent " << agent_id << " t=" << t
-                 << " => decoded (sx,sy)=(" << sx << "," << sy
-                 << ") => global_id=" << global_id << endl;*/
-
+    // 5) Aktualizujeme updated_path pro každého agenta (prefix + nová lokální dráha + sufix)
     for (size_t a = 0; a < plan.size(); ++a) {
         int agent_id = agents_to_replan[a];
 
-        // (A) Původní délka
-        int original_local_length = original_local_lengths[agent_id];
-        // (B) Nová délka
+        // (A) Původní délka lokální části
+        int old_local_length = original_local_lengths[agent_id];
+        // (B) Nová délka lokální části
         int new_local_length = (int) plan[a].size();
-        // (C) submap_end_time = T_sync + new_local_length
-        int submap_end_time = T_sync + new_local_length;
 
         cout << "[INFO] Aktualizace cesty pro agenta " << agent_id
-        << " | Původní lokální délka: " << original_local_length
-        << " | Nová lokální délka: " << new_local_length << endl;
+             << " | Původní lokální délka: " << old_local_length
+             << " | Nová lokální délka: " << new_local_length << endl;
 
-        // (1) Zkopírujeme prefix
+        // (1) Zkopírujeme prefix do T_sync
         vector<PathEntry> updated_path(
-                agents[agent_id].path.begin(),
-                agents[agent_id].path.begin() + T_sync);
+            agents[agent_id].path.begin(),
+            agents[agent_id].path.begin() + T_sync
+        );
 
         // (2) Vložíme novou lokální trasu (dekódovanou do glob. ID)
-        int submap_width  = (int)submap[0].size();
-        int submap_height = (int)submap.size();
-
-        for (int t = 0; t < new_local_length; t++) {
+        for (int t = 0; t < new_local_length; t++)
+        {
             int local_id = plan[a][t];
-            // Místo dělení a zbytku použijeme funkci decodeLocalID
+            // decodeLocalID => (sx,sy) submap
+            // *** POZOR na správné x/y a submap[x][y] vs submap[y][x]! ***
             pair<int, int> coords = decodeLocalID(local_id, map);
             int sx = coords.first;
             int sy = coords.second;
             if (sx == -1 || sy == -1) {
-                cout << "[ERROR] agent " << agent_id << " local_id=" << local_id << " nelze dekódovat do platných souřadnic.\n";
+                cout << "[ERROR] agent " << agent_id
+                     << " local_id=" << local_id
+                     << " nelze dekódovat do platných souřadnic.\n";
                 continue;
             }
+            // Globální ID z submapy:
             int global_id = submap[sx][sy];
             cout << "[DEBUG] agent " << agent_id << " t=" << t
                  << " => decoded (sx,sy)=(" << sx << "," << sy
@@ -559,158 +448,177 @@ bool LNS::solveWithSAT(
             updated_path.push_back(PathEntry(global_id));
         }
 
-        // (3) Doplníme sufix, pokud agent skončil dřív/později
-        if (new_local_length < original_local_length) {
-            int time_shift = original_local_length - new_local_length;
-            cout << "[INFO] agent " << agent_id
-            << " zrychlil o " << time_shift << " kroků.\n";
-            for (int t = submap_end_time; t < (int)agents[agent_id].path.size(); t++)
-                updated_path.push_back(agents[agent_id].path[t]);
-
-        } else if (new_local_length > original_local_length) {
-            int delay = new_local_length - original_local_length;
-            cout << "[INFO] agent " << agent_id
-            << " zpomalil o " << delay << " kroků.\n";
-            for (int t = submap_end_time; t < (int)agents[agent_id].path.size(); t++)
-                updated_path.push_back(agents[agent_id].path[t]);
-        }
-
-        // (4) Návaznost
-        if (T_sync > 0 && (size_t)T_sync < updated_path.size()) {
-            int prefix_last = updated_path[T_sync - 1].location;
-            int local_first = updated_path[T_sync].location;
-            if (prefix_last != local_first) {
-                cout << "[WARN] agent " << agent_id
-                << " prefix->lokální navaznost se liší "
-                << prefix_last << " != " << local_first << endl;
+        // (3) Připojíme suffix. Původní suffix začínal na indexu T_sync + old_local_length
+        // (tj. tam končila stará lokální část). V nové cestě jsme skončili na indexu T_sync + new_local_length - 1
+        // => suffix nalepíme od původního suffix_start dále.
+        int old_suffix_start = T_sync + old_local_length;
+        if (old_suffix_start < (int)agents[agent_id].path.size())
+        {
+            for (int t = old_suffix_start; t < (int)agents[agent_id].path.size(); t++) {
+                updated_path.push_back(PathEntry(agents[agent_id].path[t].location));
             }
         }
 
-        // (5) přiřadíme
+        // (4) Volitelná kontrola navázání prefix->lokální
+        if (T_sync > 0 && (size_t)T_sync < updated_path.size()) {
+            int prefix_last = agents[agent_id].path[T_sync].location; // TODO: nevím, jestli dává smysl kontrola návaznosti prefixu
+            int local_first = updated_path[T_sync].location;
+            if (prefix_last != local_first) {
+                cout << "[WARN] agent " << agent_id
+                     << " prefix->lokální navaznost se liší: "
+                     << prefix_last << " != " << local_first << endl;
+            }
+        }
+
+        cout << "[INFO] Původní délka cesty agenta " << agent_id
+             << " je: " <<  agents[agent_id].path.size() << endl;
+        // (5) Uložíme hotovou cestu
         agents[agent_id].path = updated_path;
+        cout << "[INFO] Cesta pro agenta " << agent_id
+             << " aktualizována, výsledná délka: "
+             << updated_path.size() << endl;
     }
 
     cout << "Paths successfully updated.\n";
     return true;
 }
 
+/* NOTE:
+ * náš operátor by se měl správně volat na vyřešení konfliktů, jakmile se konflikty vyřeší,
+ * bude se volat optimalizace (na to máme nějaký určený čas, třeba 10 s), nicméně náš operátor při optimalizaci
+ * může působit nové konflikty, což ostatní operátory nedělají, proto je potřeba najít v projektu flag,
+ * který přepíná z řešení konfliktů na optimalizaci, u našeho operátoru by bylo třeba přepínat mezi
+ * naším optimalizačním operátorem a řešením konfliktů (na přeskáčku přepínat: je konflikt -> vyřeš -> optimalizace -> ...)
+ * */
 bool LNS::generateNeighborBySAT() {
     cout << "====================" << endl;
     cout << "SAT operator called." << endl;
 
-    auto [key_agent_id, problematic_timestep] = findMostDelayedAgent();
-    if (key_agent_id < 0) {
-        cout << "No delayed agent found." << endl;
-        return false; // return true?
-    }
+    //recently_replanned_agents.clear();
 
-    int agent_loc = agents[key_agent_id].path[problematic_timestep].location; // globalID of the cell in 1D matrix
-    int submap_size = 25;
-    auto [submap, agents_in_submap] = getSubmapAndAgents(key_agent_id, submap_size, agent_loc);
+    const int MAX_ATTEMPTS = 10;
 
-    unordered_set<int> submap_set;
-    unordered_map<int, pair<int, int>> global_to_local;
-    initializeSubmapData(submap, submap_set, global_to_local); // +submap -submap_set -global_to_local
-
-    // TODO: chyba v zaznamenávání agentů
-    vector<vector<int>> map = generateMapRepresentation(submap, agents_in_submap, problematic_timestep);
-
-    // NOTE
-    // sum of cost známe, spočítáme optimální sum of cost od startu do cíle (DFS) každého agenta
-    // podle toho můžeme říkat solveru, aby našel řešení s nějakou danou cenou (inkrementálně navyšujem) - delta
-    // pokud to bude vyšší než to co známe, tak zahodíme submapu (nemá cenu řešit)
-    // avoid existuje
-    vector<int> agents_to_replan = getAgentsToReplan(agents_in_submap, submap_set, problematic_timestep);
-    if (agents_to_replan.empty()) return false; // return true?
-
-    // **SYNCHRONIZACE AGENTŮ**
-    int T_sync = problematic_timestep; // bude se synchronizovat podle nejproblematičtějšího agenta
-
-    // =================== DEBUG ======================
-    // =================== DEBUG ======================
-    // =================== DEBUG ======================
-    vector<pair<int, int>> start_positions, goal_positions;
-    for (int agent : agents_to_replan)
-    {
-        int start_global = -1, goal_global = -1;
-        int start_time = T_sync, goal_time = -1;  // start je T_sync
-        // 1) Ověříme, že agent je definován v T_sync
-        if ((size_t)T_sync >= agents[agent].path.size()) {
-            cout << "[ERROR] Agent " << agent
-                 << " nemá definovanou pozici v čase T_sync!\n";
-            continue;
+    for (int attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
+        auto [key_agent_id, problematic_timestep] = findMostDelayedAgent();
+        if (key_agent_id < 0) {
+            cout << "No delayed agent found." << endl;
+            return false; // return true?
         }
 
-        // 2) Zjistíme, zda je v submapě v T_sync
-        int loc_at_Tsync = agents[agent].path[T_sync].location;
-        if (submap_set.find(loc_at_Tsync) == submap_set.end()) {
-            cout << "[WARNING] Agent " << agent
-                 << " není v submapě v čase T_sync!\n";
-            continue;
-        }
-        start_global = loc_at_Tsync;
+        int agent_loc = agents[key_agent_id].path[problematic_timestep].location; // globalID of the cell in 1D matrix
+        int submap_size = 25;
+        auto [submap, agents_in_submap] = getSubmapAndAgents(key_agent_id, submap_size, agent_loc);
 
-        // 3) Najdeme první okamžik, kdy agent submapu opouští.
-        //    => goal_time bude poslední t, pro který agent byl uvnitř submapy
-        goal_time = -1;
-        for (int t = T_sync; t < (int)agents[agent].path.size(); t++)
-        {
-            int location = agents[agent].path[t].location;
-            if (submap_set.find(location) != submap_set.end()) {
-                // agent je pořád v submapě
-                goal_global = location;
-                goal_time = t;
+        unordered_set<int> submap_set;
+        unordered_map<int, pair<int, int>> global_to_local;
+        initializeSubmapData(submap, submap_set, global_to_local); // +submap -submap_set -global_to_local
+
+        vector <vector<int>> map = generateMapRepresentation(submap, agents_in_submap, problematic_timestep);
+
+        // NOTE
+        // sum of cost známe, spočítáme optimální sum of cost od startu do cíle (DFS) každého agenta
+        // podle toho můžeme říkat solveru, aby našel řešení s nějakou danou cenou (inkrementálně navyšujem) - delta
+        // pokud to bude vyšší než to co známe, tak zahodíme submapu (nemá cenu řešit)
+        // avoid existuje
+
+        // TODO: avoid na agenty, kteří submapou prochází v budoucnosti pomocí path_table.getAgents
+        vector<int> agents_to_replan = getAgentsToReplan(agents_in_submap, submap_set, problematic_timestep);
+        if (agents_to_replan.empty()) return false; // return true?
+
+        int T_sync = problematic_timestep; // bude se synchronizovat podle nejproblematičtějšího agenta
+
+        // =================== DEBUG ======================
+        // =================== DEBUG ======================
+        // =================== DEBUG ======================
+        vector <pair<int, int>> start_positions, goal_positions;
+        for (int agent: agents_to_replan) {
+            int start_global = -1, goal_global = -1;
+            int start_time = T_sync, goal_time = -1;  // start je T_sync
+            // 1) Ověříme, že agent je definován v T_sync
+            if ((size_t) T_sync >= agents[agent].path.size()) {
+                cout << "[ERROR] Agent " << agent
+                     << " nemá definovanou pozici v čase T_sync!\n";
+                continue;
             }
-            else break; // agent submapu opustil poprvé => končíme
+
+            // 2) Zjistíme, zda je v submapě v T_sync
+            int loc_at_Tsync = agents[agent].path[T_sync].location;
+            if (submap_set.find(loc_at_Tsync) == submap_set.end()) {
+                cout << "[WARNING] Agent " << agent
+                     << " není v submapě v čase T_sync!\n";
+                continue;
+            }
+            start_global = loc_at_Tsync;
+
+            // 3) Najdeme první okamžik, kdy agent submapu opouští.
+            //    => goal_time bude poslední t, pro který agent byl uvnitř submapy
+            goal_time = -1;
+            for (int t = T_sync; t < (int) agents[agent].path.size(); t++) {
+                int location = agents[agent].path[t].location;
+                if (submap_set.find(location) != submap_set.end()) {
+                    // agent je pořád v submapě
+                    goal_global = location;
+                    goal_time = t;
+                } else break; // agent submapu opustil poprvé => končíme
+            }
+
+            if (goal_time == -1) {
+                // pokud by se stalo, že agent nebyl v submapě ani v T_sync,
+                // ale to se nestane, protože výše jsme kontrolovali loc_atTsync
+                cout << "[WARNING] Agent " << agent
+                     << " nemá platnou cílovou pozici (už T_sync je mimo?)!\n";
+                continue;
+            }
+
+            // 4) Převod globálních souřadnic start/goal na lokální (sx, sy)
+            auto itS = global_to_local.find(start_global);
+            auto itG = global_to_local.find(goal_global);
+
+            if (itS == global_to_local.end()) {
+                cout << "[ERROR] Startovní pozice agenta " << agent
+                     << " není v global_to_local!\n";
+                continue;
+            }
+            if (itG == global_to_local.end()) {
+                cout << "[ERROR] Cílová pozice agenta " << agent
+                     << " není v global_to_local!\n";
+                continue;
+            }
+
+            // Uložit do start_positions, goal_positions pro debug
+            start_positions.push_back(itS->second);
+            goal_positions.push_back(itG->second);
+
+            // 5) Výpis
+            cout << "Agent " << agent
+                 << " | Start (globální): " << start_global
+                 << " → (lokální): (" << itS->second.first << ", " << itS->second.second << ")"
+                 << " v čase " << T_sync
+                 << " | První opuštění submapy v t=" << (goal_time + 1)
+                 << " => Cíl (globální): " << goal_global
+                 << " → (lokální): (" << itG->second.first << ", " << itG->second.second << ")"
+                 << " v čase " << goal_time << endl;
+        }
+        // =================== DEBUG ======================
+        // =================== DEBUG ======================
+        // =================== DEBUG ======================
+
+        auto local_paths = findLocalPaths(agents_to_replan, submap, submap_set, global_to_local, T_sync);
+        bool success = solveWithSAT(map, local_paths, agents_to_replan, submap, T_sync);
+
+        if (success) {
+            neighbor.agents = agents_to_replan; // PRO REPAIR OPERÁTORY
+            for (int agent : agents_to_replan)
+                recently_replanned_agents.insert(agent);
+            return true;
         }
 
-        if (goal_time == -1) {
-            // pokud by se stalo, že agent nebyl v submapě ani v T_sync,
-            // ale to se nestane, protože výše jsme kontrolovali loc_atTsync
-            cout << "[WARNING] Agent " << agent
-                 << " nemá platnou cílovou pozici (už T_sync je mimo?)!\n";
-            continue;
-        }
-
-        // 4) Převod globálních souřadnic start/goal na lokální (sx, sy)
-        auto itS = global_to_local.find(start_global);
-        auto itG = global_to_local.find(goal_global);
-
-        if (itS == global_to_local.end()) {
-            cout << "[ERROR] Startovní pozice agenta " << agent
-                 << " není v global_to_local!\n";
-            continue;
-        }
-        if (itG == global_to_local.end()) {
-            cout << "[ERROR] Cílová pozice agenta " << agent
-                 << " není v global_to_local!\n";
-            continue;
-        }
-
-        // Uložit do start_positions, goal_positions pro debug
-        start_positions.push_back(itS->second);
-        goal_positions.push_back(itG->second);
-
-        // 5) Výpis
-        cout << "Agent " << agent
-             << " | Start (globální): " << start_global
-             << " → (lokální): (" << itS->second.first << ", " << itS->second.second << ")"
-             << " v čase " << T_sync
-             << " | První opuštění submapy v t=" << (goal_time+1)
-             << " => Cíl (globální): " << goal_global
-             << " → (lokální): (" << itG->second.first << ", " << itG->second.second << ")"
-             << " v čase " << goal_time << endl;
+        // Neúspěšné přeplánování => přidáme agenta do ignorovaných
+        ignored_agents.insert(key_agent_id);
+        cout << "[WARN] SAT selhal pro agenta " << key_agent_id << ", ignoruji v dalších pokusech.\n";
     }
-    // =================== DEBUG ======================
-    // =================== DEBUG ======================
-    // =================== DEBUG ======================
-
-    synchronizeAgentPathsLocally(agents_to_replan, T_sync, submap_set); // momentálně se synchronizuje podle key_agent_id
-    auto local_paths = findLocalPaths(agents_to_replan, submap, submap_set, global_to_local, T_sync);
-
-    // SAT solveru vadí dva agenti na jednom startovacím místě -> přeskočit/posunout
-    // TODO: avoid na agenty, kteří submapou prochází v budoucnosti
-    return solveWithSAT(map, local_paths, agents_to_replan, submap, T_sync);
+    cout << "[ERROR] SAT se nepodařilo aplikovat na žádného agenta po " << MAX_ATTEMPTS << " pokusech.\n";
+    return false;
 }
 
 bool LNS::run()
@@ -778,7 +686,7 @@ bool LNS::run()
         cout.flush();
         runtime =((fsec)(Time::now() - start_time)).count();
         if(screen >= 1)
-            validateSolution();
+            validateSolution(); // vrací exit(-1) při nalezení konfliktu -> problém
         if (ALNS)
             chooseDestroyHeuristicbyALNS();
 
@@ -1332,21 +1240,18 @@ pair<int, int> LNS::findMostDelayedAgent() {
     int most_problematic_timestep = -1;
 
     for (const auto& agent : agents) {
-        auto [agent_max_delays, problematic_timestep] = agent.getMostProblematicDelay(path_table);
+        // přeskoč agenty, kteří už selhali
+        if (ignored_agents.find(agent.id) != ignored_agents.end())
+            continue;
+        if (recently_replanned_agents.find(agent.id) != recently_replanned_agents.end())
+            continue;
 
-        // debug
-        //cout << "Agent " << agent.id << ": Delays = " << agent_max_delays
-        //     << ", Problematic timestep = " << problematic_timestep << endl;
+        auto [agent_max_delays, problematic_timestep] = agent.getMostProblematicDelay(path_table);
 
         if (agent_max_delays > max_delays) {
             max_delays = agent_max_delays;
-            agent_with_max_delays = agent.id; // most problematic agent
+            agent_with_max_delays = agent.id;
             most_problematic_timestep = problematic_timestep;
-
-            // debug
-            //cout << "New most delayed agent: " << agent_with_max_delays
-            //     << " with delays = " << max_delays
-            //     << " at timestep = " << most_problematic_timestep << endl;
         }
     }
 

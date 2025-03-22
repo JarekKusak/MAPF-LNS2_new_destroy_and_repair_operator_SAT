@@ -59,6 +59,9 @@ private:
     unordered_set<int> tabu_list; // used by randomwalk strategy
     list<int> intersections;
 
+    std::unordered_set<int> ignored_agents; // MOJE
+    std::unordered_set<int> recently_replanned_agents; // MOJE
+
     bool runEECBS();
     bool runCBS();
     bool runPP();
@@ -97,8 +100,6 @@ private:
             vector<int>& agents_to_replan,
             const vector<vector<int>>& submap,
             int T_sync);
-    void synchronizeAgentPathsLocally(vector<int>& agents_to_replan,
-                                    int T_sync, const unordered_set<int>& submap_set);
     unordered_map<int, vector<pair<int,int>>> findLocalPaths(const vector<int>& agents_to_replan,
                                                              const vector<vector<int>>& submap,
                                                              const unordered_set<int>& submap_set,

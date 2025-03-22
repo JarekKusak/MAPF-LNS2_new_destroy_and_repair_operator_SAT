@@ -105,4 +105,5 @@ private:
                                                              const unordered_set<int>& submap_set,
                                                              const unordered_map<int, pair<int,int>>& global_to_local,
                                                              int T_sync);
+    bool runSAT();
 };

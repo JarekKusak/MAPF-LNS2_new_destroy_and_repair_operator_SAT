@@ -50,6 +50,13 @@ struct Neighbor
     set<pair<int, int>> colliding_pairs;  // id1 < id2
     set<pair<int, int>> old_colliding_pairs;  // id1 < id2
     vector<Path> old_paths;
+
+    // NOVÉ atributy pro SAT
+    vector<vector<int>> submap;
+    unordered_set<int> submap_set;
+    unordered_map<int, pair<int, int>> global_to_local;
+    int T_sync = -1;
+    vector<vector<int>> map;
 };
 
 class BasicLNS

@@ -510,7 +510,7 @@ bool LNS::generateNeighborBySAT() {
         }
 
         int agent_loc = agents[key_agent_id].path[problematic_timestep].location; // globalID of the cell in 1D matrix
-        int submap_size = 25;
+        int submap_size = 9;
         auto [submap, agents_in_submap] = getSubmapAndAgents(key_agent_id, submap_size, agent_loc);
 
         unordered_set<int> submap_set;
@@ -616,6 +616,8 @@ bool LNS::generateNeighborBySAT() {
         neighbor.global_to_local = global_to_local;
         neighbor.map = map;
         neighbor.T_sync = T_sync;
+
+        ignored_agents.insert(key_agent_id);
 
         // Také si můžeme poznamenat, že jsme si "vybrali" tento submap pro replan
         // => vrátíme true, a v run() potom dojde k volbě "runSAT()" namísto runPP apod.

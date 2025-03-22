@@ -96,7 +96,7 @@ pair<int, int> InitLNS::decodeLocalID(int local_id, const vector<vector<int>>& m
     return {-1, -1};
 }
 
-/* getting the submap around one or more agents and identifying agents in these submaps
+// getting the submap around one or more agents and identifying agents in these submaps
 pair<vector<vector<int>>, vector<int>> InitLNS::getSubmapAndAgents(int agent_id, int submap_size, int agent_location) {
     int map_width = 32;  // fixed for now...
     int map_height = 32; // fixed for now...
@@ -113,19 +113,19 @@ pair<vector<vector<int>>, vector<int>> InitLNS::getSubmapAndAgents(int agent_id,
     set<int> conflicting_agents;
 
     // center of the submap
-    int agent_x = agent_location / map_width; // most delayed agent is the center of submap
+    int agent_x = agent_location / map_width;
     int agent_y = agent_location % map_width;
 
     int half_side = submap_side / 2;
 
     for (int dx = -half_side; dx <= half_side; ++dx) {
         for (int dy = -half_side; dy <= half_side; ++dy) {
-            int x = agent_x + dx; // relative displacement from the agent along the horizontal
-            int y = agent_y + dy; // relative displacement from the agent along the vertical
+            int x = agent_x + dx;
+            int y = agent_y + dy;
 
-            // ensure we are within map boundaries (if not -> skip)
+            // ensure we are within map boundaries
             if (x >= 0 && x < map_height && y >= 0 && y < map_width) {
-                int global_pos = x * map_width + y; // the unique index of a cell in the global map
+                int global_pos = x * map_width + y; // unique index of cell in global map
 
                 // map (dx, dy) to submap indices
                 int submap_x = dx + half_side;
@@ -133,7 +133,16 @@ pair<vector<vector<int>>, vector<int>> InitLNS::getSubmapAndAgents(int agent_id,
 
                 if (submap_x >= 0 && submap_x < submap_side && submap_y >= 0 && submap_y < submap_side) {
                     submap[submap_x][submap_y] = global_pos;
-                    path_table.get_agents(conflicting_agents, global_pos); // collect all agents in the submap (at EVERY timestep)
+
+                    // Vzhledem k tomu, že PathTableWC nemá metodu get_agents,
+                    // projdeme všechny časy (time steps) pro danou buňku (global_pos)
+                    if (global_pos < path_table.table.size()) { // TODO: NEEFEKTIVNÍ
+                        for (const auto& agent_list : path_table.table[global_pos]) {
+                            for (int ag : agent_list) {
+                                conflicting_agents.insert(ag);
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -515,13 +524,7 @@ bool InitLNS::solveWithSAT(
     return true;
 }
 
-/* NOTE:
- * náš operátor by se měl správně volat na vyřešení konfliktů, jakmile se konflikty vyřeší,
- * bude se volat optimalizace (na to máme nějaký určený čas, třeba 10 s), nicméně náš operátor při optimalizaci
- * může působit nové konflikty, což ostatní operátory nedělají, proto je potřeba najít v projektu flag,
- * který přepíná z řešení konfliktů na optimalizaci, u našeho operátoru by bylo třeba přepínat mezi
- * naším optimalizačním operátorem a řešením konfliktů (na přeskáčku přepínat: je konflikt -> vyřeš -> optimalizace -> ...)
- *
+
 // --------------------------------------------------------
 // DESTROY fáze: generateNeighborBySAT() – najde submapu, agenty, T_sync atd.
 // --------------------------------------------------------
@@ -535,7 +538,7 @@ bool InitLNS::generateNeighborBySAT() {
 
     for (int attempt = 0; attempt < MAX_ATTEMPTS; attempt++)
     {
-        auto [key_agent_id, problematic_timestep] = findMostDelayedAgent();
+        auto [key_agent_id, problematic_timestep] = findConflictAgent();
         if (key_agent_id < 0) {
             cout << "No delayed agent found." << endl;
             return false; // return true?
@@ -664,6 +667,7 @@ bool InitLNS::generateNeighborBySAT() {
     return false;
 }
 
+
 // --------------------------------------------------------
 // REPAIR fáze: runSAT() – zavolá findLocalPaths + solveWithSAT,
 //              a upraví cesty agentů + path_table
@@ -681,14 +685,14 @@ bool InitLNS::runSAT()
     const auto& map              = neighbor.map;
     int T_sync                   = neighbor.T_sync;
 
-    // Zavoláme původní findLocalPaths
+    // Zavoláme findLocalPaths, která vytvoří lokální reprezentaci cest v submapě
     auto local_paths = findLocalPaths(agents_to_replan,
                                       submap,
                                       submap_set,
                                       global_to_local,
                                       T_sync);
 
-    // Nyní spustíme solveWithSAT (původní kód).
+    // Spustíme SAT solver – řešíme přeplánování agentů v submapě
     bool success = solveWithSAT(
             const_cast<vector<vector<int>>&>(map), // solveWithSAT bere non-const
             local_paths,
@@ -698,37 +702,41 @@ bool InitLNS::runSAT()
 
     if (!success) {
         cout << "[WARN] SAT solver failed to find a valid solution." << endl;
-        // Vrátíme false => run() to pozná a zahodí neighbor
         return false;
     }
 
-    // Úspěch – spočítáme novou sum_of_costs
-    neighbor.sum_of_costs = 0;
+    // Po SAT řešení nyní zkontrolujeme, kolik konfliktů (vertex/edge) má nově přeplánované řešení
+    set<pair<int,int>> new_colliding_pairs;
     for (int ag : agents_to_replan) {
-        neighbor.sum_of_costs += (int)agents[ag].path.size() - 1;
+        updateCollidingPairs(new_colliding_pairs, agents[ag].id, agents[ag].path);
     }
+    int new_conflicts = new_colliding_pairs.size();
 
-    // Porovnáme s old_sum_of_costs => buď akceptujeme, nebo revert
-    if (neighbor.sum_of_costs <= neighbor.old_sum_of_costs) {
-        // Akceptujeme novou cestu => zaneseme do path_table
+    cout << "[DEBUG] New SAT solution has " << new_conflicts << " conflicting pairs." << endl;
+
+    // Porovnáme s původním počtem kolizních párů, uloženým v neighbor.old_colliding_pairs
+    if (new_conflicts <= neighbor.old_colliding_pairs.size()) {
+        // Akceptujeme nové řešení – aktualizujeme path_table
         for (int ag : agents_to_replan) {
-            path_table.insertPath(ag, agents[ag].path);
+            path_table.insertPath(agents[ag].id, agents[ag].path);
         }
         return true;
     }
     else {
-        cout << "[INFO] New SAT solution is worse, reverting." << endl;
-        // Vrátíme agentům staré cesty
+        cout << "[INFO] New SAT solution has more conflicts (" << new_conflicts
+             << ") than before (" << neighbor.old_colliding_pairs.size() << "), reverting." << endl;
+        // Vrátíme staré cesty
         for (int i = 0; i < (int)neighbor.agents.size(); i++) {
             int a = neighbor.agents[i];
-            path_table.deletePath(agents[a].id, agents[a].path);
+            path_table.deletePath(agents[a].id); // TODO: zkontrolovat
             agents[a].path = neighbor.old_paths[i];
-            path_table.insertPath(agents[a].id, agents[a].path);
+            path_table.insertPath(agents[a].id);
         }
-        neighbor.sum_of_costs = neighbor.old_sum_of_costs;
         return false;
     }
-}*/
+}
+
+// TODO: ZAKOMPONOVAT OPERÁTOR DO METODY RUN A ZAVOLAT --initLNS=SAT
 
 bool InitLNS::run()
 {

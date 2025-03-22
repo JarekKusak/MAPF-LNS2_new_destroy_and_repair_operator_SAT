@@ -84,6 +84,7 @@ private:
                     set<int>& neighbor, int neighbor_size, int upperbound);
 
     bool generateNeighborBySAT(); // new destroy operator
+    bool runSAT(); // new repair operator
     pair<vector<vector<int>>, vector<int>> getSubmapAndAgents(int agent_id, int submap_size, int agent_location); // helper function for getting sub-map
     vector<int> getAgentsToReplan(const vector<int>& agents_in_submap,
                                        const unordered_set<int>& submap_set,
@@ -105,5 +106,4 @@ private:
                                                              const unordered_set<int>& submap_set,
                                                              const unordered_map<int, pair<int,int>>& global_to_local,
                                                              int T_sync);
-    bool runSAT();
 };

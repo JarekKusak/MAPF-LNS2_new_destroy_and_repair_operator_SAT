@@ -10,7 +10,7 @@ LNS::LNS(const Instance& instance, double time_limit, const string & init_algo_n
          const string & init_destory_name, bool use_sipp, int screen, PIBTPPS_option pipp_option) :
          BasicLNS(instance, time_limit, neighbor_size, screen),
          init_algo_name(init_algo_name),  replan_algo_name(replan_algo_name),
-         num_of_iterations(num_of_iterations > 0 ? 0 : 1), // TODO: proč nefunguje?
+         num_of_iterations(num_of_iterations > 0 ? 0 : 2), // TODO: proč nefunguje?
          use_init_lns(use_init_lns),init_destory_name(init_destory_name),
          path_table(instance.map_size), pipp_option(pipp_option)
 {
@@ -499,41 +499,33 @@ bool LNS::generateNeighborBySAT() {
 
     //recently_replanned_agents.clear();
 
-    const int MAX_ATTEMPTS = 10;
+    // Jediný pokus. Pokud se nepodaří, vracíme false => v run() pak zkusíme jiný attempt.
+    auto [key_agent_id, problematic_timestep] = findMostDelayedAgent();
+    if (key_agent_id < 0) {
+        cout << "No delayed agent found." << endl;
+        return false; // return true?
+    }
 
-    for (int attempt = 0; attempt < MAX_ATTEMPTS; attempt++)
-    {
-        auto [key_agent_id, problematic_timestep] = findMostDelayedAgent();
-        if (key_agent_id < 0) {
-            cout << "No delayed agent found." << endl;
-            return false; // return true?
-        }
+    int agent_loc = agents[key_agent_id].path[problematic_timestep].location; // globalID of the cell in 1D matrix
+    int submap_size = 25;
+    auto [submap, agents_in_submap] = getSubmapAndAgents(key_agent_id, submap_size, agent_loc);
 
-        int agent_loc = agents[key_agent_id].path[problematic_timestep].location; // globalID of the cell in 1D matrix
-        int submap_size = 9;
-        auto [submap, agents_in_submap] = getSubmapAndAgents(key_agent_id, submap_size, agent_loc);
+    unordered_set<int> submap_set;
+    unordered_map<int, pair<int, int>> global_to_local;
+    initializeSubmapData(submap, submap_set, global_to_local); // +submap -submap_set -global_to_local
 
-        unordered_set<int> submap_set;
-        unordered_map<int, pair<int, int>> global_to_local;
-        initializeSubmapData(submap, submap_set, global_to_local); // +submap -submap_set -global_to_local
+    vector<vector<int>> map = generateMapRepresentation(submap, agents_in_submap, problematic_timestep);
 
-        vector<vector<int>> map = generateMapRepresentation(submap, agents_in_submap, problematic_timestep);
+    // TODO: později budeme chtít dát na agenty procházející submapou avoid
+    vector<int> agents_to_replan = getAgentsToReplan(agents_in_submap, submap_set, problematic_timestep);
+    if (agents_to_replan.empty()) {
+        cout << "[WARN] No agents to replan in submap." << endl;
+        return false;
+    }
 
-        // NOTE
-        // sum of cost známe, spočítáme optimální sum of cost od startu do cíle (DFS) každého agenta
-        // podle toho můžeme říkat solveru, aby našel řešení s nějakou danou cenou (inkrementálně navyšujem) - delta
-        // pokud to bude vyšší než to co známe, tak zahodíme submapu (nemá cenu řešit)
-        // avoid existuje
+    int T_sync = problematic_timestep; // bude se synchronizovat podle nejproblematičtějšího agenta
 
-        // TODO: avoid na agenty, kteří submapou prochází v budoucnosti pomocí path_table.getAgents
-        vector<int> agents_to_replan = getAgentsToReplan(agents_in_submap, submap_set, problematic_timestep);
-        if (agents_to_replan.empty()) return false; // return true?
-
-        int T_sync = problematic_timestep; // bude se synchronizovat podle nejproblematičtějšího agenta
-
-        // =================== DEBUG ======================
-        // =================== DEBUG ======================
-        // =================== DEBUG ======================
+    // =================== DEBUG ======================
         vector<pair<int,int>> start_positions, goal_positions;
         for (int agent : agents_to_replan)
         {
@@ -605,11 +597,6 @@ bool LNS::generateNeighborBySAT() {
                  << " v čase " << goal_time << endl;
         }
         // =================== DEBUG ======================
-        // =================== DEBUG ======================
-        // =================== DEBUG ======================
-
-        // Namísto volání findLocalPaths + solveWithSAT přímo tady
-        // jen uložíme data do neighbor.* pro pozdější "repair" fází:
         neighbor.agents = agents_to_replan;
         neighbor.submap = submap;      // Uložíme si pro runSAT()
         neighbor.submap_set = submap_set;
@@ -617,21 +604,11 @@ bool LNS::generateNeighborBySAT() {
         neighbor.map = map;
         neighbor.T_sync = T_sync;
 
+        // ignored_agents slouží k tomu, abychom znovu nebrali stejného "key_agent_id"
         ignored_agents.insert(key_agent_id);
 
-        // Také si můžeme poznamenat, že jsme si "vybrali" tento submap pro replan
-        // => vrátíme true, a v run() potom dojde k volbě "runSAT()" namísto runPP apod.
-        // (případně, pokud chceme vícekrokové pokusy, ponecháme cycle).
-        return true; // zničení se povedlo, vrátíme se, abychom v run() spustili "repair" (runSAT).
-
-        // Pokud by to selhalo, pak:
-        // ignored_agents.insert(key_agent_id);
-        // atd. – ale pro ukázku to teď vypneme.
-    }
-
-    cout << "[ERROR] SAT se nepodařilo aplikovat na žádného agenta po "
-         << MAX_ATTEMPTS << " pokusech.\n";
-    return false;
+        // Vše OK => vracíme true
+        return true;
 }
 
 // --------------------------------------------------------
@@ -650,14 +627,12 @@ bool LNS::runSAT()
     const auto& map              = neighbor.map;
     int T_sync                   = neighbor.T_sync;
 
-    // Zavoláme původní findLocalPaths
     auto local_paths = findLocalPaths(agents_to_replan,
                                       submap,
                                       submap_set,
                                       global_to_local,
                                       T_sync);
 
-    // Nyní spustíme solveWithSAT (původní kód).
     bool success = solveWithSAT(
             const_cast<vector<vector<int>>&>(map), // solveWithSAT bere non-const
             local_paths,
@@ -667,7 +642,6 @@ bool LNS::runSAT()
 
     if (!success) {
         cout << "[WARN] SAT solver failed to find a valid solution." << endl;
-        // Vrátíme false => run() to pozná a zahodí neighbor
         return false;
     }
 
@@ -677,17 +651,15 @@ bool LNS::runSAT()
         neighbor.sum_of_costs += (int)agents[ag].path.size() - 1;
     }
 
-    // Porovnáme s old_sum_of_costs => buď akceptujeme, nebo revert
     if (neighbor.sum_of_costs <= neighbor.old_sum_of_costs) {
-        // Akceptujeme novou cestu => zaneseme do path_table
+        // Akceptujeme novou cestu => ...
         for (int ag : agents_to_replan) {
             path_table.insertPath(ag, agents[ag].path);
         }
         return true;
-    }
-    else {
+    } else {
+        // revert
         cout << "[INFO] New SAT solution is worse, reverting." << endl;
-        // Vrátíme agentům staré cesty
         for (int i = 0; i < (int)neighbor.agents.size(); i++) {
             int a = neighbor.agents[i];
             path_table.deletePath(agents[a].id, agents[a].path);
@@ -787,18 +759,18 @@ bool LNS::run()
                 }
                 succ = true;
                 break;
-            case SAT: { // new operator
+            case SAT: {
+                // Jedna iterace => až MAX_SAT_ATTEMPTS pro SAT
                 const int MAX_SAT_ATTEMPTS = 10;
                 bool sat_success = false;
                 for (int attempt = 0; attempt < MAX_SAT_ATTEMPTS && !sat_success; attempt++) {
                     if (!generateNeighborBySAT()) {
-                        // Nepodařilo se najít validní neighborhood, zkuste znovu
+                        // nepodařilo se najít validní neighborhood
                         continue;
                     }
-                    // Máme neighborhood, teď se pokusíme přeplánovat pomocí SAT solveru
+                    // Máme neighborhood, teď se pokusíme přeplánovat pomocí SAT
                     if (runSAT()) {
                         sat_success = true; // SAT operátor našel validní řešení
-                        break;
                     }
                 }
                 succ = sat_success;
@@ -828,8 +800,7 @@ bool LNS::run()
             succ = runCBS();
         else if (replan_algo_name == "PP")
             succ = runPP();
-        else if (replan_algo_name == "SAT")
-            continue;
+        else if (replan_algo_name == "SAT") { /* nic */ }
         else
         {
             cerr << "Wrong replanning strategy" << endl;

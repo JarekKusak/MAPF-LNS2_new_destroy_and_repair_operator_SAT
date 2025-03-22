@@ -10,7 +10,7 @@ LNS::LNS(const Instance& instance, double time_limit, const string & init_algo_n
          const string & init_destory_name, bool use_sipp, int screen, PIBTPPS_option pipp_option) :
          BasicLNS(instance, time_limit, neighbor_size, screen),
          init_algo_name(init_algo_name),  replan_algo_name(replan_algo_name),
-         num_of_iterations(num_of_iterations > 0 ? 0 : 1), // TODO: proč nefunguje?
+         num_of_iterations(num_of_iterations > 0 ? 0 : 2), // TODO: proč nefunguje?
          use_init_lns(use_init_lns),init_destory_name(init_destory_name),
          path_table(instance.map_size), pipp_option(pipp_option)
 {
@@ -343,9 +343,6 @@ bool LNS::solveWithSAT(
     std::map<int,int> original_local_lengths;
 
     for (int agent : agents_to_replan) {
-
-
-
         auto it = local_paths.find(agent);
         if (it == local_paths.end() || it->second.empty()) {
             cout << "[WARN] Agent " << agent
@@ -497,6 +494,8 @@ bool LNS::generateNeighborBySAT() {
     cout << "====================" << endl;
     cout << "SAT operator called." << endl;
 
+    //recently_replanned_agents.clear();
+
     const int MAX_ATTEMPTS = 10;
 
     for (int attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
@@ -607,7 +606,12 @@ bool LNS::generateNeighborBySAT() {
         auto local_paths = findLocalPaths(agents_to_replan, submap, submap_set, global_to_local, T_sync);
         bool success = solveWithSAT(map, local_paths, agents_to_replan, submap, T_sync);
 
-        if (success) return true;
+        if (success) {
+            neighbor.agents = agents_to_replan; // PRO REPAIR OPERÁTORY
+            for (int agent : agents_to_replan)
+                recently_replanned_agents.insert(agent);
+            return true;
+        }
 
         // Neúspěšné přeplánování => přidáme agenta do ignorovaných
         ignored_agents.insert(key_agent_id);
@@ -682,7 +686,7 @@ bool LNS::run()
         cout.flush();
         runtime =((fsec)(Time::now() - start_time)).count();
         if(screen >= 1)
-            validateSolution();
+            validateSolution(); // vrací exit(-1) při nalezení konfliktu -> problém
         if (ALNS)
             chooseDestroyHeuristicbyALNS();
 
@@ -1238,6 +1242,8 @@ pair<int, int> LNS::findMostDelayedAgent() {
     for (const auto& agent : agents) {
         // přeskoč agenty, kteří už selhali
         if (ignored_agents.find(agent.id) != ignored_agents.end())
+            continue;
+        if (recently_replanned_agents.find(agent.id) != recently_replanned_agents.end())
             continue;
 
         auto [agent_max_delays, problematic_timestep] = agent.getMostProblematicDelay(path_table);

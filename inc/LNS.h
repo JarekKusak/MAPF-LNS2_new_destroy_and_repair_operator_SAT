@@ -60,6 +60,7 @@ private:
     list<int> intersections;
 
     std::unordered_set<int> ignored_agents; // MOJE
+    std::unordered_set<int> recently_replanned_agents; // MOJE
 
     bool runEECBS();
     bool runCBS();

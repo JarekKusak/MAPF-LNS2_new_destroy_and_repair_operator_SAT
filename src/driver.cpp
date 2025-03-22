@@ -73,6 +73,8 @@ int main(int argc, char** argv)
     int screen = vm["screen"].as<int>();
 	srand(vm["seed"].as<int>());
 
+
+
 	if (vm["solver"].as<string>() == "LNS")
     {
         LNS lns(instance, time_limit,

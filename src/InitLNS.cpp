@@ -786,6 +786,8 @@ bool InitLNS::run()
             succ = runPP();
         else if (replan_algo_name == "GCBS")
             succ = runGCBS();
+        else if (replan_algo_name == "SAT") // TODO: dočasně
+            succ = runPP();
         else if (replan_algo_name == "PBS")
             succ = runPBS();
         else

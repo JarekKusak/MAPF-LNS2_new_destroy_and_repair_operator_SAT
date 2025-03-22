@@ -10,7 +10,7 @@ LNS::LNS(const Instance& instance, double time_limit, const string & init_algo_n
          const string & init_destory_name, bool use_sipp, int screen, PIBTPPS_option pipp_option) :
          BasicLNS(instance, time_limit, neighbor_size, screen),
          init_algo_name(init_algo_name),  replan_algo_name(replan_algo_name),
-         num_of_iterations(num_of_iterations > 0 ? 0 : 2), // TODO: proč nefunguje?
+         num_of_iterations(num_of_iterations > 0 ? 0 : 1), // TODO: proč nefunguje?
          use_init_lns(use_init_lns),init_destory_name(init_destory_name),
          path_table(instance.map_size), pipp_option(pipp_option)
 {
@@ -638,7 +638,6 @@ bool LNS::generateNeighborBySAT() {
 // --------------------------------------------------------
 bool LNS::runSAT()
 {
-    cout << "====================" << endl;
     cout << "[REPAIR] SAT operator – spouštím subproblém." << endl;
 
     // Získáme z neighbor.* všechny uložené informace
@@ -786,9 +785,22 @@ bool LNS::run()
                 }
                 succ = true;
                 break;
-            case SAT: // new operator
-                succ = generateNeighborBySAT();
-                break;
+            case SAT: { // new operator
+                const int MAX_SAT_ATTEMPTS = 10;
+                bool sat_success = false;
+                for (int attempt = 0; attempt < MAX_SAT_ATTEMPTS && !sat_success; attempt++) {
+                    if (!generateNeighborBySAT()) {
+                        // Nepodařilo se najít validní neighborhood, zkuste znovu
+                        continue;
+                    }
+                    // Máme neighborhood, teď se pokusíme přeplánovat pomocí SAT solveru
+                    if (runSAT()) {
+                        sat_success = true; // SAT operátor našel validní řešení
+                        break;
+                    }
+                }
+                succ = sat_success;
+            } break;
             default:
                 cerr << "Wrong neighbor generation strategy" << endl;
                 exit(-1);
@@ -814,8 +826,8 @@ bool LNS::run()
             succ = runCBS();
         else if (replan_algo_name == "PP")
             succ = runPP();
-        else if (replan_algo_name == "SAT") // MŮJ REPAIR OPERÁTOR
-            succ = runSAT();
+        else if (replan_algo_name == "SAT")
+            continue;
         else
         {
             cerr << "Wrong replanning strategy" << endl;

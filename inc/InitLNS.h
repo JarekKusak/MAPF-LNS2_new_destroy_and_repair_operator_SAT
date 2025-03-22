@@ -55,7 +55,7 @@ private:
 
     bool validatePathTable() const;
 
-
+    pair<int,int> findConflictAgent();
 
     bool generateNeighborBySAT(); // new destroy operator
     bool runSAT(); // new repair operator
@@ -80,4 +80,5 @@ private:
                                                              const unordered_set<int>& submap_set,
                                                              const unordered_map<int, pair<int,int>>& global_to_local,
                                                              int T_sync);
+    pair<int, int> decodeLocalID(int local_id, const vector<vector<int>>& map);
 };

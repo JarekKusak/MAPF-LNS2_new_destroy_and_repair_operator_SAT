@@ -10,7 +10,7 @@ LNS::LNS(const Instance& instance, double time_limit, const string & init_algo_n
          const string & init_destory_name, bool use_sipp, int screen, PIBTPPS_option pipp_option) :
          BasicLNS(instance, time_limit, neighbor_size, screen),
          init_algo_name(init_algo_name),  replan_algo_name(replan_algo_name),
-         num_of_iterations(num_of_iterations > 0 ? 0 : 2), // TODO: proč nefunguje?
+         num_of_iterations(num_of_iterations > 0 ? 0 : 1), // TODO: proč nefunguje?
          use_init_lns(use_init_lns),init_destory_name(init_destory_name),
          path_table(instance.map_size), pipp_option(pipp_option)
 {
@@ -47,7 +47,7 @@ LNS::LNS(const Instance& instance, double time_limit, const string & init_algo_n
 }
 
 // Vrací (sx, sy) odpovídající local_id v pořadí volných buněk v 'map' (2D pole s 1=volno, -1=prekážka)
-pair<int, int> decodeLocalID(int local_id, const vector<vector<int>>& map) {
+pair<int, int> LNS::decodeLocalID(int local_id, const vector<vector<int>>& map) {
     int count = 0;
     int rows = map.size();
     int cols = map[0].size();
@@ -507,7 +507,7 @@ bool LNS::generateNeighborBySAT() {
     }
 
     int agent_loc = agents[key_agent_id].path[problematic_timestep].location; // globalID of the cell in 1D matrix
-    int submap_size = 25;
+    int submap_size = 9;
     auto [submap, agents_in_submap] = getSubmapAndAgents(key_agent_id, submap_size, agent_loc);
 
     unordered_set<int> submap_set;
@@ -644,6 +644,7 @@ bool LNS::runSAT()
         cout << "[WARN] SAT solver failed to find a valid solution." << endl;
         return false;
     }
+
 
     // úspěch – spočítáme novou sum_of_costs
     neighbor.sum_of_costs = 0;

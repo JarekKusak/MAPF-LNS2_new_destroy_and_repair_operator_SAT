@@ -37,9 +37,49 @@ InitLNS::InitLNS(const Instance& instance, vector<Agent>& agents, double time_li
 
  }
 
-/*
+/**
+* findConflictAgent
+*  - Najde agenta s největším počtem konfliktů v collision_graph (tj. největší size() v collision_graph[a]).
+*  - Pokud collision_graph[a].size() == 0 pro všechny a, vrátí {-1,-1} => žádné konflikty.
+*  - Pro zjednodušení vracíme conflict_time=0;
+*    v reálné implementaci ho lze najít analýzou path_tableWC (např. hasCollisions / getLastCollisionTimestep).
+*/
+pair<int,int> InitLNS::findConflictAgent()
+{
+    int agent_with_most_conflicts = -1;
+    size_t max_conflicts = 0;
+
+    // Pokud collision_graph.size() < agents.size(),
+    //   pak je tam buď chybějící agent, nebo zatím nebyla data aktualizována.
+    //   Zde předpokládáme, že je vše sladěné.
+    for (int a = 0; a < (int)collision_graph.size(); a++)
+    {
+        // collision_graph[a] je množina agentů, se kterými je agent a v konfliktu
+        size_t conflicts = collision_graph[a].size();
+        if (conflicts > max_conflicts)
+        {
+            max_conflicts = conflicts;
+            agent_with_most_conflicts = a;
+        }
+    }
+
+    // Pokud agent_with_most_conflicts zůstane -1 nebo max_conflicts == 0 => žádné konflikty
+    if (agent_with_most_conflicts < 0 || max_conflicts == 0)
+    {
+        return {-1, -1}; // signál, že nejsou konflikty
+    }
+
+    // Tady byste mohli (volitelně) najít konkrétní čas konfliktu
+    //   pro agent_with_most_conflicts, buď analýzou path_tableWC
+    //   nebo jinými mechanismy. Zatím vracíme 0 jako placeholder.
+    int conflict_time = 0;
+
+    return { agent_with_most_conflicts, conflict_time };
+}
+
+
 // Vrací (sx, sy) odpovídající local_id v pořadí volných buněk v 'map' (2D pole s 1=volno, -1=prekážka)
-pair<int, int> decodeLocalID(int local_id, const vector<vector<int>>& map) {
+pair<int, int> InitLNS::decodeLocalID(int local_id, const vector<vector<int>>& map) {
     int count = 0;
     int rows = map.size();
     int cols = map[0].size();

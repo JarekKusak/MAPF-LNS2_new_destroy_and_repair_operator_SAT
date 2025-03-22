@@ -613,12 +613,12 @@ bool LNS::generateNeighborBySAT() {
             return true;
         }
 
-        // Neúspěšné přeplánování => přidáme agenta do ignorovaných
+        // neúspěšné přeplánování => přidáme agenta do ignorovaných
         ignored_agents.insert(key_agent_id);
         cout << "[WARN] SAT selhal pro agenta " << key_agent_id << ", ignoruji v dalších pokusech.\n";
     }
     cout << "[ERROR] SAT se nepodařilo aplikovat na žádného agenta po " << MAX_ATTEMPTS << " pokusech.\n";
-    return false;
+    return false; // TODO: pak se to ale dostane do nekonečné smyčky
 }
 
 bool LNS::run()

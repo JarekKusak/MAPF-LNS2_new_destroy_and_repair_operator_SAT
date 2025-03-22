@@ -597,8 +597,9 @@ bool LNS::generateNeighborBySAT() {
                  << " v čase " << goal_time << endl;
         }
         // =================== DEBUG ======================
+
         neighbor.agents = agents_to_replan;
-        neighbor.submap = submap;      // Uložíme si pro runSAT()
+        neighbor.submap = submap;      // uložíme si pro runSAT()
         neighbor.submap_set = submap_set;
         neighbor.global_to_local = global_to_local;
         neighbor.map = map;
@@ -619,7 +620,6 @@ bool LNS::runSAT()
 {
     cout << "[REPAIR] SAT operator – spouštím subproblém." << endl;
 
-    // Získáme z neighbor.* všechny uložené informace
     const auto& agents_to_replan = neighbor.agents;
     const auto& submap           = neighbor.submap;
     const auto& submap_set       = neighbor.submap_set;
@@ -645,14 +645,14 @@ bool LNS::runSAT()
         return false;
     }
 
-    // Úspěch – spočítáme novou sum_of_costs
+    // úspěch – spočítáme novou sum_of_costs
     neighbor.sum_of_costs = 0;
     for (int ag : agents_to_replan) {
         neighbor.sum_of_costs += (int)agents[ag].path.size() - 1;
     }
 
     if (neighbor.sum_of_costs <= neighbor.old_sum_of_costs) {
-        // Akceptujeme novou cestu => ...
+        // akceptujeme novou cestu => ...
         for (int ag : agents_to_replan) {
             path_table.insertPath(ag, agents[ag].path);
         }

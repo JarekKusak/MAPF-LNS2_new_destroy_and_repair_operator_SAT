@@ -19,7 +19,9 @@ include_directories(
 
 # Add source files
 file(GLOB SOURCES "src/*.cpp" "src/CBS/*.cpp" "src/PIBT/*.cpp")
-add_executable(lns ${SOURCES} src/LNS.cpp)
+add_executable(lns ${SOURCES} src/LNS.cpp
+        src/SATUtils.cpp
+        inc/SATUtils.h)
 
 # Add path to libraries
 link_directories(${CMAKE_SOURCE_DIR}/include/libs)

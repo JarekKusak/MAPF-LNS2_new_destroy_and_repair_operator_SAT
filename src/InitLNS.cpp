@@ -50,6 +50,8 @@ pair<int, int> InitLNS::findConflictAgent()
 {
     for (const auto& agent : agents)
     {
+        if (failed_sat_agents.find(agent.id) != failed_sat_agents.end())
+            continue;
         const auto& path = agent.path;
         if (path.empty())
             continue;
@@ -694,13 +696,16 @@ bool InitLNS::runSAT()
     cout << "[DEBUG] Nově přeplánované řešení má " << new_conflicts << " konfliktů." << endl;
     cout << "[DEBUG] Původní počet konfliktů: " << neighbor.old_colliding_pairs.size() << endl;
 
+
+    // Akceptujeme nové řešení – aktualizujeme path_table
+    for (int ag : agents_to_replan)
+        path_table.insertPath(agents[ag].id, agents[ag].path);
+    failed_sat_agents.clear();
+    return true;
     // Porovnáme s původním počtem kolizních párů, uloženým v neighbor.old_colliding_pairs
+    /*
     if (new_conflicts <= neighbor.old_colliding_pairs.size()) {
-        // Akceptujeme nové řešení – aktualizujeme path_table
-        for (int ag : agents_to_replan)
-            path_table.insertPath(agents[ag].id, agents[ag].path);
-        failed_sat_agents.clear();
-        return true;
+
     }
     else {
         cout << "[INFO] New SAT solution has more conflicts (" << new_conflicts
@@ -715,7 +720,7 @@ bool InitLNS::runSAT()
         cout << "jen pro info, key_agent_id je " << key_agent_id << endl;
         failed_sat_agents.insert(key_agent_id);
         return false;
-    }
+    }*/
 }
 
 // TODO: ZAKOMPONOVAT OPERÁTOR DO METODY RUN A ZAVOLAT --initLNS=SAT
@@ -902,6 +907,7 @@ bool InitLNS::run()
     printResult();
     return (num_of_colliding_pairs == 0);
 }
+
 bool InitLNS::runGCBS()
 {
     vector<SingleAgentSolver*> search_engines;

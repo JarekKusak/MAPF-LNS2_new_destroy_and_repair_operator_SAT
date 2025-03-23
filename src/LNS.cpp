@@ -1306,9 +1306,9 @@ pair<int, int> LNS::findMostDelayedAgent() {
 
     for (const auto& agent : agents) {
         // přeskoč agenty, kteří už selhali
+        // TODO: tohle není nejmoudřejší, protože je nechceme přeskakovat natrvalo, ale prozatím to nevadí
+        // TODO: nikdy nevymazáváme ignored_agents.clear()
         if (ignored_agents.find(agent.id) != ignored_agents.end())
-            continue;
-        if (recently_replanned_agents.find(agent.id) != recently_replanned_agents.end())
             continue;
 
         auto [agent_max_delays, problematic_timestep] = agent.getMostProblematicDelay(path_table);

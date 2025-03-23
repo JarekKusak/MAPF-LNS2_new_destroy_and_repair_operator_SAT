@@ -54,6 +54,7 @@ namespace SATUtils {
             int problematic_timestep,
             const std::vector<Agent>& agents);
 
+    // Vrátí mapu [agent -> vektor dvojic (sx, sy) v submapě].
     // Vytvoří lokální cesty pro agenty – vrací mapu, kde pro každého agenta (z agents_to_replan)
     // je vektor dvojic (sx, sy) odpovídající jeho pozicím v submapě od T_sync do okamžiku, kdy opustí submapu.
     std::unordered_map<int, std::vector<std::pair<int,int>>> findLocalPaths(

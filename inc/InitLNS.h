@@ -55,6 +55,9 @@ private:
 
     bool validatePathTable() const;
 
+
+    unordered_set<int> failed_sat_agents; // MOJE
+
     pair<int,int> findConflictAgent();
 
     bool generateNeighborBySAT(); // new destroy operator

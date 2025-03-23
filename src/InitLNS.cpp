@@ -46,37 +46,27 @@ InitLNS::InitLNS(const Instance& instance, vector<Agent>& agents, double time_li
 *  - Pro zjednodušení vracíme conflict_time=0;
 *    v reálné implementaci ho lze najít analýzou path_tableWC (např. hasCollisions / getLastCollisionTimestep).
 */
-pair<int,int> InitLNS::findConflictAgent()
+pair<int, int> InitLNS::findConflictAgent()
 {
-    int agent_with_most_conflicts = -1;
-    size_t max_conflicts = 0;
-
-    // Pokud collision_graph.size() < agents.size(),
-    //   pak je tam buď chybějící agent, nebo zatím nebyla data aktualizována.
-    //   Zde předpokládáme, že je vše sladěné.
-    for (int a = 0; a < (int)collision_graph.size(); a++)
+    for (const auto& agent : agents)
     {
-        // collision_graph[a] je množina agentů, se kterými je agent a v konfliktu
-        size_t conflicts = collision_graph[a].size();
-        if (conflicts > max_conflicts)
+        const auto& path = agent.path;
+        if (path.empty())
+            continue;
+
+        for (int t = 1; t < (int)path.size(); t++) // t=1 kvůli edge konfliktům
         {
-            max_conflicts = conflicts;
-            agent_with_most_conflicts = a;
+            int from = path[t - 1].location;
+            int to = path[t].location;
+
+            if (path_table.hasCollisions(from, to, t))
+            {
+                return {agent.id, t}; // agent a čas konfliktu
+            }
         }
     }
 
-    // Pokud agent_with_most_conflicts zůstane -1 nebo max_conflicts == 0 => žádné konflikty
-    if (agent_with_most_conflicts < 0 || max_conflicts == 0)
-    {
-        return {-1, -1}; // signál, že nejsou konflikty
-    }
-
-    // Tady byste mohli (volitelně) najít konkrétní čas konfliktu
-    //   pro agent_with_most_conflicts, buď analýzou path_tableWC
-    //   nebo jinými mechanismy. Zatím vracíme 0 jako placeholder.
-    int conflict_time = 0;
-
-    return { agent_with_most_conflicts, conflict_time };
+    return {-1, -1}; // žádný konflikt nenalezen
 }
 
 
@@ -532,152 +522,127 @@ bool InitLNS::solveWithSAT(
 // --------------------------------------------------------
 bool InitLNS::generateNeighborBySAT() {
     cout << "====================" << endl;
-    cout << "SAT operator called." << endl;
-
-    //recently_replanned_agents.clear();
+    cout << "SAT destroy operator called." << endl;
 
     const int MAX_ATTEMPTS = 10;
 
-    for (int attempt = 0; attempt < MAX_ATTEMPTS; attempt++)
-    {
-        auto [key_agent_id, problematic_timestep] = findConflictAgent();
-        if (key_agent_id < 0) {
-            cout << "[DEBUG] Žádný agent s konflikty nebyl nalezen." << endl;
-            return false;
-        } else {
-            cout << "[DEBUG] Vybraný agent " << key_agent_id << " má "
-                 << collision_graph[key_agent_id].size() << " konfliktů." << endl;
-        }
-
-        int agent_loc = agents[key_agent_id].path[problematic_timestep].location; // globalID of the cell in 1D matrix
-        int submap_size = 9;
-        auto [submap, agents_in_submap] = getSubmapAndAgents(key_agent_id, submap_size, agent_loc);
-
-        cout << "[DEBUG] Vytvořená submapa:" << endl;
-        for (const auto& row : submap) {
-            for (int cell : row)
-                cout << cell << " ";
-            cout << endl;
-        }
-        cout << "[DEBUG] Počet agentů v submapě: " << agents_in_submap.size() << endl;
-
-        unordered_set<int> submap_set;
-        unordered_map<int, pair<int, int>> global_to_local;
-        initializeSubmapData(submap, submap_set, global_to_local); // +submap -submap_set -global_to_local
-
-        vector<vector<int>> map = generateMapRepresentation(submap, agents_in_submap, problematic_timestep);
-
-        // NOTE
-        // sum of cost známe, spočítáme optimální sum of cost od startu do cíle (DFS) každého agenta
-        // podle toho můžeme říkat solveru, aby našel řešení s nějakou danou cenou (inkrementálně navyšujem) - delta
-        // pokud to bude vyšší než to co známe, tak zahodíme submapu (nemá cenu řešit)
-        // avoid existuje
-
-        // TODO: avoid na agenty, kteří submapou prochází v budoucnosti pomocí path_table.getAgents
-        vector<int> agents_to_replan = getAgentsToReplan(agents_in_submap, submap_set, problematic_timestep);
-        if (agents_to_replan.empty()) return false; // return true?
-
-        int T_sync = problematic_timestep; // bude se synchronizovat podle nejproblematičtějšího agenta
-
-        // =================== DEBUG ======================
-        // =================== DEBUG ======================
-        // =================== DEBUG ======================
-        vector<pair<int,int>> start_positions, goal_positions;
-        for (int agent : agents_to_replan)
-        {
-            int start_global = -1, goal_global = -1;
-            int start_time = T_sync, goal_time = -1;  // start je T_sync
-            // 1) Ověříme, že agent je definován v T_sync
-            if ((size_t)T_sync >= agents[agent].path.size()) {
-                cout << "[ERROR] Agent " << agent
-                     << " nemá definovanou pozici v čase T_sync!\n";
-                continue;
-            }
-
-            // 2) Zjistíme, zda je v submapě v T_sync
-            int loc_at_Tsync = agents[agent].path[T_sync].location;
-            if (submap_set.find(loc_at_Tsync) == submap_set.end()) {
-                cout << "[WARNING] Agent " << agent
-                     << " není v submapě v čase T_sync!\n";
-                continue;
-            }
-            start_global = loc_at_Tsync;
-
-            // 3) Najdeme první okamžik, kdy agent submapu opouští.
-            //    => goal_time bude poslední t, pro který agent byl uvnitř submapy
-            goal_time = -1;
-            for (int t = T_sync; t < (int)agents[agent].path.size(); t++) {
-                int location = agents[agent].path[t].location;
-                if (submap_set.find(location) != submap_set.end()) {
-                    // agent je pořád v submapě
-                    goal_global = location;
-                    goal_time = t;
-                } else break; // agent submapu opustil poprvé => končíme
-            }
-
-            if (goal_time == -1) {
-                // pokud by se stalo, že agent nebyl v submapě ani v T_sync,
-                // ale to se nestane, protože výše jsme kontrolovali loc_atTsync
-                cout << "[WARNING] Agent " << agent
-                     << " nemá platnou cílovou pozici (už T_sync je mimo?)!\n";
-                continue;
-            }
-
-            // 4) Převod globálních souřadnic start/goal na lokální (sx, sy)
-            auto itS = global_to_local.find(start_global);
-            auto itG = global_to_local.find(goal_global);
-
-            if (itS == global_to_local.end()) {
-                cout << "[ERROR] Startovní pozice agenta " << agent
-                     << " není v global_to_local!\n";
-                continue;
-            }
-            if (itG == global_to_local.end()) {
-                cout << "[ERROR] Cílová pozice agenta " << agent
-                     << " není v global_to_local!\n";
-                continue;
-            }
-
-            // Uložit do start_positions, goal_positions pro debug
-            start_positions.push_back(itS->second);
-            goal_positions.push_back(itG->second);
-
-            // 5) Výpis
-            cout << "Agent " << agent
-                 << " | Start (globální): " << start_global
-                 << " → (lokální): (" << itS->second.first << ", " << itS->second.second << ")"
-                 << " v čase " << T_sync
-                 << " | První opuštění submapy v t=" << (goal_time+1)
-                 << " => Cíl (globální): " << goal_global
-                 << " → (lokální): (" << itG->second.first << ", " << itG->second.second << ")"
-                 << " v čase " << goal_time << endl;
-        }
-        // =================== DEBUG ======================
-        // =================== DEBUG ======================
-        // =================== DEBUG ======================
-
-        // Namísto volání findLocalPaths + solveWithSAT přímo tady
-        // jen uložíme data do neighbor.* pro pozdější "repair" fází:
-        neighbor.agents = agents_to_replan;
-        neighbor.submap = submap;      // Uložíme si pro runSAT()
-        neighbor.submap_set = submap_set;
-        neighbor.global_to_local = global_to_local;
-        neighbor.map = map;
-        neighbor.T_sync = T_sync;
-
-        // Také si můžeme poznamenat, že jsme si "vybrali" tento submap pro replan
-        // => vrátíme true, a v run() potom dojde k volbě "runSAT()" namísto runPP apod.
-        // (případně, pokud chceme vícekrokové pokusy, ponecháme cycle).
-        return true; // zničení se povedlo, vrátíme se, abychom v run() spustili "repair" (runSAT).
-
-        // Pokud by to selhalo, pak:
-        // ignored_agents.insert(key_agent_id);
-        // atd. – ale pro ukázku to teď vypneme.
+    auto [key_agent_id, problematic_timestep] = findConflictAgent();
+    if (key_agent_id < 0) {
+        cout << "[DEBUG] Žádný agent s konflikty nebyl nalezen." << endl;
+        return false;
     }
+    else cout << "[DEBUG] Vybraný agent " << key_agent_id << " má "
+              << collision_graph[key_agent_id].size() << " konfliktů." << endl;
 
-    cout << "[ERROR] SAT se nepodařilo aplikovat na žádného agenta po "
-         << MAX_ATTEMPTS << " pokusech.\n";
-    return false;
+    int agent_loc = agents[key_agent_id].path[problematic_timestep].location; // globalID of the cell in 1D matrix
+    int submap_size = 9;
+    auto [submap, agents_in_submap] = getSubmapAndAgents(key_agent_id, submap_size, agent_loc);
+
+    unordered_set<int> submap_set;
+    unordered_map<int, pair<int, int>> global_to_local;
+    initializeSubmapData(submap, submap_set, global_to_local); // +submap -submap_set -global_to_local
+
+    vector<vector<int>> map = generateMapRepresentation(submap, agents_in_submap, problematic_timestep);
+
+    // NOTE
+    // sum of cost známe, spočítáme optimální sum of cost od startu do cíle (DFS) každého agenta
+    // podle toho můžeme říkat solveru, aby našel řešení s nějakou danou cenou (inkrementálně navyšujem) - delta
+    // pokud to bude vyšší než to co známe, tak zahodíme submapu (nemá cenu řešit)
+    // avoid existuje
+
+    // TODO: avoid na agenty, kteří submapou prochází v budoucnosti pomocí path_table.getAgents
+    vector<int> agents_to_replan = getAgentsToReplan(agents_in_submap, submap_set, problematic_timestep);
+    if (agents_to_replan.empty()) return false; // return true?
+
+    int T_sync = problematic_timestep; // bude se synchronizovat podle nejkonfliktnějšího agenta
+
+    // =================== DEBUG ======================
+    vector<pair<int,int>> start_positions, goal_positions;
+    for (int agent : agents_to_replan)
+    {
+        int start_global = -1, goal_global = -1;
+        int start_time = T_sync, goal_time = -1;  // start je T_sync
+        // 1) Ověříme, že agent je definován v T_sync
+        if ((size_t)T_sync >= agents[agent].path.size()) {
+            cout << "[ERROR] Agent " << agent
+                 << " nemá definovanou pozici v čase T_sync!\n";
+            continue;
+        }
+
+        // 2) Zjistíme, zda je v submapě v T_sync
+        int loc_at_Tsync = agents[agent].path[T_sync].location;
+        if (submap_set.find(loc_at_Tsync) == submap_set.end()) {
+            cout << "[WARNING] Agent " << agent
+                 << " není v submapě v čase T_sync!\n";
+            continue;
+        }
+        start_global = loc_at_Tsync;
+
+        // 3) Najdeme první okamžik, kdy agent submapu opouští.
+        //    => goal_time bude poslední t, pro který agent byl uvnitř submapy
+        goal_time = -1;
+        for (int t = T_sync; t < (int)agents[agent].path.size(); t++) {
+            int location = agents[agent].path[t].location;
+            if (submap_set.find(location) != submap_set.end()) {
+                // agent je pořád v submapě
+                goal_global = location;
+                goal_time = t;
+            } else break; // agent submapu opustil poprvé => končíme
+        }
+
+        if (goal_time == -1) {
+            // pokud by se stalo, že agent nebyl v submapě ani v T_sync,
+            // ale to se nestane, protože výše jsme kontrolovali loc_atTsync
+            cout << "[WARNING] Agent " << agent
+                 << " nemá platnou cílovou pozici (už T_sync je mimo?)!\n";
+            continue;
+        }
+
+        // 4) Převod globálních souřadnic start/goal na lokální (sx, sy)
+        auto itS = global_to_local.find(start_global);
+        auto itG = global_to_local.find(goal_global);
+
+        if (itS == global_to_local.end()) {
+            cout << "[ERROR] Startovní pozice agenta " << agent
+                 << " není v global_to_local!\n";
+            continue;
+        }
+        if (itG == global_to_local.end()) {
+            cout << "[ERROR] Cílová pozice agenta " << agent
+                 << " není v global_to_local!\n";
+            continue;
+        }
+
+        // Uložit do start_positions, goal_positions pro debug
+        start_positions.push_back(itS->second);
+        goal_positions.push_back(itG->second);
+
+        // 5) Výpis
+        cout << "Agent " << agent
+             << " | Start (globální): " << start_global
+             << " → (lokální): (" << itS->second.first << ", " << itS->second.second << ")"
+             << " v čase " << T_sync
+             << " | První opuštění submapy v t=" << (goal_time+1)
+             << " => Cíl (globální): " << goal_global
+             << " → (lokální): (" << itG->second.first << ", " << itG->second.second << ")"
+             << " v čase " << goal_time << endl;
+    }
+    // =================== DEBUG ======================
+
+    // Namísto volání findLocalPaths + solveWithSAT přímo tady
+    // jen uložíme data do neighbor.* pro pozdější "repair" fází:
+    neighbor.agents = agents_to_replan;
+    neighbor.submap = submap;      // Uložíme si pro runSAT()
+    neighbor.submap_set = submap_set;
+    neighbor.global_to_local = global_to_local;
+    neighbor.map = map;
+    neighbor.T_sync = T_sync;
+    neighbor.key_agent_id = key_agent_id;
+
+    // Také si můžeme poznamenat, že jsme si "vybrali" tento submap pro replan
+    // => vrátíme true, a v run() potom dojde k volbě "runSAT()" namísto runPP apod.
+    // (případně, pokud chceme vícekrokové pokusy, ponecháme cycle).
+    return true; // zničení se povedlo, vrátíme se, abychom v run() spustili "repair" (runSAT).
 }
 
 
@@ -697,6 +662,7 @@ bool InitLNS::runSAT()
     const auto& global_to_local  = neighbor.global_to_local;
     const auto& map              = neighbor.map;
     int T_sync                   = neighbor.T_sync;
+    int key_agent_id             = neighbor.key_agent_id;
 
     // Zavoláme findLocalPaths, která vytvoří lokální reprezentaci cest v submapě
     auto local_paths = findLocalPaths(agents_to_replan,
@@ -715,14 +681,15 @@ bool InitLNS::runSAT()
 
     if (!success) {
         cout << "[WARN] SAT solver failed to find a valid solution." << endl;
+        failed_sat_agents.insert(key_agent_id);
         return false;
     }
 
     // Po SAT řešení nyní zkontrolujeme, kolik konfliktů (vertex/edge) má nově přeplánované řešení
     set<pair<int,int>> new_colliding_pairs;
-    for (int ag : agents_to_replan) {
+    for (int ag : agents_to_replan)
         updateCollidingPairs(new_colliding_pairs, agents[ag].id, agents[ag].path);
-    }
+
     int new_conflicts = new_colliding_pairs.size();
     cout << "[DEBUG] Nově přeplánované řešení má " << new_conflicts << " konfliktů." << endl;
     cout << "[DEBUG] Původní počet konfliktů: " << neighbor.old_colliding_pairs.size() << endl;
@@ -730,9 +697,9 @@ bool InitLNS::runSAT()
     // Porovnáme s původním počtem kolizních párů, uloženým v neighbor.old_colliding_pairs
     if (new_conflicts <= neighbor.old_colliding_pairs.size()) {
         // Akceptujeme nové řešení – aktualizujeme path_table
-        for (int ag : agents_to_replan) {
+        for (int ag : agents_to_replan)
             path_table.insertPath(agents[ag].id, agents[ag].path);
-        }
+        failed_sat_agents.clear();
         return true;
     }
     else {
@@ -745,6 +712,8 @@ bool InitLNS::runSAT()
             agents[a].path = neighbor.old_paths[i];
             path_table.insertPath(agents[a].id);
         }
+        cout << "jen pro info, key_agent_id je " << key_agent_id << endl;
+        failed_sat_agents.insert(key_agent_id);
         return false;
     }
 }
@@ -791,29 +760,33 @@ bool InitLNS::run()
             case RANDOM_BASED:
                 succ = generateNeighborRandomly();
                 break;
-            case SAT_BASED: { // Nová SAT strategie: destroy & repair v jednom
+            case SAT_BASED: { // destroy i repair dohromady
                 const int MAX_SAT_ATTEMPTS = 10;
                 bool sat_success = false;
                 for (int attempt = 0; attempt < MAX_SAT_ATTEMPTS && !sat_success; attempt++) {
-                    if (!generateNeighborBySAT()) {
-                        // Nepodařilo se nalézt validní neighborhood – zkuste znovu
-                        continue;
-                    }
+                    if (!generateNeighborBySAT())
+                        continue; // nepodařilo se nalézt validní neighborhood – zkuste znovu
 
                     // get colliding pairs
                     neighbor.old_colliding_pairs.clear();
                     for (int a : neighbor.agents)
-                    {
                         for (auto j: collision_graph[a])
-                        {
                             neighbor.old_colliding_pairs.emplace(min(a, j), max(a, j));
-                        }
+
+                    // uložení starých cest
+                    neighbor.old_paths.resize(neighbor.agents.size());
+                    neighbor.old_sum_of_costs = 0;
+                    for (int i = 0; i < (int)neighbor.agents.size(); i++)
+                    {
+                        int a = neighbor.agents[i];
+                        neighbor.old_paths[i] = agents[a].path;
+                        path_table.deletePath(agents[a].id);
+                        neighbor.old_sum_of_costs += (int) agents[a].path.size() - 1;
                     }
 
                     // Máme neighborhood, nyní se pokusíme přeplánovat pomocí SAT solveru
-                    if (runSAT()) {
+                    if (runSAT())
                         sat_success = true; // SAT operátor úspěšně odstranil konflikty v submapě
-                    }
                 }
                 succ = sat_success;
             } break;
@@ -821,6 +794,7 @@ bool InitLNS::run()
                 cerr << "Wrong neighbor generation strategy" << endl;
                 exit(-1);
         }
+
         if(!succ || neighbor.agents.empty())
             continue;
 

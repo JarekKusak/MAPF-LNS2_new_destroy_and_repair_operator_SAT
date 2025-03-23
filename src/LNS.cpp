@@ -495,7 +495,7 @@ bool LNS::solveWithSAT(
 // --------------------------------------------------------
 bool LNS::generateNeighborBySAT() {
     cout << "====================" << endl;
-    cout << "SAT operator called." << endl;
+    cout << "SAT destroy operator called." << endl;
 
     //recently_replanned_agents.clear();
 
@@ -618,6 +618,7 @@ bool LNS::generateNeighborBySAT() {
 // --------------------------------------------------------
 bool LNS::runSAT()
 {
+    cout << "[REPAIR] SAT destroy operator called." << endl;
     cout << "[REPAIR] SAT operator – spouštím subproblém NA OPTIMALIZACI." << endl;
 
     const auto& agents_to_replan = neighbor.agents;
@@ -760,19 +761,16 @@ bool LNS::run()
                 }
                 succ = true;
                 break;
-            case SAT: {
+            case SAT: { // destroy i repair dohromady
                 // Jedna iterace => až MAX_SAT_ATTEMPTS pro SAT
                 const int MAX_SAT_ATTEMPTS = 10;
                 bool sat_success = false;
                 for (int attempt = 0; attempt < MAX_SAT_ATTEMPTS && !sat_success; attempt++) {
-                    if (!generateNeighborBySAT()) {
-                        // nepodařilo se najít validní neighborhood
-                        continue;
-                    }
+                    if (!generateNeighborBySAT())
+                        continue; // nepodařilo se najít validní neighborhood
                     // Máme neighborhood, teď se pokusíme přeplánovat pomocí SAT
-                    if (runSAT()) {
+                    if (runSAT())
                         sat_success = true; // SAT operátor našel validní řešení
-                    }
                 }
                 succ = sat_success;
             } break;

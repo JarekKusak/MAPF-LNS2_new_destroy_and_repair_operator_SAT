@@ -56,6 +56,7 @@ struct Neighbor
     unordered_set<int> submap_set;
     unordered_map<int, pair<int, int>> global_to_local;
     int T_sync = -1;
+    int key_agent_id = -1;
     vector<vector<int>> map;
 };
 

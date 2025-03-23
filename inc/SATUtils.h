@@ -5,11 +5,8 @@
 #ifndef MAPF_LNS2_SATUTILS_H
 #define MAPF_LNS2_SATUTILS_H
 
-
 #ifndef SATUTILS_H
 #define SATUTILS_H
-
-// Předdefinice tříd – upravte dle vaší architektury
 
 #include <vector>
 #include <utility>
@@ -19,14 +16,9 @@
 #include <cmath>
 #include <iostream>
 
-// Případně přidejte další potřebné hlavičky, pokud máte např.:
 #include "../include/MAPF.hpp"
 #include "BasicLNS.h"
 #include "InitLNS.h"
-
-// V našem návrhu předpokládáme, že pro SAT solver budeme potřebovat
-// také přístup k instanci a kolekci agentů. Pokud jsou tyto objekty u vás
-// členy třídy LNS či InitLNS, bude třeba je předávat jako další parametry.
 
 namespace SATUtils {
 

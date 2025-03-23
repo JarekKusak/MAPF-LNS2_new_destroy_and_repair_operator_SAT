@@ -1,10 +1,8 @@
 #include "SATUtils.h"
 
-// V případě potřeby přidejte další includy – např. pro SAT solver, Instance, Agent, PathTable apod.
 #include <iostream>
 #include <algorithm>
 
-// Implementace funkcí v rámci namespace SATUtils
 namespace SATUtils {
     std::pair<int, int> decodeLocalID(int local_id, const std::vector<std::vector<int>>& map) {
         int count = 0;

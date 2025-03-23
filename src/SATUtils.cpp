@@ -23,47 +23,6 @@ namespace SATUtils {
         return {-1, -1};
     }
 
-    std::pair<std::vector<std::vector<int>>, std::vector<int>> getSubmapAndAgents(
-            int agent_id, int submap_size, int agent_location,
-            int map_width, int map_height, const PathTable& path_table) {
-
-        int submap_side = std::sqrt(submap_size); // předpokládáme, že submap_size je dokonalý čtverec
-        if (submap_side * submap_side != submap_size) {
-            std::cout << "Error: Submap size is not a perfect square!" << std::endl;
-            return { {}, {} };
-        }
-
-        // Inicializace 2D submapy – všechny buňky jsou -1
-        std::vector<std::vector<int>> submap(submap_side, std::vector<int>(submap_side, -1));
-        std::vector<int> agents_in_submap;
-        std::set<int> conflicting_agents;
-
-        // Určení středu submapy – vychází z agentovy globální pozice
-        int agent_x = agent_location / map_width;
-        int agent_y = agent_location % map_width;
-        int half_side = submap_side / 2;
-
-        for (int dx = -half_side; dx <= half_side; ++dx) {
-            for (int dy = -half_side; dy <= half_side; ++dy) {
-                int x = agent_x + dx;
-                int y = agent_y + dy;
-                if (x >= 0 && x < map_height && y >= 0 && y < map_width) {
-                    int global_pos = x * map_width + y;
-                    int submap_x = dx + half_side;
-                    int submap_y = dy + half_side;
-                    if (submap_x >= 0 && submap_x < submap_side && submap_y >= 0 && submap_y < submap_side) {
-                        submap[submap_x][submap_y] = global_pos;
-                        // Získání agentů v buňce – zde se předpokládá metoda get_agents, která naplní množinu
-                        path_table.get_agents(conflicting_agents, global_pos);
-                    }
-                }
-            }
-        }
-
-        agents_in_submap.assign(conflicting_agents.begin(), conflicting_agents.end());
-        return { submap, agents_in_submap };
-    }
-
     void initializeSubmapData(const std::vector<std::vector<int>>& submap,
                               std::unordered_set<int>& submap_set,
                               std::unordered_map<int, std::pair<int, int>>& global_to_local) {
@@ -218,7 +177,7 @@ namespace SATUtils {
     bool solveWithSAT(
             std::vector<std::vector<int>>& map,
             const std::unordered_map<int, std::vector<std::pair<int,int>>>& local_paths,
-            std::vector<int>& agents_to_replan,
+            const std::vector<int>& agents_to_replan,
             const std::vector<std::vector<int>>& submap,
             int T_sync,
             std::vector<Agent>& agents) {

@@ -33,12 +33,6 @@ namespace SATUtils {
     // Vrací (sx, sy) odpovídající local_id v pořadí volných buněk v dané mapě
     std::pair<int, int> decodeLocalID(int local_id, const std::vector<std::vector<int>>& map);
 
-    // Vytvoří submapu kolem daného agenta (na základě jeho globalID pozice) a zároveň vrátí vektor agentů,
-    // kteří se v dané oblasti nacházejí. Parametry map_width a map_height definují rozměry globální mapy.
-    std::pair<std::vector<std::vector<int>>, std::vector<int>> getSubmapAndAgents(
-            int agent_id, int submap_size, int agent_location,
-            int map_width, int map_height, const PathTable& path_table);
-
     // Projde zadanou submapu a naplní množinu submap_set (globalIDs platných buněk) a mapování global_to_local
     void initializeSubmapData(const std::vector<std::vector<int>>& submap,
                               std::unordered_set<int>& submap_set,
@@ -75,7 +69,7 @@ namespace SATUtils {
     bool solveWithSAT(
             std::vector<std::vector<int>>& map,
             const std::unordered_map<int, std::vector<std::pair<int,int>>>& local_paths,
-            std::vector<int>& agents_to_replan,
+            const std::vector<int>& agents_to_replan,
             const std::vector<std::vector<int>>& submap,
             int T_sync,
             std::vector<Agent>& agents);

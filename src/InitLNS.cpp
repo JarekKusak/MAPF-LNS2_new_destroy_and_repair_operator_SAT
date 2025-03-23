@@ -47,21 +47,18 @@ InitLNS::InitLNS(const Instance& instance, vector<Agent>& agents, double time_li
 */
 pair<int, int> InitLNS::findConflictAgent()
 {
-    for (const auto& agent : agents)
-    {
+    for (const auto& agent : agents) {
         if (failed_sat_agents.find(agent.id) != failed_sat_agents.end())
             continue;
         const auto& path = agent.path;
         if (path.empty())
             continue;
 
-        for (int t = 1; t < (int)path.size(); t++) // t=1 kvůli edge konfliktům
-        {
+        for (int t = 1; t < (int)path.size(); t++) { // t=1 kvůli edge konfliktům
             int from = path[t - 1].location;
             int to = path[t].location;
 
-            if (path_table.hasCollisions(from, to, t))
-            {
+            if (path_table.hasCollisions(from, to, t)) {
                 return {agent.id, t}; // agent a čas konfliktu
             }
         }

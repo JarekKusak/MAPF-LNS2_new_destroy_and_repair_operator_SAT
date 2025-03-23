@@ -9,6 +9,8 @@
 #ifndef SATUTILS_H
 #define SATUTILS_H
 
+// Předdefinice tříd – upravte dle vaší architektury
+
 #include <vector>
 #include <utility>
 #include <set>
@@ -17,16 +19,10 @@
 #include <cmath>
 #include <iostream>
 
-// Předdefinice tříd – upravte dle vaší architektury
-class Instance;
-class PathTable;
-class Agent;
-class PathEntry;
-class _MAPFSAT_Instance;
-class _MAPFSAT_DisappearAtGoal;
-class _MAPFSAT_Logger;
-
+// Případně přidejte další potřebné hlavičky, pokud máte např.:
 #include "../include/MAPF.hpp"
+#include "BasicLNS.h"
+#include "InitLNS.h"
 
 // V našem návrhu předpokládáme, že pro SAT solver budeme potřebovat
 // také přístup k instanci a kolekci agentů. Pokud jsou tyto objekty u vás
@@ -86,6 +82,4 @@ namespace SATUtils {
 }
 
 #endif // SATUTILS_H
-
-
 #endif //MAPF_LNS2_SATUTILS_H

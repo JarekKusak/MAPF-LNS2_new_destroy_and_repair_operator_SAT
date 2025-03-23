@@ -12,8 +12,7 @@ LNS::LNS(const Instance& instance, double time_limit, const string & init_algo_n
          init_algo_name(init_algo_name),  replan_algo_name(replan_algo_name),
          num_of_iterations(num_of_iterations > 0 ? 0 : 1), // TODO: proč nefunguje?
          use_init_lns(use_init_lns),init_destory_name(init_destory_name),
-         path_table(instance.map_size), pipp_option(pipp_option)
-{
+         path_table(instance.map_size), pipp_option(pipp_option) {
     start_time = Time::now();
     replan_time_limit = time_limit / 100;
     if (destory_name == "Adaptive")

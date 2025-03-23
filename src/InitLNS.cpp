@@ -251,15 +251,22 @@ bool InitLNS::runSAT()
         return false;
     }
 
-    // Akceptujeme nové řešení – aktualizujeme path_table
-    for (int ag : agents_to_replan)
-        path_table.insertPath(agents[ag].id, agents[ag].path);
-    failed_sat_agents.clear();
-    return true;
-    // Porovnáme s původním počtem kolizních párů, uloženým v neighbor.old_colliding_pairs
-    /*
-    if (new_conflicts <= neighbor.old_colliding_pairs.size()) {
 
+    set<pair<int,int>> new_colliding_pairs;
+    for (int ag : agents_to_replan)
+        updateCollidingPairs(new_colliding_pairs, agents[ag].id, agents[ag].path);
+    int new_conflicts = new_colliding_pairs.size();
+    cout << "[DEBUG] Nově přeplánované řešení má " << new_conflicts << " konfliktů." << endl;
+    cout << "[DEBUG] Původní počet konfliktů: " << neighbor.old_colliding_pairs.size() << endl;
+
+    // Porovnáme s původním počtem kolizních párů, uloženým v neighbor.old_colliding_pairs
+
+    if (new_conflicts <= neighbor.old_colliding_pairs.size()) { // TODO: zjistit, jestli po úspěšném přeplánování nedojde k chybě
+        // Akceptujeme nové řešení – aktualizujeme path_table
+        for (int ag : agents_to_replan)
+            path_table.insertPath(agents[ag].id, agents[ag].path);
+        failed_sat_agents.clear();
+        return true;
     }
     else {
         cout << "[INFO] New SAT solution has more conflicts (" << new_conflicts
@@ -271,10 +278,10 @@ bool InitLNS::runSAT()
             agents[a].path = neighbor.old_paths[i];
             path_table.insertPath(agents[a].id);
         }
-        cout << "jen pro info, key_agent_id je " << key_agent_id << endl;
+        cout << "[INFO] jen pro info, key_agent_id je " << key_agent_id << endl;
         failed_sat_agents.insert(key_agent_id);
         return false;
-    }*/
+    }
 }
 
 bool InitLNS::run()

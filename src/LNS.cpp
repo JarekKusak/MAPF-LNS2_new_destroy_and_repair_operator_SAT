@@ -865,7 +865,7 @@ bool LNS::generateNeighborByRandomWalk()
     return true;
 }
 
-pair<int, int> LNS::findMostDelayedAgent() {
+pair<int, int> LNS::findMostDelayedAgent() { // TODO: zjistit, jak funguje metoda :D
     int max_delays = -1;
     int agent_with_max_delays = -1;
     int most_problematic_timestep = -1;

@@ -25,6 +25,8 @@ InitLNS::InitLNS(const Instance& instance, vector<Agent>& agents, double time_li
          init_destroy_strategy = COLLISION_BASED;
      else if (init_destory_name == "Random")
          init_destroy_strategy = RANDOM_BASED;
+     else if (init_destory_name == "SAT")
+         init_destroy_strategy = SAT_BASED;
      else
      {
          cerr << "Init Destroy heuristic " << init_destory_name << " does not exists. " << endl;
@@ -540,13 +542,24 @@ bool InitLNS::generateNeighborBySAT() {
     {
         auto [key_agent_id, problematic_timestep] = findConflictAgent();
         if (key_agent_id < 0) {
-            cout << "No delayed agent found." << endl;
-            return false; // return true?
+            cout << "[DEBUG] Žádný agent s konflikty nebyl nalezen." << endl;
+            return false;
+        } else {
+            cout << "[DEBUG] Vybraný agent " << key_agent_id << " má "
+                 << collision_graph[key_agent_id].size() << " konfliktů." << endl;
         }
 
         int agent_loc = agents[key_agent_id].path[problematic_timestep].location; // globalID of the cell in 1D matrix
-        int submap_size = 25;
+        int submap_size = 9;
         auto [submap, agents_in_submap] = getSubmapAndAgents(key_agent_id, submap_size, agent_loc);
+
+        cout << "[DEBUG] Vytvořená submapa:" << endl;
+        for (const auto& row : submap) {
+            for (int cell : row)
+                cout << cell << " ";
+            cout << endl;
+        }
+        cout << "[DEBUG] Počet agentů v submapě: " << agents_in_submap.size() << endl;
 
         unordered_set<int> submap_set;
         unordered_map<int, pair<int, int>> global_to_local;
@@ -675,7 +688,7 @@ bool InitLNS::generateNeighborBySAT() {
 bool InitLNS::runSAT()
 {
     cout << "====================" << endl;
-    cout << "[REPAIR] SAT operator – spouštím subproblém." << endl;
+    cout << "[REPAIR] SAT operator – spouštím subproblém NA ŘEŠENÍ KONFLIKTŮ." << endl;
 
     // Získáme z neighbor.* všechny uložené informace
     const auto& agents_to_replan = neighbor.agents;
@@ -711,8 +724,8 @@ bool InitLNS::runSAT()
         updateCollidingPairs(new_colliding_pairs, agents[ag].id, agents[ag].path);
     }
     int new_conflicts = new_colliding_pairs.size();
-
-    cout << "[DEBUG] New SAT solution has " << new_conflicts << " conflicting pairs." << endl;
+    cout << "[DEBUG] Nově přeplánované řešení má " << new_conflicts << " konfliktů." << endl;
+    cout << "[DEBUG] Původní počet konfliktů: " << neighbor.old_colliding_pairs.size() << endl;
 
     // Porovnáme s původním počtem kolizních párů, uloženým v neighbor.old_colliding_pairs
     if (new_conflicts <= neighbor.old_colliding_pairs.size()) {
@@ -778,6 +791,32 @@ bool InitLNS::run()
             case RANDOM_BASED:
                 succ = generateNeighborRandomly();
                 break;
+            case SAT_BASED: { // Nová SAT strategie: destroy & repair v jednom
+                const int MAX_SAT_ATTEMPTS = 10;
+                bool sat_success = false;
+                for (int attempt = 0; attempt < MAX_SAT_ATTEMPTS && !sat_success; attempt++) {
+                    if (!generateNeighborBySAT()) {
+                        // Nepodařilo se nalézt validní neighborhood – zkuste znovu
+                        continue;
+                    }
+
+                    // get colliding pairs
+                    neighbor.old_colliding_pairs.clear();
+                    for (int a : neighbor.agents)
+                    {
+                        for (auto j: collision_graph[a])
+                        {
+                            neighbor.old_colliding_pairs.emplace(min(a, j), max(a, j));
+                        }
+                    }
+
+                    // Máme neighborhood, nyní se pokusíme přeplánovat pomocí SAT solveru
+                    if (runSAT()) {
+                        sat_success = true; // SAT operátor úspěšně odstranil konflikty v submapě
+                    }
+                }
+                succ = sat_success;
+            } break;
             default:
                 cerr << "Wrong neighbor generation strategy" << endl;
                 exit(-1);
@@ -785,23 +824,25 @@ bool InitLNS::run()
         if(!succ || neighbor.agents.empty())
             continue;
 
-        // get colliding pairs
-        neighbor.old_colliding_pairs.clear();
-        for (int a : neighbor.agents)
-        {
-            for (auto j: collision_graph[a])
+        if (!(init_destroy_strategy == SAT_BASED)) {
+            // get colliding pairs
+            neighbor.old_colliding_pairs.clear();
+            for (int a : neighbor.agents)
             {
-                neighbor.old_colliding_pairs.emplace(min(a, j), max(a, j));
+                for (auto j: collision_graph[a])
+                {
+                    neighbor.old_colliding_pairs.emplace(min(a, j), max(a, j));
+                }
             }
-        }
-        if (neighbor.old_colliding_pairs.empty()) // no need to replan
-        {
-            assert(init_destroy_strategy == RANDOM_BASED);
-            if (ALNS) // update destroy heuristics
+            if (neighbor.old_colliding_pairs.empty()) // no need to replan
             {
-                destroy_weights[selected_neighbor] = (1 - decay_factor) * destroy_weights[selected_neighbor];
+                assert(init_destroy_strategy == RANDOM_BASED);
+                if (ALNS) // update destroy heuristics
+                {
+                    destroy_weights[selected_neighbor] = (1 - decay_factor) * destroy_weights[selected_neighbor];
+                }
+                continue;
             }
-            continue;
         }
 
         // store the neighbor information
@@ -834,8 +875,7 @@ bool InitLNS::run()
             succ = runPP();
         else if (replan_algo_name == "GCBS")
             succ = runGCBS();
-        else if (replan_algo_name == "SAT") // TODO: dočasně
-            succ = runPP();
+        else if (replan_algo_name == "SAT") { }// přeskočíme
         else if (replan_algo_name == "PBS")
             succ = runPBS();
         else
@@ -1188,6 +1228,7 @@ void InitLNS::chooseDestroyHeuristicbyALNS()
         case 0 : init_destroy_strategy = TARGET_BASED; break;
         case 1 : init_destroy_strategy = COLLISION_BASED; break;
         case 2 : init_destroy_strategy = RANDOM_BASED; break;
+        case 3 : init_destroy_strategy = SAT_BASED; break;
         default : cerr << "ERROR" << endl; exit(-1);
     }
 }

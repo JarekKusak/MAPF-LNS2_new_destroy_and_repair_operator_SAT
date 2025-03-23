@@ -618,7 +618,7 @@ bool LNS::generateNeighborBySAT() {
 // --------------------------------------------------------
 bool LNS::runSAT()
 {
-    cout << "[REPAIR] SAT operator – spouštím subproblém." << endl;
+    cout << "[REPAIR] SAT operator – spouštím subproblém NA OPTIMALIZACI." << endl;
 
     const auto& agents_to_replan = neighbor.agents;
     const auto& submap           = neighbor.submap;
@@ -865,6 +865,8 @@ bool LNS::getInitialSolution()
         succ = runWinPIBT();
     else if (init_algo_name == "CBS")
         succ = runCBS();
+    else if (init_algo_name == "SAT") // TODO: popravdě nevím, jestli máme upravovat - možná není nutné
+        succ = runSAT();
     else
     {
         cerr <<  "Initial MAPF solver " << init_algo_name << " does not exist!" << endl;

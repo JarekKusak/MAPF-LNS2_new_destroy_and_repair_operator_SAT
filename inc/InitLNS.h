@@ -1,7 +1,7 @@
 #pragma once
 #include "BasicLNS.h"
 
-enum init_destroy_heuristic { TARGET_BASED, COLLISION_BASED, RANDOM_BASED, INIT_COUNT };
+enum init_destroy_heuristic { TARGET_BASED, COLLISION_BASED, RANDOM_BASED, INIT_COUNT, SAT_BASED };
 
 class InitLNS : public BasicLNS
 {

@@ -126,6 +126,8 @@ pair<vector<vector<int>>, vector<int>> InitLNS::getSubmapAndAgents(int agent_id,
 // --------------------------------------------------------
 // DESTROY fáze: generateNeighborBySAT() – najde submapu, agenty, T_sync atd.
 // --------------------------------------------------------
+// TODO: u vertex conflictu máme problém - konfliktní dvojice agentů jsou v problematic_timestep na jednom vrcholu - nemůžeme přeplánovávat
+// TODO: je tedy jednoho z agentů zachytit v čase t-1 !!
 bool InitLNS::generateNeighborBySAT() {
     cout << "====================" << endl;
     cout << "SAT destroy operator called." << endl;
@@ -259,8 +261,7 @@ bool InitLNS::runSAT()
     cout << "[DEBUG] Nově přeplánované řešení má " << new_conflicts << " konfliktů." << endl;
     cout << "[DEBUG] Původní počet konfliktů: " << neighbor.old_colliding_pairs.size() << endl;
 
-    // Porovnáme s původním počtem kolizních párů, uloženým v neighbor.old_colliding_pairs
-
+    // porovnáme s původním počtem kolizních párů, uloženým v neighbor.old_colliding_pairs
     if (new_conflicts <= neighbor.old_colliding_pairs.size()) { // TODO: zjistit, jestli po úspěšném přeplánování nedojde k chybě
         // Akceptujeme nové řešení – aktualizujeme path_table
         for (int ag : agents_to_replan)

@@ -45,8 +45,7 @@ InitLNS::InitLNS(const Instance& instance, vector<Agent>& agents, double time_li
 *  - Pro zjednodušení vracíme conflict_time=0;
 *    v reálné implementaci ho lze najít analýzou path_tableWC (např. hasCollisions / getLastCollisionTimestep).
 */
-pair<int, int> InitLNS::findConflictAgent()
-{
+pair<int, int> InitLNS::findConflictAgent() { // vrací agenta a časový krok, kdy je poprvé zjištěn konflikt
     for (const auto& agent : agents) {
         if (failed_sat_agents.find(agent.id) != failed_sat_agents.end())
             continue;

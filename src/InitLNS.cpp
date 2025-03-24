@@ -57,9 +57,8 @@ pair<int, int> InitLNS::findConflictAgent() { // vrací agenta a časový krok, 
             int from = path[t - 1].location;
             int to = path[t].location;
 
-            if (path_table.hasCollisions(from, to, t)) {
+            if (path_table.hasCollisions(from, to, t))
                 return {agent.id, t}; // agent a čas konfliktu
-            }
         }
     }
 
@@ -131,8 +130,6 @@ bool InitLNS::generateNeighborBySAT() {
     cout << "====================" << endl;
     cout << "SAT destroy operator called." << endl;
 
-    const int MAX_ATTEMPTS = 10;
-
     auto [key_agent_id, problematic_timestep] = findConflictAgent();
     if (key_agent_id < 0) {
         cout << "[DEBUG] Žádný agent s konflikty nebyl nalezen." << endl;
@@ -144,8 +141,6 @@ bool InitLNS::generateNeighborBySAT() {
 
     int agent_loc = agents[key_agent_id].path[problematic_timestep].location; // globalID buňky
     int submap_size = 9;
-    int map_width = 32;  // případně získat z instance
-    int map_height = 32; // případně získat z instance
 
     // Voláme funkci ze SATUtils, která vytvoří submapu a vrátí i seznam agentů v ní
     auto [submap, agents_in_submap] = getSubmapAndAgents(key_agent_id, submap_size, agent_loc);
@@ -261,10 +256,10 @@ bool InitLNS::runSAT()
     cout << "[DEBUG] Původní počet konfliktů: " << neighbor.old_colliding_pairs.size() << endl;
 
     // porovnáme s původním počtem kolizních párů, uloženým v neighbor.old_colliding_pairs
-    if (new_conflicts <= neighbor.old_colliding_pairs.size()) { // TODO: zjistit, jestli po úspěšném přeplánování nedojde k chybě
+    if (new_conflicts <= neighbor.old_colliding_pairs.size()) {
         // Akceptujeme nové řešení – aktualizujeme path_table
-        for (int ag : agents_to_replan)
-            path_table.insertPath(agents[ag].id, agents[ag].path);
+        for (int a : agents_to_replan)
+            path_table.insertPath(agents[a].id, agents[a].path);
         failed_sat_agents.clear();
         return true;
     }

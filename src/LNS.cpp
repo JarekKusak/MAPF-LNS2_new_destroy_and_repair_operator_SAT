@@ -48,8 +48,8 @@ LNS::LNS(const Instance& instance, double time_limit, const string & init_algo_n
 
 /* getting the submap around one or more agents and identifying agents in these submaps */
 pair<vector<vector<int>>, vector<int>> LNS::getSubmapAndAgents(int agent_id, int submap_size, int agent_location) {
-    int map_width = 32;  // fixed for now...
-    int map_height = 32; // fixed for now...
+    int map_width = 32;  // případně dynamicky z instance
+    int map_height = 32; // případně dynamicky z instance
 
     int submap_side = sqrt(submap_size); // assuming submap_size is a perfect square
     if (submap_side * submap_side != submap_size) {
@@ -115,8 +115,6 @@ bool LNS::generateNeighborBySAT() {
 
     int agent_loc = agents[key_agent_id].path[problematic_timestep].location; // globalID of the cell in 1D matrix
     int submap_size = 25;
-    int map_width = 32;  // případně dynamicky z instance
-    int map_height = 32; // případně dynamicky z instance
 
     // int agent_id, int submap_size, int agent_location
     auto [submap, agents_in_submap] = getSubmapAndAgents(key_agent_id, submap_size, agent_loc);

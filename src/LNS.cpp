@@ -250,6 +250,7 @@ bool LNS::run()
     start_time = Time::now();
     bool succ = getInitialSolution();
     initial_solution_runtime = ((fsec)(Time::now() - start_time)).count();
+    // TADY SE SPOUŠTÍ FÁZE NA HLEDÁNÍ KONFLIKTŮ (INIT)
     if (!succ && initial_solution_runtime < time_limit)
     {
         if (use_init_lns)
@@ -297,6 +298,7 @@ bool LNS::run()
         return false; // terminate because no initial solution is found
     }
 
+    // TADY SE SPOUŠTÍ FÁZE OPTIMALIZACE
     while (runtime < time_limit && iteration_stats.size() <= num_of_iterations)
     {
         cout.flush();

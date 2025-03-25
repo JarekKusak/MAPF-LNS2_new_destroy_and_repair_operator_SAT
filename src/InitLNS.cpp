@@ -40,12 +40,12 @@ InitLNS::InitLNS(const Instance& instance, vector<Agent>& agents, double time_li
 
 /**
 * findConflictAgent
-*  - Najde agenta s největším počtem konfliktů v collision_graph (tj. největší size() v collision_graph[a]).
+*  - vrací agenta a časový krok, kdy je poprvé zjištěn konflikt
 *  - Pokud collision_graph[a].size() == 0 pro všechny a, vrátí {-1,-1} => žádné konflikty.
 *  - Pro zjednodušení vracíme conflict_time=0;
 *    v reálné implementaci ho lze najít analýzou path_tableWC (např. hasCollisions / getLastCollisionTimestep).
 */
-pair<int, int> InitLNS::findConflictAgent() { // vrací agenta a časový krok, kdy je poprvé zjištěn konflikt
+pair<int, int> InitLNS::findConflictAgent() {
     for (const auto& agent : agents) {
         if (failed_sat_agents.find(agent.id) != failed_sat_agents.end())
             continue;
@@ -247,7 +247,6 @@ bool InitLNS::runSAT()
         return false;
     }
 
-
     set<pair<int,int>> new_colliding_pairs;
     for (int ag : agents_to_replan)
         updateCollidingPairs(new_colliding_pairs, agents[ag].id, agents[ag].path);
@@ -326,7 +325,7 @@ bool InitLNS::run()
                     if (!generateNeighborBySAT())
                         continue; // nepodařilo se nalézt validní neighborhood – zkuste znovu
 
-                    // get colliding pairs
+                    // najdi kolizní páry
                     neighbor.old_colliding_pairs.clear();
                     for (int a : neighbor.agents)
                         for (auto j: collision_graph[a])

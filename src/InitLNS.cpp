@@ -38,7 +38,7 @@ InitLNS::InitLNS(const Instance& instance, vector<Agent>& agents, double time_li
      }
 }
 
-/**
+/*
 * findConflictAgent
 *  - vrací agenta a časový krok, kdy je poprvé zjištěn konflikt
 *  - Pokud collision_graph[a].size() == 0 pro všechny a, vrátí {-1,-1} => žádné konflikty.

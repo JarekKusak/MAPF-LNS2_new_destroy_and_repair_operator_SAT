@@ -11,7 +11,7 @@ LNS::LNS(const Instance& instance, double time_limit, const string & init_algo_n
          const string & init_destory_name, bool use_sipp, int screen, PIBTPPS_option pipp_option) :
          BasicLNS(instance, time_limit, neighbor_size, screen),
          init_algo_name(init_algo_name),  replan_algo_name(replan_algo_name),
-         num_of_iterations(num_of_iterations > 0 ? 0 : 2), // TODO: proč nefunguje?
+         num_of_iterations(num_of_iterations > 0 ? 0 : 2), // nastavuje se v argumentu
          use_init_lns(use_init_lns),init_destory_name(init_destory_name),
          path_table(instance.map_size), pipp_option(pipp_option) {
     start_time = Time::now();
@@ -865,7 +865,7 @@ bool LNS::generateNeighborByRandomWalk()
     return true;
 }
 
-pair<int, int> LNS::findMostDelayedAgent() { // TODO: zjistit, jak funguje metoda :D
+pair<int, int> LNS::findMostDelayedAgent() {
     int max_delays = -1;
     int agent_with_max_delays = -1;
     int most_problematic_timestep = -1;

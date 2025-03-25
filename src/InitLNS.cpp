@@ -106,11 +106,10 @@ pair<vector<vector<int>>, vector<int>> InitLNS::getSubmapAndAgents(int agent_id,
                     // Vzhledem k tomu, že PathTableWC nemá metodu get_agents,
                     // projdeme všechny časy (time steps) pro danou buňku (global_pos)
                     if (global_pos < path_table.table.size()) { // TODO: NEEFEKTIVNÍ
-                        for (const auto& agent_list : path_table.table[global_pos]) {
-                            for (int ag : agent_list) {
+                        for (const auto& agent_list : path_table.table[global_pos])
+                            for (int ag : agent_list)
                                 conflicting_agents.insert(ag);
-                            }
-                        }
+
                     }
                 }
             }
@@ -304,7 +303,7 @@ bool InitLNS::run()
     while (runtime < time_limit and num_of_colliding_pairs > 0)
     {
         assert(instance.validateSolution(paths, sum_of_costs, num_of_colliding_pairs));
-        if (ALNS)
+        if (ALNS) // TODO: můžeme hodit kostkou na destroy operátor
             chooseDestroyHeuristicbyALNS();
 
         switch (init_destroy_strategy)

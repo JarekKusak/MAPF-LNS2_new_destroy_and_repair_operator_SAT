@@ -305,7 +305,7 @@ bool LNS::run()
         runtime =((fsec)(Time::now() - start_time)).count();
         if(screen >= 1)
             validateSolution(); // vrací exit(-1) při nalezení konfliktu -> problém
-        if (ALNS)
+        if (ALNS) // TODO: můžeme hodit kostkou na destroy operátor
             chooseDestroyHeuristicbyALNS();
 
         switch (destroy_strategy)

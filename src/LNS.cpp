@@ -219,9 +219,8 @@ bool LNS::runSAT()
 
     if (neighbor.sum_of_costs <= neighbor.old_sum_of_costs) {
         // akceptujeme novou cestu
-        for (int ag : agents_to_replan) {
+        for (int ag : agents_to_replan)
             path_table.insertPath(ag, agents[ag].path);
-        }
         return true;
     } else {
         // revert
@@ -250,6 +249,9 @@ bool LNS::run()
     start_time = Time::now();
     bool succ = getInitialSolution();
     initial_solution_runtime = ((fsec)(Time::now() - start_time)).count();
+
+    // TODO: budeme chtít při nalezení konfliktu při fázi optimalizace přepnout do fáze napravování konfliktů
+
     // TADY SE SPOUŠTÍ FÁZE NA HLEDÁNÍ KONFLIKTŮ (INIT)
     if (!succ && initial_solution_runtime < time_limit)
     {

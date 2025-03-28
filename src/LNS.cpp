@@ -48,8 +48,8 @@ LNS::LNS(const Instance& instance, double time_limit, const string & init_algo_n
 
 /* getting the submap around one or more agents and identifying agents in these submaps */
 pair<vector<vector<int>>, vector<int>> LNS::getSubmapAndAgents(int agent_id, int submap_size, int agent_location) {
-    int map_width = 32;  // případně dynamicky z instance
-    int map_height = 32; // případně dynamicky z instance
+    int map_width = instance.num_of_cols;
+    int map_height = instance.num_of_rows;
 
     int submap_side = sqrt(submap_size); // assuming submap_size is a perfect square
     if (submap_side * submap_side != submap_size) {

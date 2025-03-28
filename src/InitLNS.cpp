@@ -49,6 +49,8 @@ pair<int, int> InitLNS::findConflictAgent() {
     for (const auto& agent : agents) {
         if (failed_sat_agents.find(agent.id) != failed_sat_agents.end())
             continue;
+        if (collision_graph[agent.id].empty())
+            continue;
         const auto& path = agent.path;
         if (path.empty())
             continue;
@@ -58,7 +60,7 @@ pair<int, int> InitLNS::findConflictAgent() {
             int to = path[t].location;
 
             if (path_table.hasCollisions(from, to, t))
-                return {agent.id, t}; // agent a čas konfliktu
+                return {agent.id, t-1}; // agent a čas konfliktu - 1 (kvůli vertex konfliktům)
         }
     }
 
@@ -67,8 +69,8 @@ pair<int, int> InitLNS::findConflictAgent() {
 
 // getting the submap around one or more agents and identifying agents in these submaps
 pair<vector<vector<int>>, vector<int>> InitLNS::getSubmapAndAgents(int agent_id, int submap_size, int agent_location) {
-    int map_width = 32;  // fixed for now...
-    int map_height = 32; // fixed for now...
+    int map_width = instance.num_of_cols;
+    int map_height = instance.num_of_rows;
 
     int submap_side = sqrt(submap_size); // assuming submap_size is a perfect square
     if (submap_side * submap_side != submap_size) {

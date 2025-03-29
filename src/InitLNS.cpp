@@ -364,9 +364,9 @@ bool InitLNS::runSAT()
             int a = neighbor.agents[i];
             cout << "[DEBUG] tohle je hodnota 'a': " << a << endl;
             cout << "[DEBUG] tohle je hodnota 'agents[a].id': " << agents[a].id << endl;
-            path_table.deletePath(agents[a].id); // TODO: zkontrolovat
+            //path_table.deletePath(agents[a].id); // TODO: tady to padá, když má agent novou cestu delší, než původní
             agents[a].path = neighbor.old_paths[i];
-            path_table.insertPath(agents[a].id, agents[a].path); // <-- log uvnitř
+            path_table.insertPath(agents[a].id, agents[a].path);
             auto storedPath = path_table.getPath(agents[a].id);
             if (storedPath == nullptr)
                 cout << "[ERROR] after revert, path_table says agent " << a << " is nullptr" << endl;

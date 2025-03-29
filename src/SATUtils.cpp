@@ -78,51 +78,66 @@ namespace SATUtils {
     std::vector<int> getAgentsToReplan(
             const std::vector<int>& agents_in_submap,
             const std::unordered_set<int>& submap_set,
-            int problematic_timestep,
+            int T_sync,
             const std::vector<Agent>& agents) {
 
         std::vector<int> agents_to_replan;
         std::cout << "\n[INFO] Identifikace agentů v submapě pro přeplánování "
-                  << "(kdy key_agent je tam v čase " << problematic_timestep << "):\n";
+                  << "(kdy key_agent je tam v čase " << T_sync << "):\n";
 
         for (int agent : agents_in_submap) {
-            // TODO: co když je to ale druhý/třetí/... průchod agenta submapou, jehož interval už pokrývá problematic_timestep?
-            // Najdeme PRVNÍ souvislý interval [t_min..t_max], ve kterém je agent v submapě.
-            // Kdyby agent submapu opustil a pak se znovu vrátil, ignorujeme ten návrat.
             const auto& path = agents[agent].path;
             if (path.empty()) continue;
-            int t_min = -1, t_max = -1;
-            // Projdeme celé path:
-            //  1) hledáme první t, kdy je agent v submapě -> t_min
-            //  2) dokud je agent v submapě, posouváme t_max
-            //  3) jakmile agent submapu opustí, končíme (break)
-            for (int t = 0; t < (int)path.size(); t++) {
-                int loc = path[t].location;
-                bool inSubmap = (submap_set.find(loc) != submap_set.end());
-                if (t_min < 0) {
-                    if (inSubmap) {
-                        t_min = t;
-                        t_max = t;
-                    }
+            int n = (int) path.size();
+            std::vector<std::pair<int,int>> intervals;
+            int i = 0;
+            // Najdeme všechny souvislé intervaly, kdy je agent v submapě.
+            while (i < n) {
+                // Přeskočíme časy, kdy agent není v submapě.
+                while (i < n && submap_set.find(path[i].location) == submap_set.end()) {
+                    i++;
                 }
-                else {
-                    if (inSubmap)
-                        t_max = t;
-                    else break;
+                if (i >= n)
+                    break;
+                int t_min = i;
+                // Dokud je agent v submapě, posunujeme i.
+                while (i < n && submap_set.find(path[i].location) != submap_set.end()) {
+                    i++;
+                }
+                int t_max = i - 1;
+                intervals.push_back({t_min, t_max});
+            }
+
+            // Debug: vypiš všechny nalezené intervaly pro daného agenta.
+            std::cout << "[DEBUG] Agent " << agent << " nalezené intervaly v submapě:";
+            for (const auto& interval : intervals) {
+                std::cout << " [" << interval.first << ".." << interval.second << "]";
+            }
+            std::cout << std::endl;
+
+            // Vybereme interval, který obsahuje T_sync.
+            bool found_interval = false;
+            for (const auto& interval : intervals) {
+                if (interval.first <= T_sync && T_sync <= interval.second) {
+                    agents_to_replan.push_back(agent);
+                    std::cout << "  Agent " << agent << " (interval v submapě: ["
+                              << interval.first << ".." << interval.second << "]) obsahuje čas " << T_sync
+                              << ", přidán k přeplánování.\n";
+                    found_interval = true;
+                    break;
                 }
             }
-            if (t_min == -1)
-                continue;
-            if (t_min <= problematic_timestep && problematic_timestep <= t_max) {
-                agents_to_replan.push_back(agent);
-                std::cout << "  Agent " << agent << " (první interval v submapě je ["
-                          << t_min << ".." << t_max << "]), pokrývá i čas " << problematic_timestep
-                          << ", přidán k přeplánování.\n";
+            if (!found_interval) {
+                std::cout << "[DEBUG] Agent " << agent << " není v submapě v čase " << T_sync
+                          << " (intervaly: ";
+                for (const auto& interval : intervals) {
+                    std::cout << "[" << interval.first << ".." << interval.second << "] ";
+                }
+                std::cout << ")\n";
             }
         }
         if (agents_to_replan.empty())
-            std::cout << "[INFO] Žádný agent nebyl v submapě ve stejnou chvíli (čas "
-                      << problematic_timestep << ").\n";
+            std::cout << "[INFO] Žádný agent nebyl v submapě ve stejnou chvíli (čas " << T_sync << ").\n";
         return agents_to_replan;
     }
 
@@ -316,7 +331,7 @@ namespace SATUtils {
 
             // (4) Volitelná kontrola navázání prefix->lokální
             if (T_sync > 0 && (size_t)T_sync < updated_path.size()) {
-                int prefix_last = agents[agent_id].path[T_sync].location; // TODO: nevím, jestli dává smysl kontrola návaznosti prefixu
+                int prefix_last = agents[agent_id].path[T_sync].location;
                 int local_first = updated_path[T_sync].location;
                 if (prefix_last != local_first) {
                     cout << "[WARN] agent " << agent_id

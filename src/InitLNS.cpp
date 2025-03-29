@@ -108,8 +108,8 @@ pair<vector<vector<int>>, vector<int>> InitLNS::getSubmapAndAgents(int agent_id,
 
                 if (submap_x >= 0 && submap_x < submap_side && submap_y >= 0 && submap_y < submap_side) {
                     submap[submap_x][submap_y] = global_pos;
-                    //path_table.get_agents_at_timestep(conflicting_agents, global_pos, timestep);
-                    path_table.get_agents(conflicting_agents, global_pos);
+                    path_table.get_agents_at_timestep(conflicting_agents, global_pos, timestep);
+                    //path_table.get_agents(conflicting_agents, global_pos);
                 }
             }
         }
@@ -387,12 +387,11 @@ bool InitLNS::runSAT()
 bool InitLNS::run()
 {
     // Otevřeme soubor pro zápis
-    std::ofstream out("log.txt");
+    //std::ofstream out("log.txt");
     // Uložíme původní stream buffer, pokud byste chtěli později obnovit std::cout
-    std::streambuf* coutbuf = std::cout.rdbuf();
+    //std::streambuf* coutbuf = std::cout.rdbuf();
     // Přesměrujeme std::cout do souboru
-    std::cout.rdbuf(out.rdbuf());
-
+    //std::cout.rdbuf(out.rdbuf());
 
     start_time = Time::now();
     bool succ = getInitialSolution();
@@ -703,10 +702,8 @@ bool InitLNS::runPP()
     double T = min(time_limit - runtime, replan_time_limit);
     auto time = Time::now();
     ConstraintTable constraint_table(instance.num_of_cols, instance.map_size, nullptr, &path_table);
-    cout << "jsme tu" << endl;
     while (p != shuffled_agents.end() && ((fsec)(Time::now() - time)).count() < T)
     {
-        cout << "jsme tu podruhé" << endl;
         if (p == shuffled_agents.end()) {
             cerr << "[ERROR] Iterator p je na konci shuffled_agents. shuffled_agents.size() = "
                  << shuffled_agents.size() << endl;
@@ -717,15 +714,13 @@ bool InitLNS::runPP()
             cerr << "[ERROR] agents[" << id << "].path_planner je nullptr!" << endl;
             exit(-1); // nebo vhodně ošetřit chybu
         }
-        agents[id].path = agents[id].path_planner->findPath(constraint_table); // tady to padá...
-        cout << "jsme tu potřetí" << endl;
+        agents[id].path = agents[id].path_planner->findPath(constraint_table);
         assert(!agents[id].path.empty() && agents[id].path.back().location == agents[id].path_planner->goal_location);
         if (agents[id].path_planner->num_collisions > 0)
             updateCollidingPairs(neighbor.colliding_pairs, agents[id].id, agents[id].path);
 
         assert(agents[id].path_planner->num_collisions > 0 or
             !updateCollidingPairs(neighbor.colliding_pairs, agents[id].id, agents[id].path));
-        cout << "jsme tu počtvrté" << endl;
         neighbor.sum_of_costs += (int)agents[id].path.size() - 1;
         remaining_agents--;
 

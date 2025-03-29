@@ -121,6 +121,62 @@ int PathTable::getHoldingTime(int location, int earliest_timestep = 0) const
     return rst;
 }
 
+void PathTableWC::debugPrintPathTable() const
+{
+    std::cout << "\n[DEBUG] --- Obsah PathTableWC::table ---\n";
+    for (size_t loc = 0; loc < table.size(); loc++)
+    {
+        // Pokud je table[loc] úplně prázdné, klidně přeskočte kvůli úspoře výpisu:
+        if (table[loc].empty())
+            continue;
+
+        // Můžete vypsat i nějaké souhrnné info:
+        // std::cout << "Pos: " << loc << " -> " << table[loc].size() << " časových slotů\n";
+
+        // Pro každý "časový slot"
+        for (size_t time = 0; time < table[loc].size(); time++)
+        {
+            // table[loc][time] je list<int> agentů
+            if (!table[loc][time].empty())
+            {
+                std::cout << "loc = " << loc
+                          << ", time = " << time
+                          << " -> agents: ";
+                for (int ag : table[loc][time])
+                {
+                    std::cout << ag << " ";
+                }
+                std::cout << "\n";
+            }
+        }
+    }
+    std::cout << "[DEBUG] --- Konec výpisu PathTableWC::table ---\n\n";
+}
+
+void PathTableWC::get_agents(set<int>& conflicting_agents, int loc) const { // MOJE
+    /*
+    if (loc < 0 || loc >= (int)table.size())
+        return;
+    // table[loc] je vector< list<int> > – tj. pro každý časový krok máme seznam agentů
+    for (const auto& time_list : table[loc]) {
+        for (int ag : time_list) {
+            if (ag >= 0)
+                conflicting_agents.insert(ag);
+        }
+    }*/
+    if (loc < 0 || loc >= (int)table.size())
+        return;
+
+    for (size_t t = 0; t < table[loc].size(); t++)
+    {
+        for (int a : table[loc][t])
+        {
+            if (a >= 0)
+                conflicting_agents.insert(a);
+        }
+    }
+}
+
 void PathTableWC::insertPath(int agent_id, const Path& path)
 {
     paths[agent_id] = &path;

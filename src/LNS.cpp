@@ -47,7 +47,7 @@ LNS::LNS(const Instance& instance, double time_limit, const string & init_algo_n
 }
 
 /* getting the submap around one or more agents and identifying agents in these submaps */
-pair<vector<vector<int>>, vector<int>> LNS::getSubmapAndAgents(int agent_id, int submap_size, int agent_location) {
+pair<vector<vector<int>>, vector<int>> LNS::getSubmapAndAgents(int agent_id, int submap_size, int agent_location, int timestep) {
     int map_width = instance.num_of_cols;
     int map_height = instance.num_of_rows;
 
@@ -83,7 +83,8 @@ pair<vector<vector<int>>, vector<int>> LNS::getSubmapAndAgents(int agent_id, int
 
                 if (submap_x >= 0 && submap_x < submap_side && submap_y >= 0 && submap_y < submap_side) {
                     submap[submap_x][submap_y] = global_pos;
-                    path_table.get_agents(conflicting_agents, global_pos); // collect all agents in the submap (at EVERY timestep)
+                    path_table.get_agents(conflicting_agents, global_pos, timestep);
+                    //path_table.get_agents(conflicting_agents, global_pos); // collect all agents in the submap (at EVERY timestep)
                 }
             }
         }
@@ -130,7 +131,7 @@ bool LNS::generateNeighborBySAT() {
     int submap_size = 25;
 
     // int agent_id, int submap_size, int agent_location
-    auto [submap, agents_in_submap] = getSubmapAndAgents(key_agent_id, submap_size, agent_loc);
+    auto [submap, agents_in_submap] = getSubmapAndAgents(key_agent_id, submap_size, agent_loc, problematic_timestep);
 
     std::unordered_set<int> submap_set;
     std::unordered_map<int, pair<int, int>> global_to_local;

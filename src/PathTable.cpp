@@ -68,6 +68,16 @@ void PathTable::getConflictingAgents(int agent_id, set<int>& conflicting_agents,
     // TODO: collect target conflicts as well.
 }
 
+void PathTable::get_agents_at_timestep(set<int>& conflicting_agents, int loc, int timestep) const {
+    if (loc < 0 || loc >= (int)table.size())
+        return;
+    if (timestep < table[loc].size()) {
+        int agent = table[loc][timestep];
+        if (agent != NO_AGENT)
+            conflicting_agents.insert(agent);
+    }
+}
+
 void PathTable::get_agents(set<int>& conflicting_agents, int loc) const
 {
     if (loc < 0)
@@ -119,38 +129,6 @@ int PathTable::getHoldingTime(int location, int earliest_timestep = 0) const
     while (rst > earliest_timestep and table[location][rst - 1] == NO_AGENT)
         rst--;
     return rst;
-}
-
-void PathTableWC::debugPrintPathTable() const
-{
-    std::cout << "\n[DEBUG] --- Obsah PathTableWC::table ---\n";
-    for (size_t loc = 0; loc < table.size(); loc++)
-    {
-        // Pokud je table[loc] úplně prázdné, klidně přeskočte kvůli úspoře výpisu:
-        if (table[loc].empty())
-            continue;
-
-        // Můžete vypsat i nějaké souhrnné info:
-        // std::cout << "Pos: " << loc << " -> " << table[loc].size() << " časových slotů\n";
-
-        // Pro každý "časový slot"
-        for (size_t time = 0; time < table[loc].size(); time++)
-        {
-            // table[loc][time] je list<int> agentů
-            if (!table[loc][time].empty())
-            {
-                std::cout << "loc = " << loc
-                          << ", time = " << time
-                          << " -> agents: ";
-                for (int ag : table[loc][time])
-                {
-                    std::cout << ag << " ";
-                }
-                std::cout << "\n";
-            }
-        }
-    }
-    std::cout << "[DEBUG] --- Konec výpisu PathTableWC::table ---\n\n";
 }
 
 void PathTableWC::get_agents_at_timestep(set<int>& conflicting_agents, int loc, int timestep) const {

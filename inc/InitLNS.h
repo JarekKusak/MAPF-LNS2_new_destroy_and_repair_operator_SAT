@@ -60,5 +60,5 @@ private:
     pair<int,int> findConflictAgent();
     bool generateNeighborBySAT(); // new destroy operator
     bool runSAT(); // new repair operator
-    pair<vector<vector<int>>, vector<int>> getSubmapAndAgents(int agent_id, int submap_size, int agent_location); // helper function for getting sub-map
+    pair<vector<vector<int>>, vector<int>> getSubmapAndAgents(int agent_id, int submap_size, int agent_location, int timestep); // helper function for getting sub-map
 };

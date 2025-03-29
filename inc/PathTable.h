@@ -42,6 +42,7 @@ public:
     void clear();
     void debugPrintPathTable() const; // MOJE IMPLEMENTACE
     void get_agents(set<int>& conflicting_agents, int loc) const; // MOJE IMPLEMENTACE
+    void get_agents_at_timestep(set<int>& conflicting_agents, int loc, int timestep) const; // MOJE IMPLEMENTACE
     explicit PathTableWC(int map_size = 0, int num_of_agents = 0) : table(map_size), goals(map_size, MAX_COST),
         paths(num_of_agents, nullptr) {}
 private:

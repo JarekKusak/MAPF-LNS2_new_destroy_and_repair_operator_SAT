@@ -153,17 +153,18 @@ void PathTableWC::debugPrintPathTable() const
     std::cout << "[DEBUG] --- Konec výpisu PathTableWC::table ---\n\n";
 }
 
-void PathTableWC::get_agents(set<int>& conflicting_agents, int loc) const { // MOJE
-    /*
+void PathTableWC::get_agents_at_timestep(set<int>& conflicting_agents, int loc, int timestep) const {
     if (loc < 0 || loc >= (int)table.size())
         return;
-    // table[loc] je vector< list<int> > – tj. pro každý časový krok máme seznam agentů
-    for (const auto& time_list : table[loc]) {
-        for (int ag : time_list) {
-            if (ag >= 0)
-                conflicting_agents.insert(ag);
+    if (timestep < table[loc].size()) {
+        for (int a : table[loc][timestep]) {
+            if (a >= 0)
+                conflicting_agents.insert(a);
         }
-    }*/
+    }
+}
+
+void PathTableWC::get_agents(set<int>& conflicting_agents, int loc) const { // MOJE
     if (loc < 0 || loc >= (int)table.size())
         return;
 

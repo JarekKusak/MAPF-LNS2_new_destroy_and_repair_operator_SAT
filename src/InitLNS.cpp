@@ -72,7 +72,7 @@ pair<int, int> InitLNS::findConflictAgent() {
 }
 
 // getting the submap around one or more agents and identifying agents in these submaps
-pair<vector<vector<int>>, vector<int>> InitLNS::getSubmapAndAgents(int agent_id, int submap_size, int agent_location) {
+pair<vector<vector<int>>, vector<int>> InitLNS::getSubmapAndAgents(int agent_id, int submap_size, int agent_location, int timestep) {
     int map_width = instance.num_of_cols;
     int map_height = instance.num_of_rows;
 
@@ -108,7 +108,7 @@ pair<vector<vector<int>>, vector<int>> InitLNS::getSubmapAndAgents(int agent_id,
 
                 if (submap_x >= 0 && submap_x < submap_side && submap_y >= 0 && submap_y < submap_side) {
                     submap[submap_x][submap_y] = global_pos;
-                    // TODO: to nefunguje...
+                    //path_table.get_agents_at_timestep(conflicting_agents, global_pos, timestep);
                     path_table.get_agents(conflicting_agents, global_pos);
                 }
             }
@@ -169,7 +169,7 @@ bool InitLNS::generateNeighborBySAT() {
     int submap_size = 9;
 
     // Získání submapy a seznamu agentů
-    auto [submap, agents_in_submap] = getSubmapAndAgents(key_agent_id, submap_size, agent_loc);
+    auto [submap, agents_in_submap] = getSubmapAndAgents(key_agent_id, submap_size, agent_loc, problematic_timestep);
 
     cout << "[DEBUG] Počet agentů v submapě: " << agents_in_submap.size() << endl;
     if (!agents_in_submap.empty()) {

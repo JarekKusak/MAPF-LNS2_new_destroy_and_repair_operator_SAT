@@ -319,7 +319,7 @@ bool InitLNS::runSAT()
             int a = neighbor.agents[i];
             cout << "[DEBUG] Reverting path for agent " << a << " (agent id: " << agents[a].id << ")" << endl;
             // Odstraníme aktuální (neúspěšnou) cestu z path_table
-            path_table.deletePath(agents[a].id);
+            //path_table.deletePath(agents[a].id); // TODO: radši ověřit xd
             // Obnovíme původní cestu uloženou v neighbor.old_paths
             agents[a].path = neighbor.old_paths[i];
             // Znovu vložíme původní cestu do path_table

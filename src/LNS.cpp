@@ -83,7 +83,7 @@ pair<vector<vector<int>>, vector<int>> LNS::getSubmapAndAgents(int agent_id, int
 
                 if (submap_x >= 0 && submap_x < submap_side && submap_y >= 0 && submap_y < submap_side) {
                     submap[submap_x][submap_y] = global_pos;
-                    path_table.get_agents(conflicting_agents, global_pos, timestep);
+                    path_table.get_agents_at_timestep(conflicting_agents, global_pos, timestep);
                     //path_table.get_agents(conflicting_agents, global_pos); // collect all agents in the submap (at EVERY timestep)
                 }
             }
@@ -221,13 +221,6 @@ bool LNS::runSAT()
 
     if (!success) {
         cout << "[WARN] SAT solver failed to find a valid solution." << endl;
-        for (int i = 0; i < (int)neighbor.agents.size(); i++) {
-            int a = neighbor.agents[i];
-            cout << "[DEBUG] Reverting path for agent " << a << " (agent id: " << agents[a].id << ")" << endl;
-            path_table.deletePath(agents[a].id, agents[a].path);
-            agents[a].path = neighbor.old_paths[i];
-            path_table.insertPath(agents[a].id, agents[a].path);
-        }
         // TODO: přidat do seznamu na failed_agents
         return false;
     }
@@ -240,8 +233,11 @@ bool LNS::runSAT()
 
     if (neighbor.sum_of_costs <= neighbor.old_sum_of_costs) {
         // akceptujeme novou cestu
-        for (int ag : agents_to_replan)
-            path_table.insertPath(ag, agents[ag].path);
+        for (int a : agents_to_replan) {
+            path_table.deletePath(agents[a].id, agents[a].path); // TODO: oveřit
+            path_table.insertPath(a, agents[a].path);
+            // TODO: přidat debugy na kontrolu, zda před i po insertu jsou cesty v path_table i agents.path stejné
+        }
         return true;
     } else {
         // revert
@@ -251,14 +247,25 @@ bool LNS::runSAT()
             path_table.deletePath(agents[a].id, agents[a].path);
             agents[a].path = neighbor.old_paths[i];
             path_table.insertPath(agents[a].id, agents[a].path);
+            // TODO: přidat debugy na kontrolu, zda před i po insertu jsou cesty v path_table i agents.path stejné
         }
         neighbor.sum_of_costs = neighbor.old_sum_of_costs;
         return false;
     }
 }
 
+// TODO: odstranit přebytečné debugy, naopak připsat jiné
+// TODO: zkontrolovat manipulaci s path_table a agent.path - nejspíš je potřeba aktualizovat oboje
+
 bool LNS::run()
 {
+    // Otevřeme soubor pro zápis
+    std::ofstream out("log.txt");
+    // Uložíme původní stream buffer, pokud byste chtěli později obnovit std::cout
+    std::streambuf* coutbuf = std::cout.rdbuf();
+    // Přesměrujeme std::cout do souboru
+    std::cout.rdbuf(out.rdbuf());
+
     // only for statistic analysis, and thus is not included in runtime
     sum_of_distances = 0;
     for (const auto & agent : agents)

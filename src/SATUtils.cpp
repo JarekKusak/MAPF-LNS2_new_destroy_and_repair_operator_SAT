@@ -149,7 +149,6 @@ namespace SATUtils {
             int T_sync,
             const std::vector<Agent>& agents) {
 
-        // TODO: co když agent prochází submapou opakovaně? Musíme vybrat ten souvislý úsek lokální cesty, která má v intervalu problematic_timestep
         // pro každého agent vytvoříme sekvenci (sx, sy) lokálních souřadnic
         // pokud agent není v submapě v čase T_sync, vynecháme ho
         // jakmile agent submapu opustí, končíme

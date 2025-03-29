@@ -46,6 +46,10 @@ InitLNS::InitLNS(const Instance& instance, vector<Agent>& agents, double time_li
 *    v reálné implementaci ho lze najít analýzou path_tableWC (např. hasCollisions / getLastCollisionTimestep).
 */
 pair<int, int> InitLNS::findConflictAgent() {
+    cout << "[DEBUG] Tohle jsou naši hříšníci: ";
+    for (auto a : failed_sat_agents)
+        cout << "agent " << a << ", ";
+    cout << endl;
     for (const auto& agent : agents) {
         if (failed_sat_agents.find(agent.id) != failed_sat_agents.end())
             continue;
@@ -104,21 +108,24 @@ pair<vector<vector<int>>, vector<int>> InitLNS::getSubmapAndAgents(int agent_id,
 
                 if (submap_x >= 0 && submap_x < submap_side && submap_y >= 0 && submap_y < submap_side) {
                     submap[submap_x][submap_y] = global_pos;
-
-                    // Vzhledem k tomu, že PathTableWC nemá metodu get_agents,
-                    // projdeme všechny časy (time steps) pro danou buňku (global_pos)
-                    if (global_pos < path_table.table.size()) { // TODO: NEEFEKTIVNÍ
-                        for (const auto& agent_list : path_table.table[global_pos])
-                            for (int ag : agent_list)
-                                conflicting_agents.insert(ag);
-
-                    }
+                    // TODO: to nefunguje...
+                    path_table.get_agents(conflicting_agents, global_pos);
                 }
             }
         }
     }
 
     agents_in_submap.assign(conflicting_agents.begin(), conflicting_agents.end());
+    bool found = false;
+    for (auto a : agents_in_submap) {
+        if (a == agent_id) {
+            found = true;
+            break;
+        }
+    }
+    if (found)
+        cout << "[DEBUG] klíčový agent je mezi agenty v submapě" << endl;
+    else cout << "[WARNING] klíčový agent NENÍ mezi agenty v submapě!" << endl;
     return {submap, agents_in_submap};
 }
 
@@ -130,37 +137,101 @@ bool InitLNS::generateNeighborBySAT() {
     cout << "SAT destroy operator called." << endl;
 
     auto [key_agent_id, problematic_timestep] = findConflictAgent();
+
+    //problematic_timestep += 10; // DOČASNĚ PRO TEST
+
     if (key_agent_id < 0) {
         cout << "[DEBUG] Žádný agent s konflikty nebyl nalezen." << endl;
         return false;
     }
-    else
+    else {
         cout << "[DEBUG] Vybraný agent " << key_agent_id << " má "
              << collision_graph[key_agent_id].size() << " konfliktů." << endl;
+    }
+
+    cout << "[DEBUG] --- Speciální debug pro key_agent_id ---" << endl;
+    cout << "[DEBUG] Collision graph pro agenta key_agent_id: ";
+    for (int conflict : collision_graph[key_agent_id])
+        cout << conflict << " ";
+    cout << endl;
+    cout << "[DEBUG] Agent key_agent_id cesta (global positions): ";
+    for (int t = 0; t < agents[key_agent_id].path.size(); t++) {
+        cout << agents[key_agent_id].path[t].location << " ";
+    }
+    cout << endl;
+    cout << "[DEBUG] Problematický timestep: " << problematic_timestep << endl;
+
+    //std::cout << "[DEBUG] --- Speciální debug pro agenta key_agent_id ---\n";
+    //path_table.debugPrintPathTable();
+
 
     int agent_loc = agents[key_agent_id].path[problematic_timestep].location; // globalID buňky
     int submap_size = 9;
 
-    // Voláme funkci ze SATUtils, která vytvoří submapu a vrátí i seznam agentů v ní
+    // Získání submapy a seznamu agentů
     auto [submap, agents_in_submap] = getSubmapAndAgents(key_agent_id, submap_size, agent_loc);
 
+    cout << "[DEBUG] Počet agentů v submapě: " << agents_in_submap.size() << endl;
+    if (!agents_in_submap.empty()) {
+        cout << "[DEBUG] Seznam agentů v submapě: ";
+        for (int ag : agents_in_submap)
+            cout << ag << " ";
+        cout << endl;
+    }
+    else {
+        cout << "[DEBUG] Upozornění: Submapa je prázdná, žádní agenti nebyli nalezeni v okolí." << endl;
+    }
+
+    // Připravíme data pro SATUtils
     std::unordered_set<int> submap_set;
     std::unordered_map<int, pair<int, int>> global_to_local;
     SATUtils::initializeSubmapData(submap, submap_set, global_to_local);
 
+    // Debug – výpis obsahu submap_set
+    cout << "[DEBUG] Obsah submap_set (globální indexy): ";
+    for (int pos : submap_set)
+        cout << pos << " ";
+    cout << endl;
+
     // Generování 2D reprezentace mapy s překážkami a umístěním agentů
     vector<vector<int>> map = SATUtils::generateMapRepresentation(submap, agents_in_submap, problematic_timestep, instance, agents);
 
-    // Nahraďte lokální volání getAgentsToReplan voláním ze SATUtils (předáme i kolekci agentů)
+    // Debug – výpis 2D mapy (může být omezen, pokud je mapa velká)
+    cout << "[DEBUG] 2D reprezentace mapy:" << endl;
+    for (const auto & row : map) {
+        for (int cell : row) {
+            cout << cell << "\t";
+        }
+        cout << endl;
+    }
+
+    // Debug – před voláním getAgentsToReplan, speciálně pro agenta key_agent_id
+    cout << "[DEBUG] --- Před SATUtils::getAgentsToReplan pro agenta key_agent_id ---" << endl;
+    cout << "[DEBUG] Seznam agentů z getSubmapAndAgents: ";
+    for (int ag : agents_in_submap)
+        cout << ag << " ";
+    cout << endl;
+
+
+    cout << "[DEBUG] Kontrola: Agent " << key_agent_id << " má pozici " << agent_loc
+         << " a T_sync = " << problematic_timestep << ". Submap_set obsahuje: ";
+    for (int pos : submap_set) {
+        cout << pos << " ";
+    }
+    cout << endl;
+
+    // Volání SATUtils::getAgentsToReplan
     vector<int> agents_to_replan = SATUtils::getAgentsToReplan(agents_in_submap, submap_set, problematic_timestep, agents);
     if (agents_to_replan.empty()) {
         cout << "[WARN] No agents to replan in submap." << endl;
+        cout << "[DEBUG] Pro agenta key_agent_id: agents_in_submap je prázdný. Kontrola submap_set a problematic timestep:" << endl;
+        cout << "         T_sync: " << problematic_timestep << ", agent_loc: " << agent_loc << endl;
         return false;
     }
 
     int T_sync = problematic_timestep; // synchronizace dle nejkonfliktnějšího agenta
 
-    // Debug – výpis start/goal pozic
+    // Debug – výpis start/goal pozic pro agenty k přeplánování
     vector<pair<int,int>> start_positions, goal_positions;
     for (int agent : agents_to_replan) {
         int start_global = -1, goal_global = -1;
@@ -216,6 +287,7 @@ bool InitLNS::generateNeighborBySAT() {
     return true;
 }
 
+// TODO: špatně se vybírá konfliktní agent nebo se špatně generuje submapa
 
 // --------------------------------------------------------
 // REPAIR fáze: runSAT() – zavolá findLocalPaths + solveWithSAT,
@@ -242,7 +314,19 @@ bool InitLNS::runSAT()
 
     if (!success) {
         cout << "[WARN] SAT solver failed to find a valid solution." << endl;
+        // Vrátíme původní cesty agentům, aby jejich přeplánování nezmizelo.
+        for (int i = 0; i < (int)neighbor.agents.size(); i++) {
+            int a = neighbor.agents[i];
+            cout << "[DEBUG] Reverting path for agent " << a << " (agent id: " << agents[a].id << ")" << endl;
+            // Odstraníme aktuální (neúspěšnou) cestu z path_table
+            path_table.deletePath(agents[a].id);
+            // Obnovíme původní cestu uloženou v neighbor.old_paths
+            agents[a].path = neighbor.old_paths[i];
+            // Znovu vložíme původní cestu do path_table
+            path_table.insertPath(agents[a].id, agents[a].path);
+        }
         failed_sat_agents.insert(key_agent_id);
+        // Můžete také vymazat key_agent_id z failed_sat_agents nebo jej nepřidávat
         return false;
     }
 
@@ -256,8 +340,19 @@ bool InitLNS::runSAT()
     // porovnáme s původním počtem kolizních párů, uloženým v neighbor.old_colliding_pairs
     if (new_conflicts <= neighbor.old_colliding_pairs.size()) {
         // Akceptujeme nové řešení – aktualizujeme path_table
-        for (int a : agents_to_replan)
+        for (int a : agents_to_replan) {
+            cout << "[DEBUG] tohle je hodnota 'a': " << a << endl;
+            cout << "[DEBUG] tohle je hodnota 'agents[a].id': " << agents[a].id << endl;
+
+            cout << "[DEBUG] we decided to accept the solution -> replanning" << endl;
+            cout << "[DEBUG] before inserting new path into path_table, path_table has agent " << a
+                 << " with path length = " << path_table.getPath(agents[a].id)->size() << endl;
             path_table.insertPath(agents[a].id, agents[a].path);
+            cout << "[DEBUG] after inserting new path into path_table, agents " << agents[a].id
+                 << " path has path length = " << path_table.getPath(agents[a].id)->size() << endl;
+            cout << "[DEBUG] after inserting new path into path_table, agents " << agents[a].id
+                 << " path has path length in agents[a].path = " << agents[a].path.size() << endl;
+        }
         failed_sat_agents.clear();
         return true;
     }
@@ -267,9 +362,21 @@ bool InitLNS::runSAT()
         // Vrátíme staré cesty
         for (int i = 0; i < (int)neighbor.agents.size(); i++) {
             int a = neighbor.agents[i];
+            cout << "[DEBUG] tohle je hodnota 'a': " << a << endl;
+            cout << "[DEBUG] tohle je hodnota 'agents[a].id': " << agents[a].id << endl;
             path_table.deletePath(agents[a].id); // TODO: zkontrolovat
             agents[a].path = neighbor.old_paths[i];
-            path_table.insertPath(agents[a].id);
+            path_table.insertPath(agents[a].id, agents[a].path); // <-- log uvnitř
+            auto storedPath = path_table.getPath(agents[a].id);
+            if (storedPath == nullptr)
+                cout << "[ERROR] after revert, path_table says agent " << a << " is nullptr" << endl;
+            else {
+                cout << "[DEBUG] after revert, path_table has agent " << a
+                     << " with path length = " << storedPath->size() << endl;
+                cout << "[DEBUG] after revert, agents " << agents[a].id
+                        << " path has path length = " << agents[a].path.size() << endl;
+            }
+
         }
         cout << "[INFO] jen pro info, key_agent_id je " << key_agent_id << endl;
         failed_sat_agents.insert(key_agent_id);
@@ -279,6 +386,14 @@ bool InitLNS::runSAT()
 
 bool InitLNS::run()
 {
+    // Otevřeme soubor pro zápis
+    std::ofstream out("log.txt");
+    // Uložíme původní stream buffer, pokud byste chtěli později obnovit std::cout
+    std::streambuf* coutbuf = std::cout.rdbuf();
+    // Přesměrujeme std::cout do souboru
+    std::cout.rdbuf(out.rdbuf());
+
+
     start_time = Time::now();
     bool succ = getInitialSolution();
     runtime = ((fsec)(Time::now() - start_time)).count();
@@ -300,6 +415,7 @@ bool InitLNS::run()
     vector<Path*> paths(agents.size());
     for (auto i = 0; i < agents.size(); i++)
         paths[i] = &agents[i].path;
+
     while (runtime < time_limit and num_of_colliding_pairs > 0)
     {
         assert(instance.validateSolution(paths, sum_of_costs, num_of_colliding_pairs));
@@ -333,8 +449,7 @@ bool InitLNS::run()
                     // uložení starých cest
                     neighbor.old_paths.resize(neighbor.agents.size());
                     neighbor.old_sum_of_costs = 0;
-                    for (int i = 0; i < (int)neighbor.agents.size(); i++)
-                    {
+                    for (int i = 0; i < (int)neighbor.agents.size(); i++) {
                         int a = neighbor.agents[i];
                         neighbor.old_paths[i] = agents[a].path;
                         path_table.deletePath(agents[a].id);
@@ -374,32 +489,32 @@ bool InitLNS::run()
                 }
                 continue;
             }
-        }
 
-        // store the neighbor information
-        neighbor.old_paths.resize(neighbor.agents.size());
-        neighbor.old_sum_of_costs = 0;
-        for (int i = 0; i < (int)neighbor.agents.size(); i++)
-        {
-            int a = neighbor.agents[i];
-            if (replan_algo_name == "PP" || neighbor.agents.size() == 1)
-                neighbor.old_paths[i] = agents[a].path;
-            path_table.deletePath(neighbor.agents[i]);
-            neighbor.old_sum_of_costs += (int) agents[a].path.size() - 1;
-        }
-        if (screen >= 2)
-        {
-            cout << "Neighbors: ";
-            for (auto a : neighbor.agents)
-                cout << a << ", ";
-            cout << endl;
-            cout << "Old colliding pairs (" << neighbor.old_colliding_pairs.size() << "): ";
-            for (const auto & p : neighbor.old_colliding_pairs)
+            // store the neighbor information
+            neighbor.old_paths.resize(neighbor.agents.size());
+            neighbor.old_sum_of_costs = 0;
+            for (int i = 0; i < (int)neighbor.agents.size(); i++)
             {
-                cout << "(" << p.first << "," << p.second << "), ";
+                int a = neighbor.agents[i];
+                if (replan_algo_name == "PP" || neighbor.agents.size() == 1)
+                    neighbor.old_paths[i] = agents[a].path;
+                path_table.deletePath(neighbor.agents[i]);
+                neighbor.old_sum_of_costs += (int) agents[a].path.size() - 1;
             }
-            cout << endl;
+            if (screen >= 2)
+            {
+                cout << "Neighbors: ";
+                for (auto a : neighbor.agents)
+                    cout << a << ", ";
+                cout << endl;
+                cout << "Old colliding pairs (" << neighbor.old_colliding_pairs.size() << "): ";
+                for (const auto & p : neighbor.old_colliding_pairs)
+                {
+                    cout << "(" << p.first << "," << p.second << "), ";
+                }
+                cout << endl;
 
+            }
         }
 
         if (replan_algo_name == "PP" || neighbor.agents.size() == 1)
@@ -426,6 +541,7 @@ bool InitLNS::run()
                 destroy_weights[selected_neighbor] =
                         (1 - decay_factor) * destroy_weights[selected_neighbor];
         }
+
         if (screen >= 2)
             cout << "New colliding pairs = " << neighbor.colliding_pairs.size() << endl;
         if (succ) // update collision graph
@@ -444,6 +560,7 @@ bool InitLNS::run()
             if (screen >= 2)
                 printCollisionGraph();
         }
+
         runtime = ((fsec)(Time::now() - start_time)).count();
         sum_of_costs += neighbor.sum_of_costs - neighbor.old_sum_of_costs;
         if (screen >= 1)
@@ -569,6 +686,7 @@ bool InitLNS::runPBS()
 }
 bool InitLNS::runPP()
 {
+    cout << "[DEBUG] velikost neighbor.agents: " << neighbor.agents.size() << endl;
     auto shuffled_agents = neighbor.agents;
     std::random_shuffle(shuffled_agents.begin(), shuffled_agents.end());
     if (screen >= 2) {
@@ -585,17 +703,32 @@ bool InitLNS::runPP()
     double T = min(time_limit - runtime, replan_time_limit);
     auto time = Time::now();
     ConstraintTable constraint_table(instance.num_of_cols, instance.map_size, nullptr, &path_table);
+    cout << "jsme tu" << endl;
     while (p != shuffled_agents.end() && ((fsec)(Time::now() - time)).count() < T)
     {
+        cout << "jsme tu podruhé" << endl;
+        if (p == shuffled_agents.end()) {
+            cerr << "[ERROR] Iterator p je na konci shuffled_agents. shuffled_agents.size() = "
+                 << shuffled_agents.size() << endl;
+            exit(-1);
+        }
         int id = *p;
-        agents[id].path = agents[id].path_planner->findPath(constraint_table);
+        if (agents[id].path_planner == nullptr) {
+            cerr << "[ERROR] agents[" << id << "].path_planner je nullptr!" << endl;
+            exit(-1); // nebo vhodně ošetřit chybu
+        }
+        agents[id].path = agents[id].path_planner->findPath(constraint_table); // tady to padá...
+        cout << "jsme tu potřetí" << endl;
         assert(!agents[id].path.empty() && agents[id].path.back().location == agents[id].path_planner->goal_location);
         if (agents[id].path_planner->num_collisions > 0)
             updateCollidingPairs(neighbor.colliding_pairs, agents[id].id, agents[id].path);
+
         assert(agents[id].path_planner->num_collisions > 0 or
             !updateCollidingPairs(neighbor.colliding_pairs, agents[id].id, agents[id].path));
+        cout << "jsme tu počtvrté" << endl;
         neighbor.sum_of_costs += (int)agents[id].path.size() - 1;
         remaining_agents--;
+
         if (screen >= 3)
         {
             runtime = ((fsec)(Time::now() - start_time)).count();

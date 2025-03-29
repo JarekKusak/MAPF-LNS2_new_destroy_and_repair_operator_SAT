@@ -125,7 +125,7 @@ bool LNS::generateNeighborBySAT() {
     }
     cout << "[DEBUG] key_agent_id: " << key_agent_id << endl;
     cout << "[DEBUG] key_agent_id délka globální cesty: " << agents[key_agent_id].path.size() << endl;
-    problematic_timestep += 10; // SCHVÁLNĚ DOČASNĚ POSUNUTÉ
+    //problematic_timestep += 10; // SCHVÁLNĚ DOČASNĚ POSUNUTÉ
     int agent_loc = agents[key_agent_id].path[problematic_timestep].location; // globalID of the cell in 1D matrix
     int submap_size = 25;
 
@@ -220,6 +220,14 @@ bool LNS::runSAT()
 
     if (!success) {
         cout << "[WARN] SAT solver failed to find a valid solution." << endl;
+        for (int i = 0; i < (int)neighbor.agents.size(); i++) {
+            int a = neighbor.agents[i];
+            cout << "[DEBUG] Reverting path for agent " << a << " (agent id: " << agents[a].id << ")" << endl;
+            path_table.deletePath(agents[a].id, agents[a].path);
+            agents[a].path = neighbor.old_paths[i];
+            path_table.insertPath(agents[a].id, agents[a].path);
+        }
+        // TODO: přidat do seznamu na failed_agents
         return false;
     }
 
@@ -310,6 +318,16 @@ bool LNS::run()
         cout << "Failed to find an initial solution in "
              << runtime << " seconds after  " << restart_times << " restarts" << endl;
         return false; // terminate because no initial solution is found
+    }
+
+    for (auto a : agents) {
+        if (a.id == 89 || a.id == 328) {
+            cout << "[DEBUG] počáteční cesta agenta " << a.id << ": ";
+            for (auto loc: agents[a.id].path)
+                cout << loc.location << ",";
+
+            cout << endl;
+        }
     }
 
     // TADY SE SPOUŠTÍ FÁZE OPTIMALIZACE

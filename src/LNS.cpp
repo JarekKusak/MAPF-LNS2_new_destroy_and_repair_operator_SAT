@@ -90,6 +90,17 @@ pair<vector<vector<int>>, vector<int>> LNS::getSubmapAndAgents(int agent_id, int
     }
 
     agents_in_submap.assign(conflicting_agents.begin(), conflicting_agents.end());
+    bool found = false;
+    for (auto a : agents_in_submap) {
+        if (a == agent_id) {
+            found = true;
+            break;
+        }
+    }
+    if (found)
+        cout << "[DEBUG] klíčový agent je mezi agenty v submapě" << endl;
+    else cout << "[WARNING] klíčový agent NENÍ mezi agenty v submapě!" << endl;
+
     return {submap, agents_in_submap};
 }
 
@@ -112,7 +123,9 @@ bool LNS::generateNeighborBySAT() {
         cout << "No delayed agent found." << endl;
         return false;
     }
-
+    cout << "[DEBUG] key_agent_id: " << key_agent_id << endl;
+    cout << "[DEBUG] key_agent_id délka globální cesty: " << agents[key_agent_id].path.size() << endl;
+    problematic_timestep += 10; // SCHVÁLNĚ DOČASNĚ POSUNUTÉ
     int agent_loc = agents[key_agent_id].path[problematic_timestep].location; // globalID of the cell in 1D matrix
     int submap_size = 25;
 
@@ -132,7 +145,6 @@ bool LNS::generateNeighborBySAT() {
     }
 
     int T_sync = problematic_timestep; // synchronizace dle nejproblematičtějšího agenta
-
     // Debug výpis – lze ponechat nebo odstranit
     vector<pair<int,int>> start_positions, goal_positions;
     for (int agent : agents_to_replan) {

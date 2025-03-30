@@ -945,6 +945,30 @@ src/ReservationTable.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/lns.dir/build.make CMakeFiles/lns.dir/src/ReservationTable.cpp.s
 .PHONY : src/ReservationTable.cpp.s
 
+src/SATUtils.o: src/SATUtils.cpp.o
+.PHONY : src/SATUtils.o
+
+# target to build an object file
+src/SATUtils.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/lns.dir/build.make CMakeFiles/lns.dir/src/SATUtils.cpp.o
+.PHONY : src/SATUtils.cpp.o
+
+src/SATUtils.i: src/SATUtils.cpp.i
+.PHONY : src/SATUtils.i
+
+# target to preprocess a source file
+src/SATUtils.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/lns.dir/build.make CMakeFiles/lns.dir/src/SATUtils.cpp.i
+.PHONY : src/SATUtils.cpp.i
+
+src/SATUtils.s: src/SATUtils.cpp.s
+.PHONY : src/SATUtils.s
+
+# target to generate assembly for a file
+src/SATUtils.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/lns.dir/build.make CMakeFiles/lns.dir/src/SATUtils.cpp.s
+.PHONY : src/SATUtils.cpp.s
+
 src/SIPP.o: src/SIPP.cpp.o
 .PHONY : src/SIPP.o
 
@@ -1176,6 +1200,9 @@ help:
 	@echo "... src/ReservationTable.o"
 	@echo "... src/ReservationTable.i"
 	@echo "... src/ReservationTable.s"
+	@echo "... src/SATUtils.o"
+	@echo "... src/SATUtils.i"
+	@echo "... src/SATUtils.s"
 	@echo "... src/SIPP.o"
 	@echo "... src/SIPP.i"
 	@echo "... src/SIPP.s"

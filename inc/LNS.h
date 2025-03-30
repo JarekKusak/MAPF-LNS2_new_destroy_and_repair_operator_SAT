@@ -84,25 +84,6 @@ private:
                     set<int>& neighbor, int neighbor_size, int upperbound);
 
     bool generateNeighborBySAT(); // new destroy operator
-    pair<vector<vector<int>>, vector<int>> getSubmapAndAgents(int agent_id, int submap_size, int agent_location); // helper function for getting sub-map
-    vector<int> getAgentsToReplan(const vector<int>& agents_in_submap,
-                                       const unordered_set<int>& submap_set,
-                                       int problematic_timestep);
-    void initializeSubmapData(const vector<vector<int>>& submap,
-                                   unordered_set<int>& submap_set,
-                                   unordered_map<int, pair<int, int>>& global_to_local);
-    vector<vector<int>> generateMapRepresentation(const vector<vector<int>>& submap,
-                                                       const vector<int>& agents_in_submap,
-                                                       int problematic_timestep);
-    bool solveWithSAT(
-            vector<vector<int>>& map,
-            const unordered_map<int, vector<pair<int,int>>>& local_paths,
-            vector<int>& agents_to_replan,
-            const vector<vector<int>>& submap,
-            int T_sync);
-    unordered_map<int, vector<pair<int,int>>> findLocalPaths(const vector<int>& agents_to_replan,
-                                                             const vector<vector<int>>& submap,
-                                                             const unordered_set<int>& submap_set,
-                                                             const unordered_map<int, pair<int,int>>& global_to_local,
-                                                             int T_sync);
+    bool runSAT(); // new repair operator
+    pair<vector<vector<int>>, vector<int>> getSubmapAndAgents(int agent_id, int submap_size, int agent_location, int timestep); // helper function for getting sub-map
 };

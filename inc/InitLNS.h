@@ -1,7 +1,7 @@
 #pragma once
 #include "BasicLNS.h"
 
-enum init_destroy_heuristic { TARGET_BASED, COLLISION_BASED, RANDOM_BASED, INIT_COUNT };
+enum init_destroy_heuristic { TARGET_BASED, COLLISION_BASED, RANDOM_BASED, INIT_COUNT, SAT_BASED };
 
 class InitLNS : public BasicLNS
 {
@@ -54,4 +54,11 @@ private:
             unordered_map<int, set<int>>& sub_graph);
 
     bool validatePathTable() const;
+
+    std::unordered_set<int> failed_sat_agents; // MOJE
+
+    pair<int,int> findConflictAgent();
+    bool generateNeighborBySAT(); // new destroy operator
+    bool runSAT(); // new repair operator
+    pair<vector<vector<int>>, vector<int>> getSubmapAndAgents(int agent_id, int submap_size, int agent_location, int timestep); // helper function for getting sub-map
 };

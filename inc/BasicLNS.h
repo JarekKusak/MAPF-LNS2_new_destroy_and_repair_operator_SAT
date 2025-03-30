@@ -3,6 +3,9 @@
 #include "SpaceTimeAStar.h"
 #include "SIPP.h"
 
+#include <unordered_set>
+#include <unordered_map>
+
 class PathTable; // forward declaration
 
 struct Agent
@@ -50,6 +53,14 @@ struct Neighbor
     set<pair<int, int>> colliding_pairs;  // id1 < id2
     set<pair<int, int>> old_colliding_pairs;  // id1 < id2
     vector<Path> old_paths;
+
+    // NOVÉ atributy pro SAT
+    std::vector<vector<int>> submap;
+    std::unordered_set<int> submap_set;
+    std::unordered_map<int, pair<int, int>> global_to_local;
+    int T_sync = -1;
+    int key_agent_id = -1;
+    std::vector<vector<int>> map;
 };
 
 class BasicLNS

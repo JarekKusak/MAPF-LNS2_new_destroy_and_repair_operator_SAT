@@ -68,6 +68,16 @@ void PathTable::getConflictingAgents(int agent_id, set<int>& conflicting_agents,
     // TODO: collect target conflicts as well.
 }
 
+void PathTable::get_agents_at_timestep(set<int>& conflicting_agents, int loc, int timestep) const {
+    if (loc < 0 || loc >= (int)table.size())
+        return;
+    if (timestep < table[loc].size()) {
+        int agent = table[loc][timestep];
+        if (agent != NO_AGENT)
+            conflicting_agents.insert(agent);
+    }
+}
+
 void PathTable::get_agents(set<int>& conflicting_agents, int loc) const
 {
     if (loc < 0)
@@ -119,6 +129,31 @@ int PathTable::getHoldingTime(int location, int earliest_timestep = 0) const
     while (rst > earliest_timestep and table[location][rst - 1] == NO_AGENT)
         rst--;
     return rst;
+}
+
+void PathTableWC::get_agents_at_timestep(set<int>& conflicting_agents, int loc, int timestep) const {
+    if (loc < 0 || loc >= (int)table.size())
+        return;
+    if (timestep < table[loc].size()) {
+        for (int a : table[loc][timestep]) {
+            if (a >= 0)
+                conflicting_agents.insert(a);
+        }
+    }
+}
+
+void PathTableWC::get_agents(set<int>& conflicting_agents, int loc) const { // MOJE
+    if (loc < 0 || loc >= (int)table.size())
+        return;
+
+    for (size_t t = 0; t < table[loc].size(); t++)
+    {
+        for (int a : table[loc][t])
+        {
+            if (a >= 0)
+                conflicting_agents.insert(a);
+        }
+    }
 }
 
 void PathTableWC::insertPath(int agent_id, const Path& path)

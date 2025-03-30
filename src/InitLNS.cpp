@@ -187,15 +187,6 @@ bool InitLNS::generateNeighborBySAT() {
     // Generování 2D reprezentace mapy s překážkami a umístěním agentů
     vector<vector<int>> map = SATUtils::generateMapRepresentation(submap, agents_in_submap, problematic_timestep, instance, agents);
 
-    // Debug – výpis 2D mapy (může být omezen, pokud je mapa velká)
-    cout << "[DEBUG] 2D reprezentace mapy:" << endl;
-    for (const auto & row : map) {
-        for (int cell : row) {
-            cout << cell << "\t";
-        }
-        cout << endl;
-    }
-
     cout << "[DEBUG] Kontrola: Agent " << key_agent_id << " má pozici " << agent_loc
          << " a T_sync = " << problematic_timestep << endl;
 
@@ -391,8 +382,8 @@ bool InitLNS::run()
         // jinak použijeme ostatní operátory dle strategie (TARGET, COLLISION, RANDOM).
         int r = rand() % 100;
         bool opSuccess = false;
-        if (r < 80) {
-            cout << "[DEBUG] Using SAT operator (destroy+repair SAT) with probability 20%." << endl;
+        if (r < 20) {
+            cout << "[DEBUG] Using SAT operator (destroy+repair SAT) with probability " << r << " %." << endl;
             const int MAX_SAT_ATTEMPTS = 10;
             bool sat_success = false;
             for (int attempt = 0; attempt < MAX_SAT_ATTEMPTS && !sat_success; attempt++) {

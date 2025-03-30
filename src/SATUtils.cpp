@@ -51,7 +51,7 @@ namespace SATUtils {
             for (size_t y = 0; y < submap[0].size(); ++y) {
                 int global_pos = submap[x][y];
                 if (global_pos == -1)
-                    std::cout << ". ";
+                    std::cout << "X ";
                 else if (instance.isObstacle(global_pos)) {
                     std::cout << "X ";
                     map[x][y] = -1;

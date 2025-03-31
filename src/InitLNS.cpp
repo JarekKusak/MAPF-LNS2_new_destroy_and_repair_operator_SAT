@@ -39,6 +39,7 @@ InitLNS::InitLNS(const Instance& instance, vector<Agent>& agents, double time_li
 }
 
 // TODO: pořádně zkontrolovat výstup, to vypadá, že se neaktualizují nové cesty agentů nebo nevím ._.
+// TODO: pro t-2 SAT nevrací správný plán (konkrétně s jinou goal pozicí), ale měl by...
 
 /*
 * findConflictAgent

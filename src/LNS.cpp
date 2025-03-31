@@ -91,17 +91,6 @@ pair<vector<vector<int>>, vector<int>> LNS::getSubmapAndAgents(int agent_id, int
     }
 
     agents_in_submap.assign(conflicting_agents.begin(), conflicting_agents.end());
-    bool found = false;
-    for (auto a : agents_in_submap) {
-        if (a == agent_id) {
-            found = true;
-            break;
-        }
-    }
-    if (found)
-        cout << "[DEBUG] klíčový agent je mezi agenty v submapě" << endl;
-    else cout << "[WARNING] klíčový agent NENÍ mezi agenty v submapě!" << endl;
-
     return {submap, agents_in_submap};
 }
 

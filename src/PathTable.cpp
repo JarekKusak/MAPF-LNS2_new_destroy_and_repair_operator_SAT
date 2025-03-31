@@ -239,6 +239,7 @@ int PathTableWC::getNumOfCollisions(int from, int to, int to_time) const
     }
     return rst;
 }
+
 bool PathTableWC::hasCollisions(int from, int to, int to_time) const
 {
     if (!table.empty())
@@ -264,6 +265,57 @@ bool PathTableWC::hasCollisions(int from, int to, int to_time) const
     }
     return false;
 }
+
+bool PathTableWC::hasCollisions(int from, int to, int to_time, int current_agent_id) const
+{
+    if (!table.empty())
+    {
+        if ((int)table[to].size() > to_time)
+        {
+            for (int other : table[to][to_time])
+            {
+                if (other != -1 && other != current_agent_id) // -1 = NO_AGENT
+                {
+                    cout << "[DEBUG] vertex conflict at time " << to_time
+                         << ", cell " << to << ", agents: ";
+                    for (auto id : table[to][to_time]) cout << id << " ";
+                    cout << endl;
+                    return true;
+                }
+            }
+        }
+        if (from != to && table[to].size() >= to_time && table[from].size() > to_time)
+        {
+            for (auto a1 : table[to][to_time - 1])
+            {
+                for (auto a2: table[from][to_time])
+                {
+                    if (a1 == a2) {
+                        cout << "[DEBUG] edge conflict at time " << to_time
+                             << ", edge (" << from << " → " << to << "), agent(s): ";
+                        cout << "from=";
+                        for (auto a : table[from][to_time]) cout << a << " ";
+                        cout << "to=";
+                        for (auto a : table[to][to_time - 1]) cout << a << " ";
+                        cout << endl;
+                        return true; // edge conflict
+                    }
+                }
+            }
+        }
+    }
+    if (!goals.empty())
+    {
+
+        if (goals[to] < to_time){
+            cout << "[DEBUG] goal conflict..." << endl;
+            return true; // target conflict
+        }
+
+    }
+    return false;
+}
+
 bool PathTableWC::hasEdgeCollisions(int from, int to, int to_time) const
 {
     if (!table.empty() && from != to && table[to].size() >= to_time && table[from].size() > to_time)

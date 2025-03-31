@@ -41,6 +41,7 @@ public:
     // return the agent who reaches its target target_location before timestep earliest_timestep
     int getAgentWithTarget(int target_location, int latest_timestep) const;
     void clear();
+    bool hasCollisions(int from, int to, int to_time, int current_agent_id) const; // MOJE IMPLEMENTACE
     void get_agents(set<int>& conflicting_agents, int loc) const; // MOJE IMPLEMENTACE
     void get_agents_at_timestep(set<int>& conflicting_agents, int loc, int timestep) const; // MOJE IMPLEMENTACE
     explicit PathTableWC(int map_size = 0, int num_of_agents = 0) : table(map_size), goals(map_size, MAX_COST),

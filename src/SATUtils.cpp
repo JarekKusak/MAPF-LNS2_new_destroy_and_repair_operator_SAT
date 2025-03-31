@@ -237,6 +237,13 @@ namespace SATUtils {
                       << "), Goal (" << path.back().first << "," << path.back().second << ")\n";
         }
 
+        cout << "Startovní pozice: ";
+        for (auto s : start_positions)
+            cout << "(" << s.first << ", " << s.second << ")," << endl;
+        cout << "CÍLOVÉ pozice: ";
+        for (auto s : goal_positions)
+            cout << "(" << s.first << ", " << s.second << ")," << endl;
+
         auto inst = std::make_unique<_MAPFSAT_Instance>(map, start_positions, goal_positions);
         auto solver = std::make_unique<_MAPFSAT_DisappearAtGoal>();
         auto log = std::make_unique<_MAPFSAT_Logger>(inst.get(), "disappear_at_goal", 2);
@@ -257,6 +264,7 @@ namespace SATUtils {
 
         vector<vector<int>> plan = solver->GetPlan();
 
+        int i = 0;
         for (auto& path_for_agent : plan) {
             if (path_for_agent.empty()) continue;
             // Smaž opakované indexy na úplném konci (dokud se opakují v cíli):
@@ -290,11 +298,12 @@ namespace SATUtils {
 
             // (1) Zkopírujeme prefix do T_sync
             vector<PathEntry> updated_path(
-                agents[agent_id].path.begin(),
-                agents[agent_id].path.begin() + T_sync
+                    agents[agent_id].path.begin(),
+                    agents[agent_id].path.begin() + T_sync
             );
 
             // (2) Vložíme novou lokální trasu (dekódovanou do glob. ID)
+            vector<PathEntry> new_local_path; // pro uložení nové lokální cesty zvlášť
             for (int t = 0; t < new_local_length; t++)
             {
                 int local_id = plan[a][t];
@@ -314,6 +323,7 @@ namespace SATUtils {
                 cout << "[DEBUG] agent " << agent_id << " t=" << t
                      << " => decoded (sx,sy)=(" << sx << "," << sy
                      << ") => global_id=" << global_id << endl;
+                new_local_path.push_back(PathEntry(global_id));
                 updated_path.push_back(PathEntry(global_id));
             }
 
@@ -339,8 +349,26 @@ namespace SATUtils {
                 }
             }
 
+            // TODO: zkontrolovat, proč nedošlo k poškození lokální návaznosti...
+            // NOVÁ KONTROLA: Zkontrolujeme, zda nová lokální cesta vrací původní cíl
+            if (!new_local_path.empty()) {
+                pair<int, int> new_local_goal = decodeLocalID(plan[a].back(), map);
+                pair<int, int> original_goal = goal_positions[a];
+                if (new_local_goal != original_goal) {
+                    cout << "[ERROR] agent " << agent_id
+                         << " nová lokální cesta končí na ("
+                         << new_local_goal.first << "," << new_local_goal.second
+                         << ") místo původního cíle (" << original_goal.first << ","
+                         << original_goal.second << ").\n";
+                    return false;
+                }
+            } else {
+                cout << "[WARN] agent " << agent_id << " nemá novou lokální cestu.\n";
+            }
+
             cout << "[INFO] Původní délka cesty agenta " << agent_id
                  << " je: " <<  agents[agent_id].path.size() << endl;
+
             // (5) Uložíme hotovou cestu
             agents[agent_id].path = updated_path;
             cout << "[INFO] Cesta pro agenta " << agent_id

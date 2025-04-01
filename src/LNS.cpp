@@ -317,16 +317,6 @@ bool LNS::run()
         return false; // terminate because no initial solution is found
     }
 
-    for (auto a : agents) {
-        if (a.id == 89 || a.id == 328) {
-            cout << "[DEBUG] počáteční cesta agenta " << a.id << ": ";
-            for (auto loc: agents[a.id].path)
-                cout << loc.location << ",";
-
-            cout << endl;
-        }
-    }
-
     // TADY SE SPOUŠTÍ FÁZE OPTIMALIZACE
     while (runtime < time_limit && iteration_stats.size() <= num_of_iterations)
     {
@@ -364,8 +354,10 @@ bool LNS::run()
                     if (!generateNeighborBySAT())
                         continue; // nepodařilo se najít validní neighborhood
                     // Máme neighborhood, teď se pokusíme přeplánovat pomocí SAT
-                    if (runSAT())
+                    if (runSAT()) {
                         sat_success = true; // SAT operátor našel validní řešení
+
+                    }
                 }
                 succ = sat_success;
             } break;

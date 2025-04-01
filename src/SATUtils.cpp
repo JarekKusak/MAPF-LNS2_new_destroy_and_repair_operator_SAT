@@ -206,6 +206,33 @@ namespace SATUtils {
         return local_paths;
     }
 
+    // Přidáme funkci pro "vykreslení" cesty (jednoduchý textový výpis)
+    void printPathDetails(const std::vector<PathEntry>& path, int T_sync, int old_local_length, const std::vector<std::vector<int>>& submap, const std::vector<std::vector<int>>& map) {
+        std::cout << "[DEBUG] Vykreslení cesty:" << std::endl;
+        // Vypiš prefix (cesta před vstupem do submapy)
+        std::cout << "  Prefix (před submapou): ";
+        for (int i = 0; i < T_sync && i < (int)path.size(); i++) {
+            std::cout << path[i].location << " ";
+        }
+        std::cout << std::endl;
+
+        // Vypiš lokální část (v submapě)
+        std::cout << "  Lokální cesta (v submapě): ";
+        for (int i = T_sync; i < T_sync + old_local_length && i < (int)path.size(); i++) {
+            // Dekódujeme lokální pozici podle mapy
+            auto coords = SATUtils::decodeLocalID(path[i].location, map);
+            std::cout << "(" << coords.first << "," << coords.second << ") ";
+        }
+        std::cout << std::endl;
+
+        // Vypiš suffix (po opuštění submapy)
+        std::cout << "  Suffix (po submapě): ";
+        for (size_t i = T_sync + old_local_length; i < path.size(); i++) {
+            std::cout << path[i].location << " ";
+        }
+        std::cout << std::endl;
+    }
+
     bool solveWithSAT(
             std::vector<std::vector<int>>& map,
             const std::unordered_map<int, std::vector<std::pair<int,int>>>& local_paths,
@@ -239,10 +266,12 @@ namespace SATUtils {
 
         cout << "Startovní pozice: ";
         for (auto s : start_positions)
-            cout << "(" << s.first << ", " << s.second << ")," << endl;
+            cout << "(" << s.first << ", " << s.second << "), ";
+        cout << endl;
         cout << "CÍLOVÉ pozice: ";
         for (auto s : goal_positions)
-            cout << "(" << s.first << ", " << s.second << ")," << endl;
+            cout << "(" << s.first << ", " << s.second << "), ";
+        cout << endl;
 
         auto inst = std::make_unique<_MAPFSAT_Instance>(map, start_positions, goal_positions);
         auto solver = std::make_unique<_MAPFSAT_DisappearAtGoal>();
@@ -365,6 +394,20 @@ namespace SATUtils {
             } else {
                 cout << "[WARN] agent " << agent_id << " nemá novou lokální cestu.\n";
             }
+
+            // Vykreslíme celou cestu agenta před přeplánováním, lokální a suffix:
+            cout << "[DEBUG] Kompletní cesta agenta " << agent_id << ":" << endl;
+            cout << "  Původní: ";
+            for (auto& entry : agents[agent_id].path)
+                cout << entry.location << " ";
+            cout << endl;
+            cout << "  Nová:     ";
+            for (auto& entry : updated_path)
+                cout << entry.location << " ";
+            cout << endl;
+
+            // Volitelně – voláme funkci, která vykreslí detailní informace:
+            printPathDetails(updated_path, T_sync, old_local_length, submap, map);
 
             cout << "[INFO] Původní délka cesty agenta " << agent_id
                  << " je: " <<  agents[agent_id].path.size() << endl;

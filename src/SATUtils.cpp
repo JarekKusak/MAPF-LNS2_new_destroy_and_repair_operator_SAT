@@ -206,7 +206,9 @@ namespace SATUtils {
         return local_paths;
     }
 
-    // Přidáme funkci pro "vykreslení" cesty (jednoduchý textový výpis)
+    // TODO: metoda na hezké vykreslování před a po přeplánování
+
+    // funkce pro vypsání cesty (jednoduchý textový výpis)
     void printPathDetails(const std::vector<PathEntry>& path, int T_sync, int old_local_length, const std::vector<std::vector<int>>& submap, const std::vector<std::vector<int>>& map) {
         std::cout << "[DEBUG] Vykreslení cesty:" << std::endl;
         // Vypiš prefix (cesta před vstupem do submapy)
@@ -220,8 +222,8 @@ namespace SATUtils {
         std::cout << "  Lokální cesta (v submapě): ";
         for (int i = T_sync; i < T_sync + old_local_length && i < (int)path.size(); i++) {
             // Dekódujeme lokální pozici podle mapy
-            auto coords = SATUtils::decodeLocalID(path[i].location, map);
-            std::cout << "(" << coords.first << "," << coords.second << ") ";
+            //auto coords = decodeLocalID(path[i].location, map);
+            std::cout << path[i].location << " ";
         }
         std::cout << std::endl;
 
@@ -362,12 +364,11 @@ namespace SATUtils {
             int old_suffix_start = T_sync + old_local_length;
             if (old_suffix_start < (int)agents[agent_id].path.size())
             {
-                for (int t = old_suffix_start; t < (int)agents[agent_id].path.size(); t++) {
+                for (int t = old_suffix_start; t < (int)agents[agent_id].path.size(); t++)
                     updated_path.push_back(PathEntry(agents[agent_id].path[t].location));
-                }
             }
 
-            // (4) Volitelná kontrola navázání prefix->lokální
+            // (4) Volitelná kontrola navázání prefix->lokální start
             if (T_sync > 0 && (size_t)T_sync < updated_path.size()) {
                 int prefix_last = agents[agent_id].path[T_sync].location;
                 int local_first = updated_path[T_sync].location;
@@ -378,8 +379,20 @@ namespace SATUtils {
                 }
             }
 
-            // TODO: zkontrolovat, proč nedošlo k poškození lokální návaznosti...
-            // NOVÁ KONTROLA: Zkontrolujeme, zda nová lokální cesta vrací původní cíl
+            if (T_sync + old_local_length < agents[agent_id].path.size() &&
+                T_sync + new_local_length <= updated_path.size()) {
+                // Lokální cíl nové lokální části je na indexu T_sync + new_local_length - 1
+                int local_goal = updated_path[T_sync + new_local_length - 1].location;
+                // První prvek původního sufixu je na indexu T_sync + old_local_length (tj. kde stará lokální část končila)
+                int suffix_first = agents[agent_id].path[T_sync + old_local_length].location;
+                if (local_goal != suffix_first) {
+                    cout << "[WARN] agent " << agent_id
+                         << " lokální cíl->suffix navaznost se liší: "
+                         << local_goal << " != " << suffix_first << endl;
+                }
+            }
+
+            // zkontrolujeme, zda nová lokální cesta vrací původní cíl
             if (!new_local_path.empty()) {
                 pair<int, int> new_local_goal = decodeLocalID(plan[a].back(), map);
                 pair<int, int> original_goal = goal_positions[a];
@@ -391,9 +404,8 @@ namespace SATUtils {
                          << original_goal.second << ").\n";
                     return false;
                 }
-            } else {
-                cout << "[WARN] agent " << agent_id << " nemá novou lokální cestu.\n";
             }
+            else cout << "[WARN] agent " << agent_id << " nemá novou lokální cestu.\n";
 
             // Vykreslíme celou cestu agenta před přeplánováním, lokální a suffix:
             cout << "[DEBUG] Kompletní cesta agenta " << agent_id << ":" << endl;
@@ -414,6 +426,11 @@ namespace SATUtils {
 
             // (5) Uložíme hotovou cestu
             agents[agent_id].path = updated_path;
+            cout << "(SATUtils.cpp) nová cesta v agents[a].path agenta " << a << ": ";
+            for (auto loc : agents[agent_id].path)
+                cout << loc.location << ", ";
+            cout << endl;
+
             cout << "[INFO] Cesta pro agenta " << agent_id
                  << " aktualizována, výsledná délka: "
                  << updated_path.size() << endl;

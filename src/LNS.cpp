@@ -223,9 +223,18 @@ bool LNS::runSAT()
     if (neighbor.sum_of_costs <= neighbor.old_sum_of_costs) {
         // akceptujeme novou cestu
         for (int a : agents_to_replan) {
-            path_table.deletePath(agents[a].id, agents[a].path); // TODO: oveřit
-            path_table.insertPath(a, agents[a].path);
-            // TODO: přidat debugy na kontrolu, zda před i po insertu jsou cesty v path_table i agents.path stejné
+            //path_table.deletePath(agents[a].id, agents[a].path); // TODO: oveřit
+            path_table.insertPath(agents[a].id, agents[a].path);
+            // TODO: přidat debugy na kontrolu, zda po insertu sedí obsah path_table
+            cout << "(LNS.cpp) Nová cesta v agents[a].path agenta " << a << ": ";
+            for (auto loc : agents[a].path)
+                cout << loc.location << ", ";
+            cout << endl;
+
+            cout << "(LNS.cpp) Nová cesta v PathTable agenta " << a << ": ";
+            for (auto loc : path_table.table[a])
+                cout << loc << ", ";
+            cout << endl;
         }
         return true;
     } else {
@@ -233,10 +242,19 @@ bool LNS::runSAT()
         cout << "[INFO] New SAT solution is worse, reverting." << endl;
         for (int i = 0; i < (int)neighbor.agents.size(); i++) {
             int a = neighbor.agents[i];
-            path_table.deletePath(agents[a].id, agents[a].path);
-            agents[a].path = neighbor.old_paths[i];
+            //path_table.deletePath(agents[a].id, agents[a].path);
+            //agents[a].path = neighbor.old_paths[i];
+            cout << "(LNS.cpp) Stará cesta v agents[a].path agenta " << a << ": ";
+            for (auto loc : agents[a].path)
+                cout << loc.location << ", ";
+            cout << endl;
+
             path_table.insertPath(agents[a].id, agents[a].path);
-            // TODO: přidat debugy na kontrolu, zda před i po insertu jsou cesty v path_table i agents.path stejné
+            cout << "(LNS.cpp) Stará cesta v PathTable agenta " << a << ": ";
+            for (auto loc : path_table.table[a])
+                cout << loc << ", ";
+            cout << endl;
+            // TODO: přidat debugy na kontrolu, zda před i po insertu sedí obsah path_table
         }
         neighbor.sum_of_costs = neighbor.old_sum_of_costs;
         return false;
@@ -244,7 +262,6 @@ bool LNS::runSAT()
 }
 
 // TODO: odstranit přebytečné debugy, naopak připsat jiné
-// TODO: zkontrolovat manipulaci s path_table a agent.path - nejspíš je potřeba aktualizovat oboje
 
 bool LNS::run()
 {
@@ -315,6 +332,15 @@ bool LNS::run()
         cout << "Failed to find an initial solution in "
              << runtime << " seconds after  " << restart_times << " restarts" << endl;
         return false; // terminate because no initial solution is found
+    }
+
+    for (auto a : agents) {
+        if (a.id == 3 || a.id == 89) {
+            cout << "(LNS.cpp) Stará cesta v PathTable agenta " << a.id << ": ";
+            for (auto loc: path_table.table[a.id])
+                cout << loc << ", ";
+            cout << endl;
+        }
     }
 
     // TADY SE SPOUŠTÍ FÁZE OPTIMALIZACE

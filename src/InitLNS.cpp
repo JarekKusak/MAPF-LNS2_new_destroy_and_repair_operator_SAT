@@ -289,6 +289,7 @@ bool InitLNS::runSAT()
             cout << "[DEBUG] Reverting path for agent " << a << " (agent id: " << agents[a].id << ")" << endl;
             // Odstraníme aktuální (neúspěšnou) cestu z path_table
             path_table.deletePath(agents[a].id);
+            // TODO: zkontrolovat, že stará cesta je opravdu stará
             // Obnovíme původní cestu uloženou v neighbor.old_paths
             agents[a].path = neighbor.old_paths[i];
             // Znovu vložíme původní cestu do path_table
@@ -385,7 +386,7 @@ bool InitLNS::run()
         // jinak (není SAT_BASED) použijeme vždy defaultní strategii.
         if (init_destroy_strategy == SAT_BASED) {
             int r = rand() % 100;
-            if (r < 20) {
+            if (r < 100) {
                 cout << "[DEBUG] Using SAT operator (destroy+repair SAT) with probability 20 %." << endl;
                 const int MAX_SAT_ATTEMPTS = 10;
                 bool sat_success = false;
@@ -420,7 +421,7 @@ bool InitLNS::run()
                 // Pokud náhodná volba nespadla do SAT bloku, použijeme defaultní strategii
                 cout << "[DEBUG] Random chance did not select SAT operator (r=" << r << "), defaulting to non-SAT operator." << endl;
                 int strategy = TARGET_BASED; // defaultní strategie – například TARGET_BASED
-                cout << "[DEBUG] Using default neighbor generation strategy: " << strategy << endl;
+                cout << "[DEBUG] Používám výchozí neighbor a repair strategii na řešení konfliktů: " << strategy << endl;
                 switch (strategy)
                 {
                     case TARGET_BASED:

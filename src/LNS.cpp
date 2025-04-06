@@ -1018,74 +1018,82 @@ void LNS::validateSolution() const
     {
         if (a1_.path.empty())
         {
-            cerr << "No solution for agent " << a1_.id << endl;
-            exit(-1);
+            throw ValidationException("No solution for agent " + std::to_string(a1_.id));
         }
         else if (a1_.path_planner->start_location != a1_.path.front().location)
         {
-            cerr << "The path of agent " << a1_.id << " starts from location " << a1_.path.front().location
-                << ", which is different from its start location " << a1_.path_planner->start_location << endl;
-            exit(-1);
+            throw ValidationException("The path of agent " + std::to_string(a1_.id) +
+                                      " starts from location " + std::to_string(a1_.path.front().location) +
+                                      ", which is different from its start location " +
+                                      std::to_string(a1_.path_planner->start_location));
         }
         else if (a1_.path_planner->goal_location != a1_.path.back().location)
         {
-            cerr << "The path of agent " << a1_.id << " ends at location " << a1_.path.back().location
-                 << ", which is different from its goal location " << a1_.path_planner->goal_location << endl;
-            exit(-1);
+            throw ValidationException("The path of agent " + std::to_string(a1_.id) +
+                                      " ends at location " + std::to_string(a1_.path.back().location) +
+                                      ", which is different from its goal location " +
+                                      std::to_string(a1_.path_planner->goal_location));
         }
-        for (int t = 1; t < (int) a1_.path.size(); t++ )
+
+        for (int t = 1; t < (int)a1_.path.size(); t++)
         {
             if (!instance.validMove(a1_.path[t - 1].location, a1_.path[t].location))
             {
-                cerr << "The path of agent " << a1_.id << " jump from "
-                     << a1_.path[t - 1].location << " to " << a1_.path[t].location
-                     << " between timesteps " << t - 1 << " and " << t << endl;
-                exit(-1);
+                throw ValidationException("The path of agent " + std::to_string(a1_.id) +
+                                          " jumps from " + std::to_string(a1_.path[t - 1].location) +
+                                          " to " + std::to_string(a1_.path[t].location) +
+                                          " between timesteps " + std::to_string(t - 1) + " and " + std::to_string(t));
             }
         }
-        sum += (int) a1_.path.size() - 1;
-        for (const auto  & a2_: agents)
+
+        sum += (int)a1_.path.size() - 1;
+
+        for (const auto& a2_ : agents)
         {
             if (a1_.id >= a2_.id || a2_.path.empty())
                 continue;
-            const auto & a1 = a1_.path.size() <= a2_.path.size()? a1_ : a2_;
-            const auto & a2 = a1_.path.size() <= a2_.path.size()? a2_ : a1_;
+
+            const auto& a1 = a1_.path.size() <= a2_.path.size() ? a1_ : a2_;
+            const auto& a2 = a1_.path.size() <= a2_.path.size() ? a2_ : a1_;
             int t = 1;
-            for (; t < (int) a1.path.size(); t++)
+            for (; t < (int)a1.path.size(); t++)
             {
                 if (a1.path[t].location == a2.path[t].location) // vertex conflict
                 {
-                    cerr << "Find a vertex conflict between agents " << a1.id << " and " << a2.id <<
-                            " at location " << a1.path[t].location << " at timestep " << t << endl;
-                    exit(-1);
+                    throw ValidationException("Vertex conflict between agents " +
+                                              std::to_string(a1.id) + " and " + std::to_string(a2.id) +
+                                              " at location " + std::to_string(a1.path[t].location) +
+                                              " at timestep " + std::to_string(t));
                 }
                 else if (a1.path[t].location == a2.path[t - 1].location &&
-                        a1.path[t - 1].location == a2.path[t].location) // edge conflict
+                         a1.path[t - 1].location == a2.path[t].location) // edge conflict
                 {
-                    cerr << "Find an edge conflict between agents " << a1.id << " and " << a2.id <<
-                         " at edge (" << a1.path[t - 1].location << "," << a1.path[t].location <<
-                         ") at timestep " << t << endl;
-                    exit(-1);
+                    throw ValidationException("Edge conflict between agents " +
+                                              std::to_string(a1.id) + " and " + std::to_string(a2.id) +
+                                              " at edge (" + std::to_string(a1.path[t - 1].location) + "," +
+                                              std::to_string(a1.path[t].location) + ") at timestep " +
+                                              std::to_string(t));
                 }
             }
+
             int target = a1.path.back().location;
-            for (; t < (int) a2.path.size(); t++)
+            for (; t < (int)a2.path.size(); t++)
             {
                 if (a2.path[t].location == target)  // target conflict
                 {
-                    cerr << "Find a target conflict where agent " << a2.id << " (of length " << a2.path.size() - 1<<
-                         ") traverses agent " << a1.id << " (of length " << a1.path.size() - 1<<
-                         ")'s target location " << target << " at timestep " << t << endl;
-                    exit(-1);
+                    throw ValidationException("Target conflict: agent " + std::to_string(a2.id) +
+                                              " (len " + std::to_string(a2.path.size() - 1) + ") traverses target of agent " +
+                                              std::to_string(a1.id) + " (len " + std::to_string(a1.path.size() - 1) +
+                                              ") at location " + std::to_string(target) + " at timestep " + std::to_string(t));
                 }
             }
         }
     }
+
     if (sum_of_costs != sum)
     {
-        cerr << "The computed sum of costs " << sum_of_costs <<
-             " is different from the sum of the paths in the solution " << sum << endl;
-        exit(-1);
+        throw ValidationException("Sum of costs mismatch: sum_of_costs = " + std::to_string(sum_of_costs) +
+                                  ", but computed sum = " + std::to_string(sum));
     }
 }
 

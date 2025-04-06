@@ -3,9 +3,6 @@
 #include <queue>
 #include <memory>
 
-#define DEFAULT_DESTROY_STRATEGY INTERSECTION
-#define DEFAULT_REPLAN_ALGO "PP"
-
 #include "../include/MAPF.hpp"
 #include "SATUtils.h"
 
@@ -352,18 +349,47 @@ bool LNS::run()
         return false;
     }
 
+    bool needConflictRepair = false;
+
     while (runtime < time_limit && iteration_stats.size() <= num_of_iterations)
     {
         cout.flush();
-        runtime =((fsec)(Time::now() - start_time)).count();
-        if (screen >= 1) validateSolution();
+        runtime = ((fsec)(Time::now() - start_time)).count();
+
+        // validace řešení – pokud dojde k chybě, chyť výjimku a spusť opravu
+        try {
+            if (screen >= 1) validateSolution();
+            needConflictRepair = false;
+        } catch (const std::exception& e) {
+            cout << "[WARNING] Conflict detected: " << e.what() << endl;
+            needConflictRepair = true;
+        } catch (...) {
+            cout << "[WARNING] Conflict detected: unknown error during validateSolution()." << endl;
+            needConflictRepair = true;
+        }
+
+        if (needConflictRepair && destroy_strategy == SAT && replan_algo_name == "SAT") {
+            cout << "[DEBUG] Switching to conflict repair mode via init_lns." << endl;
+            init_lns = new InitLNS(instance, agents, time_limit - runtime, replan_algo_name, init_destory_name, neighbor_size, screen);
+            succ = init_lns->run();
+            if (succ)
+            {
+                path_table.reset();
+                for (const auto & agent : agents)
+                    path_table.insertPath(agent.id, agent.path);
+                init_lns->clear();
+                sum_of_costs = init_lns->sum_of_costs;
+            }
+            continue;
+        }
+
         if (ALNS) chooseDestroyHeuristicbyALNS();
 
         bool opSuccess = false;
         if (destroy_strategy == SAT && replan_algo_name == "SAT")
         {
             int r = rand() % 100;
-            if (r < 20)
+            if (r < 100)
             {
                 cout << "[DEBUG] Using SAT operator (destroy+repair SAT) with probability 20 %." << endl;
                 const int MAX_SAT_ATTEMPTS = 10;
@@ -390,6 +416,7 @@ bool LNS::run()
 
         if (!opSuccess)
         {
+            int DEFAULT_DESTROY_STRATEGY = INTERSECTION; // NATVRDO
             switch (DEFAULT_DESTROY_STRATEGY)
             {
                 case RANDOMWALK:
@@ -421,6 +448,8 @@ bool LNS::run()
                 path_table.deletePath(a, agents[a].path);
                 neighbor.old_sum_of_costs += agents[a].path.size() - 1;
             }
+
+            std::string DEFAULT_REPLAN_ALGO = "PP"; // NATVRDO
 
             if (DEFAULT_REPLAN_ALGO == "PP") succ = runPP();
             else if (DEFAULT_REPLAN_ALGO == "CBS") succ = runCBS();

@@ -453,7 +453,7 @@ bool InitLNS::run()
         } else {
             // Pokud nebyla zvolena SAT strategie, vždy použijeme defaultní strategii.
             int strategy = init_destroy_strategy; // očekáváme, že není SAT_BASED
-            cout << "[DEBUG] Using default neighbor generation strategy: " << strategy << endl;
+            cout << "[DEBUG] Using default neighbor generation strategy for conflicts: " << strategy << endl;
             switch (strategy)
             {
                 case TARGET_BASED:

@@ -1,7 +1,6 @@
 [DEBUG] Using default neighbor generation strategy: 0
-	InitLNS(SAT): runtime = 0.0200062, iterations = 2, colliding pairs = 0, initial colliding pairs = 1, solution cost = 4286, initial solution cost = 4461, failed iterations = 0
-(LNS.cpp) Stará cesta v PathTable agenta 3: -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 117, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 139, 
-(LNS.cpp) Stará cesta v PathTable agenta 89: -1, -1, -1, -1, -1, -1, -1, 34, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 31, 
+	InitLNS(SAT): runtime = 0.0226142, iterations = 2, colliding pairs = 0, initial colliding pairs = 1, solution cost = 4286, initial solution cost = 4461, failed iterations = 0
+[DEBUG] Using SAT operator (destroy+repair SAT) with probability 20 %.
 ====================
 SAT destroy operator called.
 [DEBUG] key_agent_id: 0
@@ -409,6 +408,7 @@ Paths successfully updated.
   time=23, loc=982, table=89
   time=24, loc=1014, table=89
   time=25, loc=1015, table=89
+[DEBUG] Using SAT operator (destroy+repair SAT) with probability 20 %.
 ====================
 SAT destroy operator called.
 [DEBUG] key_agent_id: 4
@@ -1099,4 +1099,4 @@ Paths successfully updated.
   time=22, loc=538, table=142
   time=23, loc=539, table=142
   time=24, loc=507, table=142
-LNS(PP;SAT): runtime = 0.0822601, iterations = 3, solution cost = 4250, initial solution cost = 4286, failed iterations = 1
+LNS(PP;SAT): runtime = 0.0305115, iterations = 3, solution cost = 4250, initial solution cost = 4286, failed iterations = 1

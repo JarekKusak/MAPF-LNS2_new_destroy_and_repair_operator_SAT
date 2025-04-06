@@ -3,6 +3,9 @@
 #include <queue>
 #include <memory>
 
+#define DEFAULT_DESTROY_STRATEGY INTERSECTION
+#define DEFAULT_REPLAN_ALGO "PP"
+
 #include "../include/MAPF.hpp"
 #include "SATUtils.h"
 
@@ -266,7 +269,7 @@ bool LNS::runSAT()
         for (int i = 0; i < (int)neighbor.agents.size(); i++) {
             int a = neighbor.agents[i];
             //path_table.deletePath(agents[a].id, agents[a].path);
-            agents[a].path = neighbor.old_paths[i]; // TODO: padá...
+            agents[a].path = neighbor.old_paths[i];
             cout << "(LNS.cpp) Stará cesta v agents[a].path agenta " << a << ": ";
             for (auto loc : agents[a].path)
                 cout << loc.location << ", ";
@@ -293,51 +296,42 @@ bool LNS::runSAT()
     }
 }
 
+// Upravená metoda run() v LNS.cpp
 bool LNS::run()
 {
     // Otevřeme soubor pro zápis
     std::ofstream out("log.txt");
-    // Uložíme původní stream buffer, pokud byste chtěli později obnovit std::cout
     std::streambuf* coutbuf = std::cout.rdbuf();
-    // Přesměrujeme std::cout do souboru
     std::cout.rdbuf(out.rdbuf());
 
-    // only for statistic analysis, and thus is not included in runtime
     sum_of_distances = 0;
     for (const auto & agent : agents)
-    {
         sum_of_distances += agent.path_planner->my_heuristic[agent.path_planner->start_location];
-    }
 
     initial_solution_runtime = 0;
     start_time = Time::now();
     bool succ = getInitialSolution();
     initial_solution_runtime = ((fsec)(Time::now() - start_time)).count();
 
-    // TODO: budeme chtít při nalezení konfliktu při fázi optimalizace přepnout do fáze napravování konfliktů
-
-    // TADY SE SPOUŠTÍ FÁZE NA HLEDÁNÍ KONFLIKTŮ (INIT)
     if (!succ && initial_solution_runtime < time_limit)
     {
         if (use_init_lns)
         {
             init_lns = new InitLNS(instance, agents, time_limit - initial_solution_runtime,
-                    replan_algo_name,init_destory_name, neighbor_size, screen);
+                                   replan_algo_name, init_destory_name, neighbor_size, screen);
             succ = init_lns->run();
-            if (succ) // accept new paths
+            if (succ)
             {
                 path_table.reset();
                 for (const auto & agent : agents)
-                {
                     path_table.insertPath(agent.id, agent.path);
-                }
                 init_lns->clear();
                 initial_sum_of_costs = init_lns->sum_of_costs;
                 sum_of_costs = initial_sum_of_costs;
             }
             initial_solution_runtime = ((fsec)(Time::now() - start_time)).count();
         }
-        else // use random restart
+        else
         {
             while (!succ && initial_solution_runtime < time_limit)
             {
@@ -351,147 +345,119 @@ bool LNS::run()
     iteration_stats.emplace_back(neighbor.agents.size(),
                                  initial_sum_of_costs, initial_solution_runtime, init_algo_name);
     runtime = initial_solution_runtime;
-    if (succ)
-    {
-        if (screen >= 1)
-            cout << "Initial solution cost = " << initial_sum_of_costs << ", "
-                 << "runtime = " << initial_solution_runtime << endl;
-    }
-    else
+    if (!succ)
     {
         cout << "Failed to find an initial solution in "
              << runtime << " seconds after  " << restart_times << " restarts" << endl;
-        return false; // terminate because no initial solution is found
+        return false;
     }
 
-    for (auto a : agents) {
-        if (a.id == 3 || a.id == 89) {
-            cout << "(LNS.cpp) Stará cesta v PathTable agenta " << a.id << ": ";
-            for (auto loc: path_table.table[a.id])
-                cout << loc << ", ";
-            cout << endl;
-        }
-    }
-
-    // TADY SE SPOUŠTÍ FÁZE OPTIMALIZACE
     while (runtime < time_limit && iteration_stats.size() <= num_of_iterations)
     {
         cout.flush();
         runtime =((fsec)(Time::now() - start_time)).count();
-        if(screen >= 1)
-            validateSolution(); // vrací exit(-1) při nalezení konfliktu -> problém
-        if (ALNS) // TODO: můžeme hodit kostkou na destroy operátor
-            chooseDestroyHeuristicbyALNS();
+        if (screen >= 1) validateSolution();
+        if (ALNS) chooseDestroyHeuristicbyALNS();
 
-        switch (destroy_strategy)
+        bool opSuccess = false;
+        if (destroy_strategy == SAT && replan_algo_name == "SAT")
         {
-            case RANDOMWALK:
-                succ = generateNeighborByRandomWalk();
-                break;
-            case INTERSECTION:
-                succ = generateNeighborByIntersection();
-                break;
-            case RANDOMAGENTS:
-                neighbor.agents.resize(agents.size());
-                for (int i = 0; i < (int)agents.size(); i++)
-                    neighbor.agents[i] = i;
-                if (neighbor.agents.size() > neighbor_size)
-                {
-                    std::random_shuffle(neighbor.agents.begin(), neighbor.agents.end());
-                    neighbor.agents.resize(neighbor_size);
-                }
-                succ = true;
-                break;
-            case SAT: { // destroy i repair dohromady
-                // Jedna iterace => až MAX_SAT_ATTEMPTS pro SAT
+            int r = rand() % 100;
+            if (r < 100)
+            {
+                cout << "[DEBUG] Using SAT operator (destroy+repair SAT) with probability 20 %." << endl;
                 const int MAX_SAT_ATTEMPTS = 10;
-                bool sat_success = false;
-                for (int attempt = 0; attempt < MAX_SAT_ATTEMPTS && !sat_success; attempt++) {
-                    if (!generateNeighborBySAT())
-                        continue; // nepodařilo se najít validní neighborhood
-                    // store the neighbor information
+                for (int attempt = 0; attempt < MAX_SAT_ATTEMPTS && !opSuccess; attempt++)
+                {
+                    if (!generateNeighborBySAT()) continue;
                     neighbor.old_paths.resize(neighbor.agents.size());
                     neighbor.old_sum_of_costs = 0;
-                    for (int i = 0; i < (int) neighbor.agents.size(); i++) {
-                        neighbor.old_paths[i] = agents[neighbor.agents[i]].path;
-                        path_table.deletePath(neighbor.agents[i], agents[neighbor.agents[i]].path);
-                        neighbor.old_sum_of_costs += agents[neighbor.agents[i]].path.size() - 1;
+                    for (int i = 0; i < (int)neighbor.agents.size(); i++)
+                    {
+                        int a = neighbor.agents[i];
+                        neighbor.old_paths[i] = agents[a].path;
+                        path_table.deletePath(a, agents[a].path);
+                        neighbor.old_sum_of_costs += agents[a].path.size() - 1;
                     }
-                    // Máme neighborhood, teď se pokusíme přeplánovat pomocí SAT
-                    if (runSAT())
-                        sat_success = true; // SAT operátor našel validní řešení
+                    opSuccess = runSAT();
                 }
-                succ = sat_success;
-            } break;
-            default:
-                cerr << "Wrong neighbor generation strategy" << endl;
-                exit(-1);
-        }
-
-        if(!succ)
-            continue;
-
-        if (replan_algo_name != "SAT") {
-            // store the neighbor information
-            neighbor.old_paths.resize(neighbor.agents.size());
-            neighbor.old_sum_of_costs = 0;
-            for (int i = 0; i < (int) neighbor.agents.size(); i++) {
-                if (replan_algo_name == "PP")
-                    neighbor.old_paths[i] = agents[neighbor.agents[i]].path;
-                path_table.deletePath(neighbor.agents[i], agents[neighbor.agents[i]].path);
-                neighbor.old_sum_of_costs += agents[neighbor.agents[i]].path.size() - 1;
+            }
+            else
+            {
+                cout << "[DEBUG] Random chance did not select SAT operator (r=" << r << "), using default strategy." << endl;
             }
         }
 
-        if (replan_algo_name == "EECBS")
-            succ = runEECBS();
-        else if (replan_algo_name == "CBS")
-            succ = runCBS();
-        else if (replan_algo_name == "PP")
-            succ = runPP();
-        else if (replan_algo_name == "SAT") { /* nic */ }
-        else
+        if (!opSuccess)
         {
-            cerr << "Wrong replanning strategy" << endl;
-            exit(-1);
+            switch (DEFAULT_DESTROY_STRATEGY)
+            {
+                case RANDOMWALK:
+                    opSuccess = generateNeighborByRandomWalk(); break;
+                case INTERSECTION:
+                    opSuccess = generateNeighborByIntersection(); break;
+                case RANDOMAGENTS:
+                    neighbor.agents.resize(agents.size());
+                    for (int i = 0; i < (int)agents.size(); i++) neighbor.agents[i] = i;
+                    if (neighbor.agents.size() > neighbor_size)
+                    {
+                        std::random_shuffle(neighbor.agents.begin(), neighbor.agents.end());
+                        neighbor.agents.resize(neighbor_size);
+                    }
+                    opSuccess = true; break;
+                default:
+                    cerr << "Wrong neighbor generation strategy" << endl;
+                    exit(-1);
+            }
+
+            if (!opSuccess) continue;
+
+            neighbor.old_paths.resize(neighbor.agents.size());
+            neighbor.old_sum_of_costs = 0;
+            for (int i = 0; i < (int)neighbor.agents.size(); i++)
+            {
+                int a = neighbor.agents[i];
+                neighbor.old_paths[i] = agents[a].path;
+                path_table.deletePath(a, agents[a].path);
+                neighbor.old_sum_of_costs += agents[a].path.size() - 1;
+            }
+
+            if (DEFAULT_REPLAN_ALGO == "PP") succ = runPP();
+            else if (DEFAULT_REPLAN_ALGO == "CBS") succ = runCBS();
+            else if (DEFAULT_REPLAN_ALGO == "EECBS") succ = runEECBS();
+            else { cerr << "Wrong replanning strategy" << endl; exit(-1); }
         }
 
-        if (ALNS) // update destroy heuristics
+        if (!succ) continue;
+
+        if (ALNS)
         {
-            if (neighbor.old_sum_of_costs > neighbor.sum_of_costs )
-                destroy_weights[selected_neighbor] =
-                        reaction_factor * (neighbor.old_sum_of_costs - neighbor.sum_of_costs) / neighbor.agents.size()
-                        + (1 - reaction_factor) * destroy_weights[selected_neighbor];
+            if (neighbor.old_sum_of_costs > neighbor.sum_of_costs)
+                destroy_weights[selected_neighbor] = reaction_factor * (neighbor.old_sum_of_costs - neighbor.sum_of_costs) / neighbor.agents.size()
+                                                     + (1 - reaction_factor) * destroy_weights[selected_neighbor];
             else
-                destroy_weights[selected_neighbor] =
-                        (1 - decay_factor) * destroy_weights[selected_neighbor];
+                destroy_weights[selected_neighbor] = (1 - decay_factor) * destroy_weights[selected_neighbor];
         }
+
         runtime = ((fsec)(Time::now() - start_time)).count();
         sum_of_costs += neighbor.sum_of_costs - neighbor.old_sum_of_costs;
         if (screen >= 1)
-            cout << "Iteration " << iteration_stats.size() << ", "
-                 << "group size = " << neighbor.agents.size() << ", "
-                 << "solution cost = " << sum_of_costs << ", "
-                 << "remaining time = " << time_limit - runtime << endl;
+            cout << "Iteration " << iteration_stats.size() << ", group size = " << neighbor.agents.size()
+                 << ", solution cost = " << sum_of_costs << ", remaining time = " << time_limit - runtime << endl;
         iteration_stats.emplace_back(neighbor.agents.size(), sum_of_costs, runtime, replan_algo_name);
     }
 
-
-    average_group_size = - iteration_stats.front().num_of_agents;
+    average_group_size = -iteration_stats.front().num_of_agents;
     for (const auto& data : iteration_stats)
         average_group_size += data.num_of_agents;
     if (average_group_size > 0)
         average_group_size /= (double)(iteration_stats.size() - 1);
 
-    cout << getSolverName() << ": "
-         << "runtime = " << runtime << ", "
-         << "iterations = " << iteration_stats.size() << ", "
-         << "solution cost = " << sum_of_costs << ", "
-         << "initial solution cost = " << initial_sum_of_costs << ", "
-         << "failed iterations = " << num_of_failures << endl;
+    cout << getSolverName() << ": runtime = " << runtime << ", iterations = " << iteration_stats.size()
+         << ", solution cost = " << sum_of_costs << ", initial solution cost = " << initial_sum_of_costs
+         << ", failed iterations = " << num_of_failures << endl;
     return true;
 }
-
 
 bool LNS::getInitialSolution()
 {

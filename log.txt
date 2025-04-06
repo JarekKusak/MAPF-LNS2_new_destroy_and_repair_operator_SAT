@@ -1,5 +1,6 @@
 [DEBUG] Using default neighbor generation strategy for conflicts: 0
-	InitLNS(SAT): runtime = 0.0172068, iterations = 2, colliding pairs = 0, initial colliding pairs = 1, solution cost = 4286, initial solution cost = 4461, failed iterations = 0
+	InitLNS(SAT): runtime = 0.0275333, iterations = 2, colliding pairs = 0, initial colliding pairs = 1, solution cost = 4286, initial solution cost = 4461, failed iterations = 0
+jsem tady
 [DEBUG] Using SAT operator (destroy+repair SAT) with probability 20 %.
 ====================
 SAT destroy operator called.
@@ -408,6 +409,7 @@ Paths successfully updated.
   time=23, loc=982, table=89
   time=24, loc=1014, table=89
   time=25, loc=1015, table=89
+jsem tady
 [DEBUG] Using SAT operator (destroy+repair SAT) with probability 20 %.
 ====================
 SAT destroy operator called.
@@ -1099,4 +1101,7 @@ Paths successfully updated.
   time=22, loc=538, table=142
   time=23, loc=539, table=142
   time=24, loc=507, table=142
-LNS(PP;SAT): runtime = 0.132955, iterations = 3, solution cost = 4250, initial solution cost = 4286, failed iterations = 1
+LNS(PP;SAT): runtime = 0.0914032, iterations = 3, solution cost = 4250, initial solution cost = 4286, failed iterations = 1
+[WARNING] Final solution is invalid: Vertex conflict between agents 2 and 94 at location 506 at timestep 18
+[DEBUG] Attempting final repair via init_lns...
+	InitLNS(SAT): runtime = 0.000399083, iterations = 1, colliding pairs = 0, initial colliding pairs = 0, solution cost = 4425, initial solution cost = 4425, failed iterations = 0

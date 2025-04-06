@@ -10,7 +10,7 @@ public:
     int num_of_colliding_pairs = 0;
 
     InitLNS(const Instance& instance, vector<Agent>& agents, double time_limit,
-            const string & replan_algo_name, const string & init_destory_name, int neighbor_size, int screen);
+            const string & replan_algo_name, const string & init_destory_name, int neighbor_size, int screen, bool skip_initial_solution=false);
 
     bool getInitialSolution();
     bool run();
@@ -62,4 +62,6 @@ private:
     bool runSAT(); // new repair operator
     pair<vector<vector<int>>, vector<int>> getSubmapAndAgents(int agent_id, int submap_size, int agent_location, int timestep); // helper function for getting sub-map
     void prepareOldNeighborInfo();
+
+    bool skip_initial_solution;
 };

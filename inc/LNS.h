@@ -17,6 +17,9 @@ enum destroy_heuristic { RANDOMAGENTS, RANDOMWALK, INTERSECTION, DESTORY_COUNT, 
 // increase it if no progress is made for a while
 // decrease it if replanning fails to find any solutions for several times
 
+#include <stdexcept>
+#include <string>
+
 class ValidationException : public std::runtime_error {
 public:
     explicit ValidationException(const std::string& msg) : std::runtime_error(msg) {}

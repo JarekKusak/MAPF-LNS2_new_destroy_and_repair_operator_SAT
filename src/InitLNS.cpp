@@ -8,7 +8,7 @@
 #include "SATUtils.h"
 
 InitLNS::InitLNS(const Instance& instance, vector<Agent>& agents, double time_limit,
-         const string & replan_algo_name, const string & init_destory_name, int neighbor_size, int screen) :
+         const string & replan_algo_name, const string & init_destory_name, int neighbor_size, int screen, bool skip_initial_solution) :
          BasicLNS(instance, time_limit, neighbor_size, screen), agents(agents), replan_algo_name(replan_algo_name),
          path_table(instance.map_size, agents.size()), collision_graph(agents.size()), goal_table(instance.map_size, -1) {
      replan_time_limit = time_limit;
@@ -352,7 +352,9 @@ bool InitLNS::runSAT()
 bool InitLNS::run()
 {
     start_time = Time::now();
-    bool succ = getInitialSolution();
+    bool succ = false;
+    if (!skip_initial_solution)
+        succ = getInitialSolution();
     runtime = ((fsec)(Time::now() - start_time)).count();
     iteration_stats.emplace_back(neighbor.agents.size(), sum_of_costs, runtime, "PP", 0, num_of_colliding_pairs);
     if (screen >= 3)

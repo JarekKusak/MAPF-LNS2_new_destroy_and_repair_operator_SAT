@@ -223,6 +223,7 @@ bool LNS::runSAT()
     if (neighbor.sum_of_costs <= neighbor.old_sum_of_costs) {
         // akceptujeme novou cestu
         for (int a : agents_to_replan) {
+            /*
             cout << "[DEBUG] Kontrola STARÉ path_table pro agenta " << a << ":\n";
             for (int t = 0; t < (int) agents[a].path.size(); t++)
             {
@@ -236,7 +237,7 @@ bool LNS::runSAT()
                     else
                         cout << "  time=" << t << ", loc=" << loc << " => out of range\n";
                 }
-            }
+            }*/
             //path_table.deletePath(agents[a].id, agents[a].path);
             path_table.insertPath(agents[a].id, agents[a].path);
             cout << "(LNS.cpp) Nová cesta v agents[a].path agenta " << a << ": ";
@@ -244,20 +245,21 @@ bool LNS::runSAT()
                 cout << loc.location << ", ";
             cout << endl;
 
+            /*
+            // TODO: přidat kontrolu na všechny agenty v buňce
             cout << "[DEBUG] Kontrola NOVÉ path_table pro agenta " << a << ":\n";
             for (int t = 0; t < (int) agents[a].path.size(); t++)
             {
                 int loc = agents[a].path[t].location;
                 if (loc >= 0 && loc < (int) path_table.table.size())
                 {
-                    // zkontrolovat table[loc].size() > t
                     if ((int) path_table.table[loc].size() > t)
                         cout << "  time=" << t << ", loc=" << loc
                              << ", table=" << path_table.table[loc][t] << endl;
                     else
                         cout << "  time=" << t << ", loc=" << loc << " => out of range\n";
                 }
-            }
+            }*/
         }
         return true;
     } else {
@@ -351,6 +353,7 @@ bool LNS::run()
 
     bool needConflictRepair = false;
 
+    // optimalizace
     while (runtime < time_limit && iteration_stats.size() <= num_of_iterations)
     {
         cout.flush();

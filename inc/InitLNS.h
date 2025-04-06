@@ -10,10 +10,10 @@ public:
     int num_of_colliding_pairs = 0;
 
     InitLNS(const Instance& instance, vector<Agent>& agents, double time_limit,
-            const string & replan_algo_name, const string & init_destory_name, int neighbor_size, int screen, bool skip_initial_solution=false);
+            const string & replan_algo_name, const string & init_destory_name, int neighbor_size, int screen);
 
     bool getInitialSolution();
-    bool run();
+    bool run(bool skip_initial_solution);
     void writeIterStatsToFile(const string & file_name) const;
     void writeResultToFile(const string & file_name, int sum_of_distances, double preprocessing_time) const;
     string getSolverName() const override { return "InitLNS(" + replan_algo_name + ")"; }
@@ -62,6 +62,4 @@ private:
     bool runSAT(); // new repair operator
     pair<vector<vector<int>>, vector<int>> getSubmapAndAgents(int agent_id, int submap_size, int agent_location, int timestep); // helper function for getting sub-map
     void prepareOldNeighborInfo();
-
-    bool skip_initial_solution;
 };

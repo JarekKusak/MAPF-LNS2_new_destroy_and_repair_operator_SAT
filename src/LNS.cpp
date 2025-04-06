@@ -316,7 +316,7 @@ bool LNS::run()
         {
             init_lns = new InitLNS(instance, agents, time_limit - initial_solution_runtime,
                                    replan_algo_name, init_destory_name, neighbor_size, screen);
-            succ = init_lns->run();
+            succ = init_lns->run(false);
             if (succ)
             {
                 path_table.reset();
@@ -375,8 +375,8 @@ bool LNS::run()
 
         if (needConflictRepair && destroy_strategy == SAT && replan_algo_name == "SAT") {
             cout << "[DEBUG] Switching to conflict repair mode via init_lns." << endl;
-            init_lns = new InitLNS(instance, agents, time_limit - runtime, replan_algo_name, init_destory_name, neighbor_size, screen, true);
-            succ = init_lns->run();
+            init_lns = new InitLNS(instance, agents, time_limit - runtime, replan_algo_name, init_destory_name, neighbor_size, screen);
+            succ = init_lns->run(true);
             if (succ)
             {
                 path_table.reset();
@@ -500,9 +500,9 @@ bool LNS::run()
         cout << "[WARNING] Final solution is invalid: " << e.what() << endl;
         if (destroy_strategy == SAT && replan_algo_name == "SAT") {
             cout << "[DEBUG] Attempting final repair via init_lns..." << endl;
-            delete init_lns;
-            init_lns = new InitLNS(instance, agents, time_limit - runtime, replan_algo_name, init_destory_name, neighbor_size, screen, true);
-            bool fixed = init_lns->run();
+            //delete init_lns;
+            init_lns = new InitLNS(instance, agents, time_limit - runtime, replan_algo_name, init_destory_name, neighbor_size, screen);
+            bool fixed = init_lns->run(true);
             if (fixed) {
                 path_table.reset();
                 for (const auto& agent : agents)

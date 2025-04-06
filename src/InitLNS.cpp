@@ -8,7 +8,7 @@
 #include "SATUtils.h"
 
 InitLNS::InitLNS(const Instance& instance, vector<Agent>& agents, double time_limit,
-         const string & replan_algo_name, const string & init_destory_name, int neighbor_size, int screen, bool skip_initial_solution) :
+         const string & replan_algo_name, const string & init_destory_name, int neighbor_size, int screen) :
          BasicLNS(instance, time_limit, neighbor_size, screen), agents(agents), replan_algo_name(replan_algo_name),
          path_table(instance.map_size, agents.size()), collision_graph(agents.size()), goal_table(instance.map_size, -1) {
      replan_time_limit = time_limit;
@@ -61,19 +61,6 @@ pair<int, int> InitLNS::findConflictAgent() {
         const auto& path = agent.path;
         if (path.empty())
             continue;
-
-        // ======== DEBUG ========
-        if (agent.id == 28 || agent.id == 42) {
-            cout << "[DEBUG] --- Agent " << agent.id << " ---" << endl;
-            for (int t = 1; t < (int)path.size(); t++) {
-                int from = path[t - 1].location;
-                int to = path[t].location;
-                bool has = path_table.hasCollisions(from, to, t, agent.id);
-                cout << "t=" << t << " | from=" << from << " → to=" << to
-                     << " | hasCollision=" << (has ? "YES" : "no") << endl;
-            }
-        }
-        // ======== DEBUG ========
 
         for (int t = 1; t < (int)path.size(); t++) { // t=1 kvůli edge konfliktům
             int from = path[t - 1].location;
@@ -349,12 +336,15 @@ bool InitLNS::runSAT()
     }
 }
 
-bool InitLNS::run()
+bool InitLNS::run(bool skip_initial_solution)
 {
     start_time = Time::now();
     bool succ = false;
-    if (!skip_initial_solution)
+    cout << "[DEBUG] hodnota skip_initial_solution " << skip_initial_solution << endl;
+    if (!skip_initial_solution) {
         succ = getInitialSolution();
+        cout << "jsme tu" << endl;
+    }
     runtime = ((fsec)(Time::now() - start_time)).count();
     iteration_stats.emplace_back(neighbor.agents.size(), sum_of_costs, runtime, "PP", 0, num_of_colliding_pairs);
     if (screen >= 3)

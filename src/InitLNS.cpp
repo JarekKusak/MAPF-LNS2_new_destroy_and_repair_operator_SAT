@@ -150,10 +150,8 @@ bool InitLNS::generateNeighborBySAT() {
         cout << "[DEBUG] Žádný agent s konflikty nebyl nalezen." << endl;
         return false;
     }
-    else {
-        cout << "[DEBUG] Vybraný agent " << key_agent_id << " má "
+    else cout << "[DEBUG] Vybraný agent " << key_agent_id << " má "
              << collision_graph[key_agent_id].size() << " konfliktů." << endl;
-    }
 
     cout << "[DEBUG] --- Speciální debug pro key_agent_id ---" << endl;
     cout << "[DEBUG] Obsah collision graph pro agenta key_agent_id (seznam agentů, s kterými je v alespoň jedné kolizi): ";

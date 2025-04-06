@@ -223,18 +223,41 @@ bool LNS::runSAT()
     if (neighbor.sum_of_costs <= neighbor.old_sum_of_costs) {
         // akceptujeme novou cestu
         for (int a : agents_to_replan) {
-            //path_table.deletePath(agents[a].id, agents[a].path); // TODO: oveřit
+            cout << "[DEBUG] Kontrola STARÉ path_table pro agenta " << a << ":\n";
+            for (int t = 0; t < (int) agents[a].path.size(); t++)
+            {
+                int loc = agents[a].path[t].location;
+                if (loc >= 0 && loc < (int) path_table.table.size())
+                {
+                    // zkontrolovat table[loc].size() > t
+                    if ((int) path_table.table[loc].size() > t)
+                        cout << "  time=" << t << ", loc=" << loc
+                             << ", table=" << path_table.table[loc][t] << endl;
+                    else
+                        cout << "  time=" << t << ", loc=" << loc << " => out of range\n";
+                }
+            }
+            //path_table.deletePath(agents[a].id, agents[a].path);
             path_table.insertPath(agents[a].id, agents[a].path);
-            // TODO: přidat debugy na kontrolu, zda po insertu sedí obsah path_table
             cout << "(LNS.cpp) Nová cesta v agents[a].path agenta " << a << ": ";
             for (auto loc : agents[a].path)
                 cout << loc.location << ", ";
             cout << endl;
 
-            cout << "(LNS.cpp) Nová cesta v PathTable agenta " << a << ": ";
-            for (auto loc : path_table.table[a])
-                cout << loc << ", ";
-            cout << endl;
+            cout << "[DEBUG] Kontrola NOVÉ path_table pro agenta " << a << ":\n";
+            for (int t = 0; t < (int) agents[a].path.size(); t++)
+            {
+                int loc = agents[a].path[t].location;
+                if (loc >= 0 && loc < (int) path_table.table.size())
+                {
+                    // zkontrolovat table[loc].size() > t
+                    if ((int) path_table.table[loc].size() > t)
+                        cout << "  time=" << t << ", loc=" << loc
+                             << ", table=" << path_table.table[loc][t] << endl;
+                    else
+                        cout << "  time=" << t << ", loc=" << loc << " => out of range\n";
+                }
+            }
         }
         return true;
     } else {
@@ -243,25 +266,32 @@ bool LNS::runSAT()
         for (int i = 0; i < (int)neighbor.agents.size(); i++) {
             int a = neighbor.agents[i];
             //path_table.deletePath(agents[a].id, agents[a].path);
-            //agents[a].path = neighbor.old_paths[i];
+            agents[a].path = neighbor.old_paths[i]; // TODO: padá...
             cout << "(LNS.cpp) Stará cesta v agents[a].path agenta " << a << ": ";
             for (auto loc : agents[a].path)
                 cout << loc.location << ", ";
             cout << endl;
 
             path_table.insertPath(agents[a].id, agents[a].path);
-            cout << "(LNS.cpp) Stará cesta v PathTable agenta " << a << ": ";
-            for (auto loc : path_table.table[a])
-                cout << loc << ", ";
-            cout << endl;
-            // TODO: přidat debugy na kontrolu, zda před i po insertu sedí obsah path_table
+            cout << "[DEBUG] Kontrola STARÉ path_table pro agenta " << a << ":\n";
+            for (int t = 0; t < (int) agents[a].path.size(); t++)
+            {
+                int loc = agents[a].path[t].location;
+                if (loc >= 0 && loc < (int) path_table.table.size())
+                {
+                    // zkontrolovat table[loc].size() > t
+                    if ((int) path_table.table[loc].size() > t)
+                        cout << "  time=" << t << ", loc=" << loc
+                             << ", table=" << path_table.table[loc][t] << endl;
+                    else
+                        cout << "  time=" << t << ", loc=" << loc << " => out of range\n";
+                }
+            }
         }
         neighbor.sum_of_costs = neighbor.old_sum_of_costs;
         return false;
     }
 }
-
-// TODO: odstranit přebytečné debugy, naopak připsat jiné
 
 bool LNS::run()
 {
@@ -379,11 +409,17 @@ bool LNS::run()
                 for (int attempt = 0; attempt < MAX_SAT_ATTEMPTS && !sat_success; attempt++) {
                     if (!generateNeighborBySAT())
                         continue; // nepodařilo se najít validní neighborhood
-                    // Máme neighborhood, teď se pokusíme přeplánovat pomocí SAT
-                    if (runSAT()) {
-                        sat_success = true; // SAT operátor našel validní řešení
-
+                    // store the neighbor information
+                    neighbor.old_paths.resize(neighbor.agents.size());
+                    neighbor.old_sum_of_costs = 0;
+                    for (int i = 0; i < (int) neighbor.agents.size(); i++) {
+                        neighbor.old_paths[i] = agents[neighbor.agents[i]].path;
+                        path_table.deletePath(neighbor.agents[i], agents[neighbor.agents[i]].path);
+                        neighbor.old_sum_of_costs += agents[neighbor.agents[i]].path.size() - 1;
                     }
+                    // Máme neighborhood, teď se pokusíme přeplánovat pomocí SAT
+                    if (runSAT())
+                        sat_success = true; // SAT operátor našel validní řešení
                 }
                 succ = sat_success;
             } break;
@@ -395,15 +431,16 @@ bool LNS::run()
         if(!succ)
             continue;
 
-        // store the neighbor information
-        neighbor.old_paths.resize(neighbor.agents.size());
-        neighbor.old_sum_of_costs = 0;
-        for (int i = 0; i < (int)neighbor.agents.size(); i++)
-        {
-            if (replan_algo_name == "PP")
-                neighbor.old_paths[i] = agents[neighbor.agents[i]].path;
-            path_table.deletePath(neighbor.agents[i], agents[neighbor.agents[i]].path);
-            neighbor.old_sum_of_costs += agents[neighbor.agents[i]].path.size() - 1;
+        if (replan_algo_name != "SAT") {
+            // store the neighbor information
+            neighbor.old_paths.resize(neighbor.agents.size());
+            neighbor.old_sum_of_costs = 0;
+            for (int i = 0; i < (int) neighbor.agents.size(); i++) {
+                if (replan_algo_name == "PP")
+                    neighbor.old_paths[i] = agents[neighbor.agents[i]].path;
+                path_table.deletePath(neighbor.agents[i], agents[neighbor.agents[i]].path);
+                neighbor.old_sum_of_costs += agents[neighbor.agents[i]].path.size() - 1;
+            }
         }
 
         if (replan_algo_name == "EECBS")

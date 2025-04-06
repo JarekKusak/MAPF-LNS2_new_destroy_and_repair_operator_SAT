@@ -206,11 +206,9 @@ namespace SATUtils {
         return local_paths;
     }
 
-    // TODO: metoda na hezké vykreslování před a po přeplánování
-
     // funkce pro vypsání cesty (jednoduchý textový výpis)
     void printPathDetails(const std::vector<PathEntry>& path, int T_sync, int old_local_length, const std::vector<std::vector<int>>& submap, const std::vector<std::vector<int>>& map) {
-        std::cout << "[DEBUG] Vykreslení cesty:" << std::endl;
+        std::cout << "[DEBUG] Vykreslení PŮVODNÍ cesty:" << std::endl;
         // Vypiš prefix (cesta před vstupem do submapy)
         std::cout << "  Prefix (před submapou): ";
         for (int i = 0; i < T_sync && i < (int)path.size(); i++) {
@@ -382,12 +380,12 @@ namespace SATUtils {
             if (T_sync + old_local_length < agents[agent_id].path.size() &&
                 T_sync + new_local_length <= updated_path.size()) {
                 // Lokální cíl nové lokální části je na indexu T_sync + new_local_length - 1
-                int local_goal = updated_path[T_sync + new_local_length - 1].location;
+                int local_goal = updated_path[T_sync + new_local_length].location;
                 // První prvek původního sufixu je na indexu T_sync + old_local_length (tj. kde stará lokální část končila)
                 int suffix_first = agents[agent_id].path[T_sync + old_local_length].location;
                 if (local_goal != suffix_first) {
                     cout << "[WARN] agent " << agent_id
-                         << " lokální cíl->suffix navaznost se liší: "
+                         << " lokální cíl->suffix návaznost se liší: "
                          << local_goal << " != " << suffix_first << endl;
                 }
             }

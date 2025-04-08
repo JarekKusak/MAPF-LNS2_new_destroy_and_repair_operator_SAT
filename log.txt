@@ -1,16 +1,459 @@
 [DEBUG] hodnota skip_initial_solution 0
 [DEBUG] Using default neighbor generation strategy for conflicts: 0
-	InitLNS(SAT): runtime = 0.0180369, iterations = 2, colliding pairs = 0, initial colliding pairs = 1, solution cost = 4286, initial solution cost = 4461, failed iterations = 0
-[DEBUG] Random chance did not select SAT operator (r=32), using default strategy.
-[DEBUG] Random chance did not select SAT operator (r=81), using default strategy.
-[DEBUG] Random chance did not select SAT operator (r=4), using default strategy.
-[DEBUG] Random chance did not select SAT operator (r=78), using default strategy.
-[DEBUG] Random chance did not select SAT operator (r=14), using default strategy.
-[DEBUG] Random chance did not select SAT operator (r=73), using default strategy.
-[DEBUG] Random chance did not select SAT operator (r=48), using default strategy.
-[DEBUG] Random chance did not select SAT operator (r=37), using default strategy.
-[DEBUG] Random chance did not select SAT operator (r=34), using default strategy.
-[DEBUG] Random chance did not select SAT operator (r=39), using default strategy.
-[DEBUG] Random chance did not select SAT operator (r=31), using default strategy.
-[DEBUG] Random chance did not select SAT operator (r=36), using default strategy.
-LNS(PP;SAT): runtime = 0.0270358, iterations = 3, solution cost = 4252, initial solution cost = 4286, failed iterations = 11
+[DEBUG] velikost neighbor.agents: 6
+	InitLNS(PP): runtime = 0.0250697, iterations = 2, colliding pairs = 0, initial colliding pairs = 1, solution cost = 4490, initial solution cost = 4461, failed iterations = 0
+[DEBUG] Using SAT operator (destroy+repair SAT) with probability 20 %.
+====================
+SAT destroy operator called.
+[DEBUG] key_agent_id: 0
+[DEBUG] key_agent_id délka globální cesty: 43
+Submap content (global positions):
+450 451 452 453 454 
+482 483 484 485 486 
+514 515 516 517 518 
+546 547 548 549 550 
+578 579 580 581 582 
+Map content with agents and obstacles:
+. X X X . 
+. A A A . 
+X . A . X 
+. A . A . 
+. . . . . 
+
+[INFO] Identifikace agentů v submapě pro přeplánování (kdy key_agent je tam v čase 1):
+[DEBUG] Agent 0 nalezené intervaly v submapě: [0..3]
+  Agent 0 (interval v submapě: [0..3]) obsahuje čas 1, přidán k přeplánování.
+[DEBUG] Agent 18 nalezené intervaly v submapě: [0..5]
+  Agent 18 (interval v submapě: [0..5]) obsahuje čas 1, přidán k přeplánování.
+[DEBUG] Agent 21 nalezené intervaly v submapě: [0..8]
+  Agent 21 (interval v submapě: [0..8]) obsahuje čas 1, přidán k přeplánování.
+[DEBUG] Agent 29 nalezené intervaly v submapě: [0..6]
+  Agent 29 (interval v submapě: [0..6]) obsahuje čas 1, přidán k přeplánování.
+[DEBUG] Agent 71 nalezené intervaly v submapě: [0..6]
+  Agent 71 (interval v submapě: [0..6]) obsahuje čas 1, přidán k přeplánování.
+[DEBUG] Agent 116 nalezené intervaly v submapě: [0..20]
+  Agent 116 (interval v submapě: [0..20]) obsahuje čas 1, přidán k přeplánování.
+Agent 0 | Start (globální): 516 → (lokální): (2, 2) v čase 1 | Cíl (globální): 580 → (lokální): (4, 2) v čase 3
+Agent 18 | Start (globální): 485 → (lokální): (1, 3) v čase 1 | Cíl (globální): 580 → (lokální): (4, 2) v čase 5
+Agent 21 | Start (globální): 484 → (lokální): (1, 2) v čase 1 | Cíl (globální): 454 → (lokální): (0, 4) v čase 8
+Agent 29 | Start (globální): 547 → (lokální): (3, 1) v čase 1 | Cíl (globální): 486 → (lokální): (1, 4) v čase 6
+Agent 71 | Start (globální): 483 → (lokální): (1, 1) v čase 1 | Cíl (globální): 550 → (lokální): (3, 4) v čase 6
+Agent 116 | Start (globální): 549 → (lokální): (3, 3) v čase 1 | Cíl (globální): 454 → (lokální): (0, 4) v čase 20
+[REPAIR] SAT destroy operator called.
+[REPAIR] SAT operator – spouštím subproblém NA OPTIMALIZACI.
+
+[INFO] Tvorba lokálních cest (sx, sy) v submapě pro T_sync = 1
+  Agent 0 (globální cesty od T=1 do 3) má lokální dráhu: (2,2) (3,2) (4,2) 
+  Agent 18 (globální cesty od T=1 do 5) má lokální dráhu: (1,3) (2,3) (2,2) (3,2) (4,2) 
+  Agent 21 (globální cesty od T=1 do 8) má lokální dráhu: (1,2) (1,3) (1,4) (0,4) (0,4) (0,4) (0,4) (0,4) 
+  Agent 29 (globální cesty od T=1 do 6) má lokální dráhu: (3,1) (2,1) (1,1) (1,2) (1,3) (1,4) 
+  Agent 71 (globální cesty od T=1 do 6) má lokální dráhu: (1,1) (1,2) (1,3) (2,3) (3,3) (3,4) 
+  Agent 116 (globální cesty od T=1 do 20) má lokální dráhu: (3,3) (3,3) (3,3) (3,3) (3,2) (3,2) (3,2) (3,2) (3,2) (3,2) (3,2) (3,2) (3,2) (3,2) (3,2) (3,3) (2,3) (1,3) (1,4) (0,4) 
+
+[DEBUG] Kontrola vstupních dat pro SAT solver:
+  - Počet agentů k přeplánování: 6
+[DEBUG] Agent 0 má původní lokální dráhu délky: 3 => Start (2,2), Goal (4,2)
+[DEBUG] Agent 18 má původní lokální dráhu délky: 5 => Start (1,3), Goal (4,2)
+[DEBUG] Agent 21 má původní lokální dráhu délky: 8 => Start (1,2), Goal (0,4)
+[DEBUG] Agent 29 má původní lokální dráhu délky: 6 => Start (3,1), Goal (1,4)
+[DEBUG] Agent 71 má původní lokální dráhu délky: 6 => Start (1,1), Goal (3,4)
+[DEBUG] Agent 116 má původní lokální dráhu délky: 20 => Start (3,3), Goal (0,4)
+Startovní pozice: (2, 2), (1, 3), (1, 2), (3, 1), (1, 1), (3, 3), 
+CÍLOVÉ pozice: (4, 2), (4, 2), (0, 4), (1, 4), (3, 4), (0, 4), 
+SAT instance and solver created.
+Currently solving
+Instance name: scen
+Map name: map
+Encoding used: disappear_at_goal
+SAT solver used: Kissat
+Optimizing function: sum of costs
+Number of agents: 6
+Mks LB: 6
+SoC LB: 29
+Delta: 0
+Remaining time: 300000 [ms]
+
+Solver returned: -1
+SAT solver failed.
+[WARN] SAT solver failed to find a valid solution.
+====================
+SAT destroy operator called.
+[DEBUG] key_agent_id: 1
+[DEBUG] key_agent_id délka globální cesty: 20
+Submap content (global positions):
+884 885 886 887 888 
+916 917 918 919 920 
+948 949 950 951 952 
+980 981 982 983 984 
+1012 1013 1014 1015 1016 
+Map content with agents and obstacles:
+. . A A . 
+. . . . . 
+. . A X A 
+. . A . A 
+. . . . . 
+
+[INFO] Identifikace agentů v submapě pro přeplánování (kdy key_agent je tam v čase 1):
+[DEBUG] Agent 1 nalezené intervaly v submapě: [0..3]
+  Agent 1 (interval v submapě: [0..3]) obsahuje čas 1, přidán k přeplánování.
+[DEBUG] Agent 6 nalezené intervaly v submapě: [0..6]
+  Agent 6 (interval v submapě: [0..6]) obsahuje čas 1, přidán k přeplánování.
+[DEBUG] Agent 49 nalezené intervaly v submapě: [0..7]
+  Agent 49 (interval v submapě: [0..7]) obsahuje čas 1, přidán k přeplánování.
+[DEBUG] Agent 50 nalezené intervaly v submapě: [0..4]
+  Agent 50 (interval v submapě: [0..4]) obsahuje čas 1, přidán k přeplánování.
+[DEBUG] Agent 101 nalezené intervaly v submapě: [1..8]
+  Agent 101 (interval v submapě: [1..8]) obsahuje čas 1, přidán k přeplánování.
+[DEBUG] Agent 118 nalezené intervaly v submapě: [0..3]
+  Agent 118 (interval v submapě: [0..3]) obsahuje čas 1, přidán k přeplánování.
+Agent 1 | Start (globální): 950 → (lokální): (2, 2) v čase 1 | Cíl (globální): 886 → (lokální): (0, 2) v čase 3
+Agent 6 | Start (globální): 982 → (lokální): (3, 2) v čase 1 | Cíl (globální): 884 → (lokální): (0, 0) v čase 6
+Agent 49 | Start (globální): 952 → (lokální): (2, 4) v čase 1 | Cíl (globální): 884 → (lokální): (0, 0) v čase 7
+Agent 50 | Start (globální): 887 → (lokální): (0, 3) v čase 1 | Cíl (globální): 884 → (lokální): (0, 0) v čase 4
+Agent 101 | Start (globální): 984 → (lokální): (3, 4) v čase 1 | Cíl (globální): 884 → (lokální): (0, 0) v čase 8
+Agent 118 | Start (globální): 886 → (lokální): (0, 2) v čase 1 | Cíl (globální): 884 → (lokální): (0, 0) v čase 3
+[REPAIR] SAT destroy operator called.
+[REPAIR] SAT operator – spouštím subproblém NA OPTIMALIZACI.
+
+[INFO] Tvorba lokálních cest (sx, sy) v submapě pro T_sync = 1
+  Agent 1 (globální cesty od T=1 do 3) má lokální dráhu: (2,2) (1,2) (0,2) 
+  Agent 6 (globální cesty od T=1 do 6) má lokální dráhu: (3,2) (3,1) (2,1) (2,0) (1,0) (0,0) 
+  Agent 49 (globální cesty od T=1 do 7) má lokální dráhu: (2,4) (1,4) (0,4) (0,3) (0,2) (0,1) (0,0) 
+  Agent 50 (globální cesty od T=1 do 4) má lokální dráhu: (0,3) (0,2) (0,1) (0,0) 
+  Agent 101 (globální cesty od T=1 do 8) má lokální dráhu: (3,4) (2,4) (1,4) (1,3) (0,3) (0,2) (0,1) (0,0) 
+  Agent 118 (globální cesty od T=1 do 3) má lokální dráhu: (0,2) (0,1) (0,0) 
+
+[DEBUG] Kontrola vstupních dat pro SAT solver:
+  - Počet agentů k přeplánování: 6
+[DEBUG] Agent 1 má původní lokální dráhu délky: 3 => Start (2,2), Goal (0,2)
+[DEBUG] Agent 6 má původní lokální dráhu délky: 6 => Start (3,2), Goal (0,0)
+[DEBUG] Agent 49 má původní lokální dráhu délky: 7 => Start (2,4), Goal (0,0)
+[DEBUG] Agent 50 má původní lokální dráhu délky: 4 => Start (0,3), Goal (0,0)
+[DEBUG] Agent 101 má původní lokální dráhu délky: 8 => Start (3,4), Goal (0,0)
+[DEBUG] Agent 118 má původní lokální dráhu délky: 3 => Start (0,2), Goal (0,0)
+Startovní pozice: (2, 2), (3, 2), (2, 4), (0, 3), (3, 4), (0, 2), 
+CÍLOVÉ pozice: (0, 2), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), 
+SAT instance and solver created.
+Currently solving
+Instance name: scen
+Map name: map
+Encoding used: disappear_at_goal
+SAT solver used: Kissat
+Optimizing function: sum of costs
+Number of agents: 6
+Mks LB: 8
+SoC LB: 31
+Delta: 0
+Remaining time: 300000 [ms]
+
+Vertex conflict! Agents 1, 2, timestep 6, location 0
+Swapping conflict! Agents 1, 2, timestep 6, edge (0,0)
+Vertex conflict! Agents 1, 2, timestep 7, location 0
+Vertex conflict! Agents 1, 3, timestep 5, location 0
+Swapping conflict! Agents 1, 3, timestep 5, edge (0,0)
+Vertex conflict! Agents 1, 3, timestep 6, location 0
+Swapping conflict! Agents 1, 3, timestep 6, edge (0,0)
+Vertex conflict! Agents 1, 3, timestep 7, location 0
+Vertex conflict! Agents 1, 4, timestep 7, location 0
+Vertex conflict! Agents 1, 5, timestep 5, location 0
+Swapping conflict! Agents 1, 5, timestep 5, edge (0,0)
+Vertex conflict! Agents 1, 5, timestep 6, location 0
+Swapping conflict! Agents 1, 5, timestep 6, edge (0,0)
+Vertex conflict! Agents 1, 5, timestep 7, location 0
+Vertex conflict! Agents 2, 3, timestep 6, location 0
+Swapping conflict! Agents 2, 3, timestep 6, edge (0,0)
+Vertex conflict! Agents 2, 3, timestep 7, location 0
+Vertex conflict! Agents 2, 4, timestep 7, location 0
+Vertex conflict! Agents 2, 5, timestep 6, location 0
+Swapping conflict! Agents 2, 5, timestep 6, edge (0,0)
+Vertex conflict! Agents 2, 5, timestep 7, location 0
+Vertex conflict! Agents 3, 4, timestep 7, location 0
+Vertex conflict! Agents 3, 5, timestep 3, location 0
+Swapping conflict! Agents 3, 5, timestep 3, edge (0,0)
+Vertex conflict! Agents 3, 5, timestep 4, location 0
+Swapping conflict! Agents 3, 5, timestep 4, edge (0,0)
+Vertex conflict! Agents 3, 5, timestep 5, location 0
+Swapping conflict! Agents 3, 5, timestep 5, edge (0,0)
+Vertex conflict! Agents 3, 5, timestep 6, location 0
+Swapping conflict! Agents 3, 5, timestep 6, edge (0,0)
+Vertex conflict! Agents 3, 5, timestep 7, location 0
+Vertex conflict! Agents 4, 5, timestep 7, location 0
+Found plan [agents = 6] [timesteps = 8]
+Agent #0 : 12 7 2 2 2 2 2 2 
+Agent #1 : 16 15 14 10 5 0 0 0 
+Agent #2 : 13 9 8 7 6 5 0 0 
+Agent #3 : 3 2 1 0 0 0 0 0 
+Agent #4 : 18 17 16 15 14 10 5 0 
+Agent #5 : 2 1 0 0 0 0 0 0 
+
+Solver returned: 0
+[DEBUG] Agent (index) 1 | Nová lokální cesta (submap idx): 12 7 2 
+[DEBUG] Agent (index) 6 | Nová lokální cesta (submap idx): 16 15 14 10 5 0 
+[DEBUG] Agent (index) 49 | Nová lokální cesta (submap idx): 13 9 8 7 6 5 0 
+[DEBUG] Agent (index) 50 | Nová lokální cesta (submap idx): 3 2 1 0 
+[DEBUG] Agent (index) 101 | Nová lokální cesta (submap idx): 18 17 16 15 14 10 5 0 
+[DEBUG] Agent (index) 118 | Nová lokální cesta (submap idx): 2 1 0 
+[INFO] Aktualizace cesty pro agenta 1 | Původní lokální délka: 3 | Nová lokální délka: 3
+[DEBUG] agent 1 t=0 => decoded (sx,sy)=(2,2) => global_id=950
+[DEBUG] agent 1 t=1 => decoded (sx,sy)=(1,2) => global_id=918
+[DEBUG] agent 1 t=2 => decoded (sx,sy)=(0,2) => global_id=886
+[DEBUG] Kompletní cesta agenta 1:
+  Původní: 949 950 918 886 854 822 821 820 819 787 755 755 755 755 756 724 725 726 727 728 
+  Nová:     949 950 918 886 854 822 821 820 819 787 755 755 755 755 756 724 725 726 727 728 
+[DEBUG] Vykreslení PŮVODNÍ cesty:
+  Prefix (před submapou): 949 
+  Lokální cesta (v submapě): 950 918 886 
+  Suffix (po submapě): 854 822 821 820 819 787 755 755 755 755 756 724 725 726 727 728 
+[INFO] Původní délka cesty agenta 1 je: 20
+(SATUtils.cpp) nová cesta v agents[a].path agenta 0: 949, 950, 918, 886, 854, 822, 821, 820, 819, 787, 755, 755, 755, 755, 756, 724, 725, 726, 727, 728, 
+[INFO] Cesta pro agenta 1 aktualizována, výsledná délka: 20
+[INFO] Aktualizace cesty pro agenta 6 | Původní lokální délka: 6 | Nová lokální délka: 6
+[DEBUG] agent 6 t=0 => decoded (sx,sy)=(3,2) => global_id=982
+[DEBUG] agent 6 t=1 => decoded (sx,sy)=(3,1) => global_id=981
+[DEBUG] agent 6 t=2 => decoded (sx,sy)=(3,0) => global_id=980
+[DEBUG] agent 6 t=3 => decoded (sx,sy)=(2,0) => global_id=948
+[DEBUG] agent 6 t=4 => decoded (sx,sy)=(1,0) => global_id=916
+[DEBUG] agent 6 t=5 => decoded (sx,sy)=(0,0) => global_id=884
+[DEBUG] Kompletní cesta agenta 6:
+  Původní: 983 982 981 949 948 916 884 883 882 881 880 879 878 910 909 908 
+  Nová:     983 982 981 980 948 916 884 883 882 881 880 879 878 910 909 908 
+[DEBUG] Vykreslení PŮVODNÍ cesty:
+  Prefix (před submapou): 983 
+  Lokální cesta (v submapě): 982 981 980 948 916 884 
+  Suffix (po submapě): 883 882 881 880 879 878 910 909 908 
+[INFO] Původní délka cesty agenta 6 je: 16
+(SATUtils.cpp) nová cesta v agents[a].path agenta 1: 983, 982, 981, 980, 948, 916, 884, 883, 882, 881, 880, 879, 878, 910, 909, 908, 
+[INFO] Cesta pro agenta 6 aktualizována, výsledná délka: 16
+[INFO] Aktualizace cesty pro agenta 49 | Původní lokální délka: 7 | Nová lokální délka: 7
+[DEBUG] agent 49 t=0 => decoded (sx,sy)=(2,4) => global_id=952
+[DEBUG] agent 49 t=1 => decoded (sx,sy)=(1,4) => global_id=920
+[DEBUG] agent 49 t=2 => decoded (sx,sy)=(1,3) => global_id=919
+[DEBUG] agent 49 t=3 => decoded (sx,sy)=(1,2) => global_id=918
+[DEBUG] agent 49 t=4 => decoded (sx,sy)=(1,1) => global_id=917
+[DEBUG] agent 49 t=5 => decoded (sx,sy)=(1,0) => global_id=916
+[DEBUG] agent 49 t=6 => decoded (sx,sy)=(0,0) => global_id=884
+[DEBUG] Kompletní cesta agenta 49:
+  Původní: 984 952 920 888 887 886 885 884 883 851 850 849 848 847 846 814 782 750 718 686 687 686 685 653 653 653 653 653 653 653 653 654 622 590 591 592 593 561 529 528 496 464 432 400 368 
+  Nová:     984 952 920 919 918 917 916 884 883 851 850 849 848 847 846 814 782 750 718 686 687 686 685 653 653 653 653 653 653 653 653 654 622 590 591 592 593 561 529 528 496 464 432 400 368 
+[DEBUG] Vykreslení PŮVODNÍ cesty:
+  Prefix (před submapou): 984 
+  Lokální cesta (v submapě): 952 920 919 918 917 916 884 
+  Suffix (po submapě): 883 851 850 849 848 847 846 814 782 750 718 686 687 686 685 653 653 653 653 653 653 653 653 654 622 590 591 592 593 561 529 528 496 464 432 400 368 
+[INFO] Původní délka cesty agenta 49 je: 45
+(SATUtils.cpp) nová cesta v agents[a].path agenta 2: 984, 952, 920, 919, 918, 917, 916, 884, 883, 851, 850, 849, 848, 847, 846, 814, 782, 750, 718, 686, 687, 686, 685, 653, 653, 653, 653, 653, 653, 653, 653, 654, 622, 590, 591, 592, 593, 561, 529, 528, 496, 464, 432, 400, 368, 
+[INFO] Cesta pro agenta 49 aktualizována, výsledná délka: 45
+[INFO] Aktualizace cesty pro agenta 50 | Původní lokální délka: 4 | Nová lokální délka: 4
+[DEBUG] agent 50 t=0 => decoded (sx,sy)=(0,3) => global_id=887
+[DEBUG] agent 50 t=1 => decoded (sx,sy)=(0,2) => global_id=886
+[DEBUG] agent 50 t=2 => decoded (sx,sy)=(0,1) => global_id=885
+[DEBUG] agent 50 t=3 => decoded (sx,sy)=(0,0) => global_id=884
+[DEBUG] Kompletní cesta agenta 50:
+  Původní: 888 887 886 885 884 883 882 881 880 879 847 815 814 814 782 750 718 686 654 622 590 589 588 556 524 492 491 459 459 427 395 363 331 299 267 235 236 204 205 173 141 
+  Nová:     888 887 886 885 884 883 882 881 880 879 847 815 814 814 782 750 718 686 654 622 590 589 588 556 524 492 491 459 459 427 395 363 331 299 267 235 236 204 205 173 141 
+[DEBUG] Vykreslení PŮVODNÍ cesty:
+  Prefix (před submapou): 888 
+  Lokální cesta (v submapě): 887 886 885 884 
+  Suffix (po submapě): 883 882 881 880 879 847 815 814 814 782 750 718 686 654 622 590 589 588 556 524 492 491 459 459 427 395 363 331 299 267 235 236 204 205 173 141 
+[INFO] Původní délka cesty agenta 50 je: 41
+(SATUtils.cpp) nová cesta v agents[a].path agenta 3: 888, 887, 886, 885, 884, 883, 882, 881, 880, 879, 847, 815, 814, 814, 782, 750, 718, 686, 654, 622, 590, 589, 588, 556, 524, 492, 491, 459, 459, 427, 395, 363, 331, 299, 267, 235, 236, 204, 205, 173, 141, 
+[INFO] Cesta pro agenta 50 aktualizována, výsledná délka: 41
+[INFO] Aktualizace cesty pro agenta 101 | Původní lokální délka: 8 | Nová lokální délka: 8
+[DEBUG] agent 101 t=0 => decoded (sx,sy)=(3,4) => global_id=984
+[DEBUG] agent 101 t=1 => decoded (sx,sy)=(3,3) => global_id=983
+[DEBUG] agent 101 t=2 => decoded (sx,sy)=(3,2) => global_id=982
+[DEBUG] agent 101 t=3 => decoded (sx,sy)=(3,1) => global_id=981
+[DEBUG] agent 101 t=4 => decoded (sx,sy)=(3,0) => global_id=980
+[DEBUG] agent 101 t=5 => decoded (sx,sy)=(2,0) => global_id=948
+[DEBUG] agent 101 t=6 => decoded (sx,sy)=(1,0) => global_id=916
+[DEBUG] agent 101 t=7 => decoded (sx,sy)=(0,0) => global_id=884
+[DEBUG] Kompletní cesta agenta 101:
+  Původní: 985 984 952 920 919 887 886 885 884 883 851 850 849 848 847 815 814 782 750 718 686 654 622 590 589 588 587 555 523 491 459 427 395 363 331 330 329 328 296 264 232 200 168 
+  Nová:     985 984 983 982 981 980 948 916 884 883 851 850 849 848 847 815 814 782 750 718 686 654 622 590 589 588 587 555 523 491 459 427 395 363 331 330 329 328 296 264 232 200 168 
+[DEBUG] Vykreslení PŮVODNÍ cesty:
+  Prefix (před submapou): 985 
+  Lokální cesta (v submapě): 984 983 982 981 980 948 916 884 
+  Suffix (po submapě): 883 851 850 849 848 847 815 814 782 750 718 686 654 622 590 589 588 587 555 523 491 459 427 395 363 331 330 329 328 296 264 232 200 168 
+[INFO] Původní délka cesty agenta 101 je: 43
+(SATUtils.cpp) nová cesta v agents[a].path agenta 4: 985, 984, 983, 982, 981, 980, 948, 916, 884, 883, 851, 850, 849, 848, 847, 815, 814, 782, 750, 718, 686, 654, 622, 590, 589, 588, 587, 555, 523, 491, 459, 427, 395, 363, 331, 330, 329, 328, 296, 264, 232, 200, 168, 
+[INFO] Cesta pro agenta 101 aktualizována, výsledná délka: 43
+[INFO] Aktualizace cesty pro agenta 118 | Původní lokální délka: 3 | Nová lokální délka: 3
+[DEBUG] agent 118 t=0 => decoded (sx,sy)=(0,2) => global_id=886
+[DEBUG] agent 118 t=1 => decoded (sx,sy)=(0,1) => global_id=885
+[DEBUG] agent 118 t=2 => decoded (sx,sy)=(0,0) => global_id=884
+[DEBUG] Kompletní cesta agenta 118:
+  Původní: 887 886 885 884 883 851 850 849 848 847 815 814 782 781 780 748 747 715 714 682 650 649 648 647 615 583 551 519 487 455 454 422 421 420 388 387 355 323 291 259 227 
+  Nová:     887 886 885 884 883 851 850 849 848 847 815 814 782 781 780 748 747 715 714 682 650 649 648 647 615 583 551 519 487 455 454 422 421 420 388 387 355 323 291 259 227 
+[DEBUG] Vykreslení PŮVODNÍ cesty:
+  Prefix (před submapou): 887 
+  Lokální cesta (v submapě): 886 885 884 
+  Suffix (po submapě): 883 851 850 849 848 847 815 814 782 781 780 748 747 715 714 682 650 649 648 647 615 583 551 519 487 455 454 422 421 420 388 387 355 323 291 259 227 
+[INFO] Původní délka cesty agenta 118 je: 41
+(SATUtils.cpp) nová cesta v agents[a].path agenta 5: 887, 886, 885, 884, 883, 851, 850, 849, 848, 847, 815, 814, 782, 781, 780, 748, 747, 715, 714, 682, 650, 649, 648, 647, 615, 583, 551, 519, 487, 455, 454, 422, 421, 420, 388, 387, 355, 323, 291, 259, 227, 
+[INFO] Cesta pro agenta 118 aktualizována, výsledná délka: 41
+Paths successfully updated.
+(LNS.cpp) Nová cesta v agents[a].path agenta 1: 949, 950, 918, 886, 854, 822, 821, 820, 819, 787, 755, 755, 755, 755, 756, 724, 725, 726, 727, 728, 
+(LNS.cpp) Nová cesta v agents[a].path agenta 6: 983, 982, 981, 980, 948, 916, 884, 883, 882, 881, 880, 879, 878, 910, 909, 908, 
+(LNS.cpp) Nová cesta v agents[a].path agenta 49: 984, 952, 920, 919, 918, 917, 916, 884, 883, 851, 850, 849, 848, 847, 846, 814, 782, 750, 718, 686, 687, 686, 685, 653, 653, 653, 653, 653, 653, 653, 653, 654, 622, 590, 591, 592, 593, 561, 529, 528, 496, 464, 432, 400, 368, 
+(LNS.cpp) Nová cesta v agents[a].path agenta 50: 888, 887, 886, 885, 884, 883, 882, 881, 880, 879, 847, 815, 814, 814, 782, 750, 718, 686, 654, 622, 590, 589, 588, 556, 524, 492, 491, 459, 459, 427, 395, 363, 331, 299, 267, 235, 236, 204, 205, 173, 141, 
+(LNS.cpp) Nová cesta v agents[a].path agenta 101: 985, 984, 983, 982, 981, 980, 948, 916, 884, 883, 851, 850, 849, 848, 847, 815, 814, 782, 750, 718, 686, 654, 622, 590, 589, 588, 587, 555, 523, 491, 459, 427, 395, 363, 331, 330, 329, 328, 296, 264, 232, 200, 168, 
+(LNS.cpp) Nová cesta v agents[a].path agenta 118: 887, 886, 885, 884, 883, 851, 850, 849, 848, 847, 815, 814, 782, 781, 780, 748, 747, 715, 714, 682, 650, 649, 648, 647, 615, 583, 551, 519, 487, 455, 454, 422, 421, 420, 388, 387, 355, 323, 291, 259, 227, 
+[DEBUG] Using SAT operator (destroy+repair SAT) with probability 20 %.
+====================
+SAT destroy operator called.
+[DEBUG] key_agent_id: 2
+[DEBUG] key_agent_id délka globální cesty: 36
+Submap content (global positions):
+25 26 27 28 29 
+57 58 59 60 61 
+89 90 91 92 93 
+121 122 123 124 125 
+153 154 155 156 157 
+Map content with agents and obstacles:
+. . . . . 
+X . . A . 
+. . A X . 
+. . . A X 
+A A X . . 
+
+[INFO] Identifikace agentů v submapě pro přeplánování (kdy key_agent je tam v čase 1):
+[DEBUG] Agent 2 nalezené intervaly v submapě: [0..5]
+  Agent 2 (interval v submapě: [0..5]) obsahuje čas 1, přidán k přeplánování.
+[DEBUG] Agent 44 nalezené intervaly v submapě: [0..6]
+  Agent 44 (interval v submapě: [0..6]) obsahuje čas 1, přidán k přeplánování.
+[DEBUG] Agent 45 nalezené intervaly v submapě: [0..9]
+  Agent 45 (interval v submapě: [0..9]) obsahuje čas 1, přidán k přeplánování.
+[DEBUG] Agent 52 nalezené intervaly v submapě: [0..7]
+  Agent 52 (interval v submapě: [0..7]) obsahuje čas 1, přidán k přeplánování.
+[DEBUG] Agent 144 nalezené intervaly v submapě: [0..1]
+  Agent 144 (interval v submapě: [0..1]) obsahuje čas 1, přidán k přeplánování.
+Agent 2 | Start (globální): 91 → (lokální): (2, 2) v čase 1 | Cíl (globální): 153 → (lokální): (4, 0) v čase 5
+Agent 44 | Start (globální): 124 → (lokální): (3, 3) v čase 1 | Cíl (globální): 153 → (lokální): (4, 0) v čase 6
+Agent 45 | Start (globální): 154 → (lokální): (4, 1) v čase 1 | Cíl (globální): 121 → (lokální): (3, 0) v čase 9
+Agent 52 | Start (globální): 60 → (lokální): (1, 3) v čase 1 | Cíl (globální): 153 → (lokální): (4, 0) v čase 7
+Agent 144 | Start (globální): 153 → (lokální): (4, 0) v čase 1 | Cíl (globální): 153 → (lokální): (4, 0) v čase 1
+[REPAIR] SAT destroy operator called.
+[REPAIR] SAT operator – spouštím subproblém NA OPTIMALIZACI.
+
+[INFO] Tvorba lokálních cest (sx, sy) v submapě pro T_sync = 1
+  Agent 2 (globální cesty od T=1 do 5) má lokální dráhu: (2,2) (3,2) (3,1) (3,0) (4,0) 
+  Agent 44 (globální cesty od T=1 do 6) má lokální dráhu: (3,3) (3,3) (3,2) (3,1) (3,0) (4,0) 
+  Agent 45 (globální cesty od T=1 do 9) má lokální dráhu: (4,1) (4,1) (4,1) (4,1) (4,1) (4,1) (4,1) (4,0) (3,0) 
+  Agent 52 (globální cesty od T=1 do 7) má lokální dráhu: (1,3) (1,2) (2,2) (3,2) (3,1) (3,0) (4,0) 
+  Agent 144 (globální cesty od T=1 do 1) má lokální dráhu: (4,0) 
+
+[DEBUG] Kontrola vstupních dat pro SAT solver:
+  - Počet agentů k přeplánování: 5
+[DEBUG] Agent 2 má původní lokální dráhu délky: 5 => Start (2,2), Goal (4,0)
+[DEBUG] Agent 44 má původní lokální dráhu délky: 6 => Start (3,3), Goal (4,0)
+[DEBUG] Agent 45 má původní lokální dráhu délky: 9 => Start (4,1), Goal (3,0)
+[DEBUG] Agent 52 má původní lokální dráhu délky: 7 => Start (1,3), Goal (4,0)
+[DEBUG] Agent 144 má původní lokální dráhu délky: 1 => Start (4,0), Goal (4,0)
+Startovní pozice: (2, 2), (3, 3), (4, 1), (1, 3), (4, 0), 
+CÍLOVÉ pozice: (4, 0), (4, 0), (3, 0), (4, 0), (4, 0), 
+SAT instance and solver created.
+Currently solving
+Instance name: scen
+Map name: map
+Encoding used: disappear_at_goal
+SAT solver used: Kissat
+Optimizing function: sum of costs
+Number of agents: 5
+Mks LB: 7
+SoC LB: 21
+Delta: 0
+Remaining time: 300000 [ms]
+
+Solver returned: -1
+SAT solver failed.
+[WARN] SAT solver failed to find a valid solution.
+====================
+SAT destroy operator called.
+[DEBUG] key_agent_id: 3
+[DEBUG] key_agent_id délka globální cesty: 41
+Submap content (global positions):
+402 403 404 405 406 
+434 435 436 437 438 
+466 467 468 469 470 
+498 499 500 501 502 
+530 531 532 533 534 
+Map content with agents and obstacles:
+. . . . . 
+X . X . . 
+. . A A . 
+. . X . . 
+. . X . . 
+
+[INFO] Identifikace agentů v submapě pro přeplánování (kdy key_agent je tam v čase 1):
+[DEBUG] Agent 3 nalezené intervaly v submapě: [0..15]
+  Agent 3 (interval v submapě: [0..15]) obsahuje čas 1, přidán k přeplánování.
+[DEBUG] Agent 89 nalezené intervaly v submapě: [0..5]
+  Agent 89 (interval v submapě: [0..5]) obsahuje čas 1, přidán k přeplánování.
+Agent 3 | Start (globální): 468 → (lokální): (2, 2) v čase 1 | Cíl (globální): 530 → (lokální): (4, 0) v čase 15
+Agent 89 | Start (globální): 469 → (lokální): (2, 3) v čase 1 | Cíl (globální): 533 → (lokální): (4, 3) v čase 5
+[REPAIR] SAT destroy operator called.
+[REPAIR] SAT operator – spouštím subproblém NA OPTIMALIZACI.
+
+[INFO] Tvorba lokálních cest (sx, sy) v submapě pro T_sync = 1
+  Agent 3 (globální cesty od T=1 do 15) má lokální dráhu: (2,2) (2,2) (2,2) (2,2) (2,2) (2,2) (2,1) (1,1) (1,1) (2,1) (3,1) (3,1) (3,1) (3,0) (4,0) 
+  Agent 89 (globální cesty od T=1 do 5) má lokální dráhu: (2,3) (3,3) (3,4) (4,4) (4,3) 
+
+[DEBUG] Kontrola vstupních dat pro SAT solver:
+  - Počet agentů k přeplánování: 2
+[DEBUG] Agent 3 má původní lokální dráhu délky: 15 => Start (2,2), Goal (4,0)
+[DEBUG] Agent 89 má původní lokální dráhu délky: 5 => Start (2,3), Goal (4,3)
+Startovní pozice: (2, 2), (2, 3), 
+CÍLOVÉ pozice: (4, 0), (4, 3), 
+SAT instance and solver created.
+Currently solving
+Instance name: scen
+Map name: map
+Encoding used: disappear_at_goal
+SAT solver used: Kissat
+Optimizing function: sum of costs
+Number of agents: 2
+Mks LB: 5
+SoC LB: 8
+Delta: 0
+Remaining time: 300000 [ms]
+
+Found plan [agents = 2] [timesteps = 5]
+Agent #0 : 10 9 14 18 17 
+Agent #1 : 11 15 19 19 19 
+
+Solver returned: 0
+[DEBUG] Agent (index) 3 | Nová lokální cesta (submap idx): 10 9 14 18 17 
+[DEBUG] Agent (index) 89 | Nová lokální cesta (submap idx): 11 15 19 
+[INFO] Aktualizace cesty pro agenta 3 | Původní lokální délka: 15 | Nová lokální délka: 5
+[DEBUG] agent 3 t=0 => decoded (sx,sy)=(2,2) => global_id=468
+[DEBUG] agent 3 t=1 => decoded (sx,sy)=(2,1) => global_id=467
+[DEBUG] agent 3 t=2 => decoded (sx,sy)=(3,1) => global_id=499
+[DEBUG] agent 3 t=3 => decoded (sx,sy)=(4,1) => global_id=531
+[DEBUG] agent 3 t=4 => decoded (sx,sy)=(4,0) => global_id=530
+[DEBUG] Kompletní cesta agenta 3:
+  Původní: 468 468 468 468 468 468 468 467 435 435 467 499 499 499 498 530 529 561 593 594 594 594 593 592 591 591 590 622 654 686 718 719 751 783 815 847 848 849 881 913 912 
+  Nová:     468 468 467 499 531 530 529 561 593 594 594 594 593 592 591 591 590 622 654 686 718 719 751 783 815 847 848 849 881 913 912 
+[DEBUG] Vykreslení PŮVODNÍ cesty:
+  Prefix (před submapou): 468 
+  Lokální cesta (v submapě): 468 467 499 531 530 529 561 593 594 594 594 593 592 591 591 
+  Suffix (po submapě): 590 622 654 686 718 719 751 783 815 847 848 849 881 913 912 
+[INFO] Původní délka cesty agenta 3 je: 41
+(SATUtils.cpp) nová cesta v agents[a].path agenta 0: 468, 468, 467, 499, 531, 530, 529, 561, 593, 594, 594, 594, 593, 592, 591, 591, 590, 622, 654, 686, 718, 719, 751, 783, 815, 847, 848, 849, 881, 913, 912, 
+[INFO] Cesta pro agenta 3 aktualizována, výsledná délka: 31
+[INFO] Aktualizace cesty pro agenta 89 | Původní lokální délka: 5 | Nová lokální délka: 3
+[DEBUG] agent 89 t=0 => decoded (sx,sy)=(2,3) => global_id=469
+[DEBUG] agent 89 t=1 => decoded (sx,sy)=(3,3) => global_id=501
+[DEBUG] agent 89 t=2 => decoded (sx,sy)=(4,3) => global_id=533
+[DEBUG] Kompletní cesta agenta 89:
+  Původní: 437 469 501 502 534 533 565 597 596 628 660 692 724 756 788 787 819 820 821 822 854 854 886 918 950 982 1014 1015 
+  Nová:     437 469 501 533 565 597 596 628 660 692 724 756 788 787 819 820 821 822 854 854 886 918 950 982 1014 1015 
+[DEBUG] Vykreslení PŮVODNÍ cesty:
+  Prefix (před submapou): 437 
+  Lokální cesta (v submapě): 469 501 533 565 597 
+  Suffix (po submapě): 596 628 660 692 724 756 788 787 819 820 821 822 854 854 886 918 950 982 1014 1015 
+[INFO] Původní délka cesty agenta 89 je: 28
+(SATUtils.cpp) nová cesta v agents[a].path agenta 1: 437, 469, 501, 533, 565, 597, 596, 628, 660, 692, 724, 756, 788, 787, 819, 820, 821, 822, 854, 854, 886, 918, 950, 982, 1014, 1015, 
+[INFO] Cesta pro agenta 89 aktualizována, výsledná délka: 26
+Paths successfully updated.
+(LNS.cpp) Nová cesta v agents[a].path agenta 3: 468, 468, 467, 499, 531, 530, 529, 561, 593, 594, 594, 594, 593, 592, 591, 591, 590, 622, 654, 686, 718, 719, 751, 783, 815, 847, 848, 849, 881, 913, 912, 
+(LNS.cpp) Nová cesta v agents[a].path agenta 89: 437, 469, 501, 533, 565, 597, 596, 628, 660, 692, 724, 756, 788, 787, 819, 820, 821, 822, 854, 854, 886, 918, 950, 982, 1014, 1015, 
+LNS(PP;PP): runtime = 0.0285287, iterations = 3, solution cost = 4478, initial solution cost = 4490, failed iterations = 1

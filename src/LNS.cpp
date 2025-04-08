@@ -375,7 +375,7 @@ bool LNS::run()
             needConflictRepair = true;
         }
 
-        if (needConflictRepair && destroy_strategy == SAT && replan_algo_name == "SAT") {
+        if (needConflictRepair && destroy_strategy == SAT) {
             cout << "[DEBUG] Switching to conflict repair mode via init_lns." << endl;
             init_lns = new InitLNS(instance, agents, time_limit - runtime, replan_algo_name, init_destory_name, neighbor_size, screen);
             succ = init_lns->run(true);
@@ -396,10 +396,10 @@ bool LNS::run()
         if (ALNS) chooseDestroyHeuristicbyALNS();
 
         bool opSuccess = false;
-        if (destroy_strategy == SAT && replan_algo_name == "SAT")
+        if (destroy_strategy == SAT)
         {
             int r = rand() % 100;
-            if (r < 0)
+            if (r < 100)
             {
                 cout << "[DEBUG] Using SAT operator (destroy+repair SAT) with probability 20 %." << endl;
                 const int MAX_SAT_ATTEMPTS = 10;
@@ -496,13 +496,12 @@ bool LNS::run()
          << ", solution cost = " << sum_of_costs << ", initial solution cost = " << initial_sum_of_costs
          << ", failed iterations = " << num_of_failures << endl;
 
-    /*
     try {
         if (screen >= 1)
             validateSolution();
     } catch (const ValidationException& e) {
         cout << "[WARNING] Final solution is invalid: " << e.what() << endl;
-        if (destroy_strategy == SAT && replan_algo_name == "SAT") {
+        if (destroy_strategy == SAT) {
             cout << "[DEBUG] Attempting final repair via init_lns..." << endl;
             delete init_lns;
             init_lns = new InitLNS(instance, agents, time_limit - runtime, replan_algo_name, init_destory_name, neighbor_size, screen);
@@ -520,7 +519,7 @@ bool LNS::run()
         } else {
             return false;
         }
-    }*/
+    }
     return true;
 }
 
@@ -1047,6 +1046,7 @@ void LNS::randomWalk(int agent_id, int start_location, int start_timestep,
     }
 }
 
+
 void LNS::validateSolution() const
 {
     int sum = 0;
@@ -1132,6 +1132,87 @@ void LNS::validateSolution() const
                                   ", but computed sum = " + std::to_string(sum));
     }
 }
+
+/*
+void LNS::validateSolution() const
+{
+    int sum = 0;
+    for (const auto& a1_ : agents)
+    {
+        if (a1_.path.empty())
+        {
+            cerr << "No solution for agent " << a1_.id << endl;
+            exit(-1);
+        }
+        else if (a1_.path_planner->start_location != a1_.path.front().location)
+        {
+            cerr << "The path of agent " << a1_.id << " starts from location " << a1_.path.front().location
+                 << ", which is different from its start location " << a1_.path_planner->start_location << endl;
+            exit(-1);
+        }
+        else if (a1_.path_planner->goal_location != a1_.path.back().location)
+        {
+            cerr << "The path of agent " << a1_.id << " ends at location " << a1_.path.back().location
+                 << ", which is different from its goal location " << a1_.path_planner->goal_location << endl;
+            exit(-1);
+        }
+        for (int t = 1; t < (int) a1_.path.size(); t++ )
+        {
+            if (!instance.validMove(a1_.path[t - 1].location, a1_.path[t].location))
+            {
+                cerr << "The path of agent " << a1_.id << " jump from "
+                     << a1_.path[t - 1].location << " to " << a1_.path[t].location
+                     << " between timesteps " << t - 1 << " and " << t << endl;
+                exit(-1);
+            }
+        }
+        sum += (int) a1_.path.size() - 1;
+        for (const auto  & a2_: agents)
+        {
+            if (a1_.id >= a2_.id || a2_.path.empty())
+                continue;
+            const auto & a1 = a1_.path.size() <= a2_.path.size()? a1_ : a2_;
+            const auto & a2 = a1_.path.size() <= a2_.path.size()? a2_ : a1_;
+            int t = 1;
+            for (; t < (int) a1.path.size(); t++)
+            {
+                if (a1.path[t].location == a2.path[t].location) // vertex conflict
+                {
+                    cerr << "Find a vertex conflict between agents " << a1.id << " and " << a2.id <<
+                         " at location " << a1.path[t].location << " at timestep " << t << endl;
+                    exit(-1);
+                }
+                else if (a1.path[t].location == a2.path[t - 1].location &&
+                         a1.path[t - 1].location == a2.path[t].location) // edge conflict
+                {
+                    cerr << "Find an edge conflict between agents " << a1.id << " and " << a2.id <<
+                         " at edge (" << a1.path[t - 1].location << "," << a1.path[t].location <<
+                         ") at timestep " << t << endl;
+                    exit(-1);
+                }
+            }
+            int target = a1.path.back().location;
+            for (; t < (int) a2.path.size(); t++)
+            {
+                if (a2.path[t].location == target)  // target conflict
+                {
+                    cerr << "Find a target conflict where agent " << a2.id << " (of length " << a2.path.size() - 1<<
+                         ") traverses agent " << a1.id << " (of length " << a1.path.size() - 1<<
+                         ")'s target location " << target << " at timestep " << t << endl;
+                    exit(-1);
+                }
+            }
+        }
+    }
+    if (sum_of_costs != sum)
+    {
+        cerr << "The computed sum of costs " << sum_of_costs <<
+             " is different from the sum of the paths in the solution " << sum << endl;
+        exit(-1);
+    }
+}*/
+
+
 
 void LNS::writeIterStatsToFile(const string & file_name) const
 {

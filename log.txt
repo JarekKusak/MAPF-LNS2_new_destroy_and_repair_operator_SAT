@@ -1,5 +1,16 @@
+[DEBUG] hodnota skip_initial_solution 0
 [DEBUG] Using default neighbor generation strategy for conflicts: 0
-	InitLNS(SAT): runtime = 0.0199077, iterations = 2, colliding pairs = 0, initial colliding pairs = 1, solution cost = 4286, initial solution cost = 4461, failed iterations = 0
-(LNS.cpp) Stará cesta v PathTable agenta 3: -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 117, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 139, 
-(LNS.cpp) Stará cesta v PathTable agenta 89: -1, -1, -1, -1, -1, -1, -1, 34, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 31, 
-[DEBUG] Random chance did not select SAT operator (r=32), using default neighbor strategy.
+	InitLNS(SAT): runtime = 0.0180369, iterations = 2, colliding pairs = 0, initial colliding pairs = 1, solution cost = 4286, initial solution cost = 4461, failed iterations = 0
+[DEBUG] Random chance did not select SAT operator (r=32), using default strategy.
+[DEBUG] Random chance did not select SAT operator (r=81), using default strategy.
+[DEBUG] Random chance did not select SAT operator (r=4), using default strategy.
+[DEBUG] Random chance did not select SAT operator (r=78), using default strategy.
+[DEBUG] Random chance did not select SAT operator (r=14), using default strategy.
+[DEBUG] Random chance did not select SAT operator (r=73), using default strategy.
+[DEBUG] Random chance did not select SAT operator (r=48), using default strategy.
+[DEBUG] Random chance did not select SAT operator (r=37), using default strategy.
+[DEBUG] Random chance did not select SAT operator (r=34), using default strategy.
+[DEBUG] Random chance did not select SAT operator (r=39), using default strategy.
+[DEBUG] Random chance did not select SAT operator (r=31), using default strategy.
+[DEBUG] Random chance did not select SAT operator (r=36), using default strategy.
+LNS(PP;SAT): runtime = 0.0270358, iterations = 3, solution cost = 4252, initial solution cost = 4286, failed iterations = 11

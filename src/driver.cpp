@@ -87,7 +87,13 @@ int main(int argc, char** argv)
                 vm["initDestoryStrategy"].as<string>(),
                 vm["sipp"].as<bool>(),
                 screen, pipp_option);
-        bool succ = lns.run();
+        bool succ;
+
+        try {
+            succ = lns.run();
+        } catch (const std::exception& e) {
+            std::cerr << "[FATAL] Uncaught exception in main: " << e.what() << std::endl;
+        }
         if (succ)
         {
             lns.validateSolution();

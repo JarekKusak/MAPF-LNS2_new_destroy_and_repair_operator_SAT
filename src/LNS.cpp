@@ -399,7 +399,7 @@ bool LNS::run()
         if (destroy_strategy == SAT && replan_algo_name == "SAT")
         {
             int r = rand() % 100;
-            if (r < 20)
+            if (r < 0)
             {
                 cout << "[DEBUG] Using SAT operator (destroy+repair SAT) with probability 20 %." << endl;
                 const int MAX_SAT_ATTEMPTS = 10;
@@ -496,6 +496,31 @@ bool LNS::run()
          << ", solution cost = " << sum_of_costs << ", initial solution cost = " << initial_sum_of_costs
          << ", failed iterations = " << num_of_failures << endl;
 
+    /*
+    try {
+        if (screen >= 1)
+            validateSolution();
+    } catch (const ValidationException& e) {
+        cout << "[WARNING] Final solution is invalid: " << e.what() << endl;
+        if (destroy_strategy == SAT && replan_algo_name == "SAT") {
+            cout << "[DEBUG] Attempting final repair via init_lns..." << endl;
+            delete init_lns;
+            init_lns = new InitLNS(instance, agents, time_limit - runtime, replan_algo_name, init_destory_name, neighbor_size, screen);
+            bool fixed = init_lns->run(true);
+            if (fixed) {
+                path_table.reset();
+                for (const auto& agent : agents)
+                    path_table.insertPath(agent.id, agent.path);
+                sum_of_costs = init_lns->sum_of_costs;
+                init_lns->clear();
+            } else {
+                cout << "[ERROR] Could not repair final invalid solution." << endl;
+                return false;
+            }
+        } else {
+            return false;
+        }
+    }*/
     return true;
 }
 

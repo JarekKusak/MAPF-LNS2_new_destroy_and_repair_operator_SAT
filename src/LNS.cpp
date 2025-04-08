@@ -399,7 +399,7 @@ bool LNS::run()
         if (destroy_strategy == SAT && replan_algo_name == "SAT")
         {
             int r = rand() % 100;
-            if (r < 100)
+            if (r < 20)
             {
                 cout << "[DEBUG] Using SAT operator (destroy+repair SAT) with probability 20 %." << endl;
                 const int MAX_SAT_ATTEMPTS = 10;

@@ -1,8 +1,6 @@
 [DEBUG] hodnota skip_initial_solution 0
-jsme tu
 [DEBUG] Using default neighbor generation strategy for conflicts: 0
-	InitLNS(SAT): runtime = 0.0183277, iterations = 2, colliding pairs = 0, initial colliding pairs = 1, solution cost = 4286, initial solution cost = 4461, failed iterations = 0
-jsem tady
+	InitLNS(SAT): runtime = 0.0182991, iterations = 2, colliding pairs = 0, initial colliding pairs = 1, solution cost = 4286, initial solution cost = 4461, failed iterations = 0
 [DEBUG] Using SAT operator (destroy+repair SAT) with probability 20 %.
 ====================
 SAT destroy operator called.
@@ -293,7 +291,6 @@ Solver returned: 0
 Paths successfully updated.
 (LNS.cpp) Nová cesta v agents[a].path agenta 3: 468, 468, 467, 499, 531, 530, 529, 561, 593, 594, 594, 594, 593, 592, 591, 591, 590, 622, 654, 686, 718, 719, 751, 783, 815, 847, 848, 849, 881, 913, 912, 
 (LNS.cpp) Nová cesta v agents[a].path agenta 89: 437, 469, 501, 533, 565, 597, 596, 628, 660, 692, 724, 756, 788, 787, 819, 820, 821, 822, 854, 854, 886, 918, 950, 982, 1014, 1015, 
-jsem tady
 [DEBUG] Using SAT operator (destroy+repair SAT) with probability 20 %.
 ====================
 SAT destroy operator called.
@@ -499,8 +496,4 @@ Paths successfully updated.
 (LNS.cpp) Nová cesta v agents[a].path agenta 94: 701, 733, 732, 731, 730, 729, 697, 696, 664, 632, 600, 601, 602, 603, 571, 571, 539, 538, 506, 506, 506, 506, 506, 474, 473, 472, 440, 408, 376, 344, 345, 313, 281, 249, 248, 248, 216, 
 (LNS.cpp) Nová cesta v agents[a].path agenta 119: 861, 829, 797, 765, 733, 701, 702, 670, 638, 637, 636, 635, 603, 571, 570, 538, 506, 505, 473, 472, 440, 439, 407, 406, 405, 373, 341, 340, 339, 338, 337, 336, 304, 303, 302, 270, 269, 268, 236, 204, 172, 140, 
 (LNS.cpp) Nová cesta v agents[a].path agenta 142: 795, 795, 827, 859, 860, 861, 829, 797, 765, 733, 701, 702, 670, 671, 670, 638, 637, 636, 635, 603, 602, 570, 538, 539, 507, 
-LNS(PP;SAT): runtime = 0.0799904, iterations = 3, solution cost = 4250, initial solution cost = 4286, failed iterations = 1
-[WARNING] Final solution is invalid: Vertex conflict between agents 2 and 94 at location 506 at timestep 18
-[DEBUG] Attempting final repair via init_lns...
-[DEBUG] hodnota skip_initial_solution 1
-	InitLNS(SAT): runtime = 2.958e-06, iterations = 1, colliding pairs = 0, initial colliding pairs = 0, solution cost = 0, initial solution cost = 0, failed iterations = 0
+LNS(PP;SAT): runtime = 0.0791935, iterations = 3, solution cost = 4250, initial solution cost = 4286, failed iterations = 1

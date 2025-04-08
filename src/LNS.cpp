@@ -358,10 +358,10 @@ bool LNS::run()
     {
         cout.flush();
         runtime = ((fsec)(Time::now() - start_time)).count();
-
+        // if (screen >= 1) validateSolution();
         // validace řešení – pokud dojde k chybě, chyť výjimku a spusť opravu
         try {
-            if (needConflictRepair)
+            if (screen >= 1)
                 validateSolution(); // TODO: zprovoznit...
             needConflictRepair = false;
         } catch (const ValidationException& e) {
@@ -496,29 +496,6 @@ bool LNS::run()
          << ", solution cost = " << sum_of_costs << ", initial solution cost = " << initial_sum_of_costs
          << ", failed iterations = " << num_of_failures << endl;
 
-    try {
-        validateSolution();
-    } catch (const ValidationException& e) {
-        cout << "[WARNING] Final solution is invalid: " << e.what() << endl;
-        if (destroy_strategy == SAT && replan_algo_name == "SAT") {
-            cout << "[DEBUG] Attempting final repair via init_lns..." << endl;
-            //delete init_lns;
-            init_lns = new InitLNS(instance, agents, time_limit - runtime, replan_algo_name, init_destory_name, neighbor_size, screen);
-            bool fixed = init_lns->run(true);
-            if (fixed) {
-                path_table.reset();
-                for (const auto& agent : agents)
-                    path_table.insertPath(agent.id, agent.path);
-                sum_of_costs = init_lns->sum_of_costs;
-                init_lns->clear();
-            } else {
-                cout << "[ERROR] Could not repair final invalid solution." << endl;
-                return false;
-            }
-        } else {
-            return false;
-        }
-    }
     return true;
 }
 

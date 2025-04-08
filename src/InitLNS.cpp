@@ -341,10 +341,8 @@ bool InitLNS::run(bool skip_initial_solution)
     start_time = Time::now();
     bool succ = false;
     cout << "[DEBUG] hodnota skip_initial_solution " << skip_initial_solution << endl;
-    if (!skip_initial_solution) {
+    if (!skip_initial_solution)
         succ = getInitialSolution();
-        cout << "jsme tu" << endl;
-    }
     runtime = ((fsec)(Time::now() - start_time)).count();
     iteration_stats.emplace_back(neighbor.agents.size(), sum_of_costs, runtime, "PP", 0, num_of_colliding_pairs);
     if (screen >= 3)

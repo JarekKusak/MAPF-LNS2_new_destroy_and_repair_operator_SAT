@@ -362,8 +362,7 @@ bool LNS::run()
         // validace řešení – pokud dojde k chybě, chyť výjimku a spusť opravu
         try {
             if (needConflictRepair)
-                validateSolution();
-            cout <<"jsem tady" << endl;
+                validateSolution(); // TODO: zprovoznit...
             needConflictRepair = false;
         } catch (const ValidationException& e) {
             cout << "[WARNING] Conflict detected (ValidationException): " << e.what() << endl;

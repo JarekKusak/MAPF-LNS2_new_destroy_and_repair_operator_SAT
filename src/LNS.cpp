@@ -295,7 +295,8 @@ bool LNS::runSAT()
     }
 }
 
-// Upravená metoda run() v LNS.cpp
+// TODO: ověřit argumenty programu a kombinaci s ostatními
+
 bool LNS::run()
 {
     // Otevřeme soubor pro zápis
@@ -360,7 +361,7 @@ bool LNS::run()
         runtime = ((fsec)(Time::now() - start_time)).count();
         // if (screen >= 1) validateSolution();
         // validace řešení – pokud dojde k chybě, chyť výjimku a spusť opravu
-        try {
+        try { // TODO: i po poslední iteraci!!
             if (screen >= 1)
                 validateSolution(); // TODO: zprovoznit...
             needConflictRepair = false;
@@ -375,8 +376,11 @@ bool LNS::run()
             needConflictRepair = true;
         }
 
+        cout << "[DEBUG] hodnota needConflictRepair: " << needConflictRepair << endl;
+
         if (needConflictRepair && destroy_strategy == SAT) {
             cout << "[DEBUG] Switching to conflict repair mode via init_lns." << endl;
+            // TODO: po tom, co tenhle if blok zprovozním, zkontrolovat časy "time_limit - runtime", ale to by měl být detail
             init_lns = new InitLNS(instance, agents, time_limit - runtime, replan_algo_name, init_destory_name, neighbor_size, screen);
             succ = init_lns->run(true);
             if (succ)
@@ -387,8 +391,8 @@ bool LNS::run()
                 init_lns->clear();
                 sum_of_costs = init_lns->sum_of_costs;
 
-                delete init_lns;
-                init_lns = nullptr;
+                //delete init_lns;
+                //init_lns = nullptr;
             }
             continue;
         }
@@ -426,7 +430,7 @@ bool LNS::run()
 
         if (!opSuccess)
         {
-            int DEFAULT_DESTROY_STRATEGY = INTERSECTION; // NATVRDO
+            int DEFAULT_DESTROY_STRATEGY = INTERSECTION;
             switch (DEFAULT_DESTROY_STRATEGY)
             {
                 case RANDOMWALK:

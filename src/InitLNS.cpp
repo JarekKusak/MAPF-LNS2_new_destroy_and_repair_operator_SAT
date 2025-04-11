@@ -38,7 +38,6 @@ InitLNS::InitLNS(const Instance& instance, vector<Agent>& agents, double time_li
      }
 }
 
-// TODO: pořádně zkontrolovat výstup, to vypadá, že se neaktualizují nové cesty agentů nebo nevím
 // TODO: pro t-2 SAT nevrací správný plán (konkrétně s jinou goal pozicí), ale měl by...
 
 /*
@@ -241,8 +240,6 @@ bool InitLNS::generateNeighborBySAT() {
     return true;
 }
 
-// TODO: špatně se vybírá konfliktní agent nebo se špatně generuje submapa
-
 // --------------------------------------------------------
 // REPAIR fáze: runSAT() – zavolá findLocalPaths + solveWithSAT,
 //              a upraví cesty agentů + path_table
@@ -336,15 +333,98 @@ bool InitLNS::runSAT()
     }
 }
 
+void InitLNS::buildCollisionData()
+{
+    cout << "[DEBUG] buildCollisionData() called – skip_initial_solution case." << endl;
+    cout << "[DEBUG] Agents.size()=" << agents.size()
+         << ", collision_graph.size()=" << collision_graph.size() << endl;
+
+    // Pro jistotu znovu zajistíme správnou velikost collision_graph
+    collision_graph.assign(agents.size(), {});
+    path_table.clear();
+    sum_of_costs = 0;
+
+    set<pair<int,int>> colliding_pairs;
+    // Vložíme existující cesty do path_table a přepočítáme sum_of_costs
+    for (int i = 0; i < (int)agents.size(); i++)
+    {
+        if ((int)agents[i].path.size() == 0) {
+            cout << "[DEBUG] Agent " << i << " has an EMPTY path (size=0)." << endl;
+        } else {
+            cout << "[DEBUG] Agent " << i << " has path length=" << agents[i].path.size() << endl;
+        }
+
+        // sečteme cost
+        sum_of_costs += (int)agents[i].path.size() - 1;
+
+        // vložíme do path_table
+        path_table.insertPath(agents[i].id, agents[i].path);
+    }
+
+    // Teď projdeme cesty znovu a voláme updateCollidingPairs (může číst z path_table)
+    for (int i = 0; i < (int)agents.size(); i++)
+    {
+        // Najdi kolize s cestou agent[i]
+        bool foundCollision = updateCollidingPairs(colliding_pairs, agents[i].id, agents[i].path);
+        if (foundCollision) {
+            cout << "[DEBUG] agent " << i
+                 << " => updateCollidingPairs => foundCollision" << endl;
+        }
+    }
+
+    // Naplníme collision_graph
+    collision_graph.assign(agents.size(), {});
+    for(const auto& ap : colliding_pairs)
+    {
+        auto a1 = ap.first;
+        auto a2 = ap.second;
+        // Pro jistotu ověřit, zda a1,a2 < agents.size()
+        if (a1 < 0 || a1 >= (int)agents.size() ||
+            a2 < 0 || a2 >= (int)agents.size()) {
+            cout << "[ERROR] buildCollisionData() found out-of-range agent index: ("
+                 << a1 << "," << a2 << ") – possible cause of segfault." << endl;
+        } else {
+            collision_graph[a1].emplace(a2);
+            collision_graph[a2].emplace(a1);
+        }
+    }
+
+    num_of_colliding_pairs = colliding_pairs.size();
+    cout << "[DEBUG] buildCollisionData() => sum_of_costs=" << sum_of_costs
+         << ", num_of_colliding_pairs=" << num_of_colliding_pairs << endl;
+}
+
 bool InitLNS::run(bool skip_initial_solution)
 {
     start_time = Time::now();
     bool succ = false;
-    cout << "[DEBUG] hodnota skip_initial_solution " << skip_initial_solution << endl;
+    cout << "[DEBUG] hodnota skip_initial_solution=" << skip_initial_solution << endl;
+    came_from_optimizing_phase = skip_initial_solution;
     if (!skip_initial_solution)
+    {
         succ = getInitialSolution();
+        cout << "[DEBUG] getInitialSolution() => succ=" << succ
+             << ", sum_of_costs=" << sum_of_costs
+             << ", num_of_colliding_pairs=" << num_of_colliding_pairs << endl;
+    }
+    else
+    {
+        cout << "[DEBUG] We skip initialSolution => call buildCollisionData()" << endl;
+        buildCollisionData();
+        succ = true;
+        cout << "[DEBUG] buildCollisionData done => sum_of_costs=" << sum_of_costs
+             << ", num_of_colliding_pairs=" << num_of_colliding_pairs << endl;
+        cout << "[DEBUG] sum_of_cost hodnota: " << sum_of_costs << endl;
+    }
+
     runtime = ((fsec)(Time::now() - start_time)).count();
     iteration_stats.emplace_back(neighbor.agents.size(), sum_of_costs, runtime, "PP", 0, num_of_colliding_pairs);
+
+    // Můžete vypsat sanity-check
+    cout << "[DEBUG] After skip/init build => iteration_stats.back(): sum_of_costs="
+         << iteration_stats.back().sum_of_costs
+         << ", collisions=" << iteration_stats.back().num_of_colliding_pairs << endl;
+
     if (screen >= 3)
         printPath();
     if (screen >= 1)
@@ -353,6 +433,7 @@ bool InitLNS::run(bool skip_initial_solution)
              << "colliding pairs = " << num_of_colliding_pairs << ", "
              << "solution cost = " << sum_of_costs << ", "
              << "remaining time = " << time_limit - runtime << endl;
+
     if (runtime >= time_limit && !succ)
     {
         printResult();
@@ -648,7 +729,6 @@ bool InitLNS::runPBS()
 }
 bool InitLNS::runPP()
 {
-    cout << "[DEBUG] velikost neighbor.agents: " << neighbor.agents.size() << endl;
     auto shuffled_agents = neighbor.agents;
     std::random_shuffle(shuffled_agents.begin(), shuffled_agents.end());
     if (screen >= 2) {
@@ -796,6 +876,9 @@ bool InitLNS::updateCollidingPairs(set<pair<int, int>>& colliding_pairs, int age
         {
             for (auto id : path_table.table[to][t])
             {
+                if (id == agent_id)
+                    continue;
+
                 succ = true;
                 colliding_pairs.emplace(min(agent_id, id), max(agent_id, id));
             }
@@ -806,6 +889,8 @@ bool InitLNS::updateCollidingPairs(set<pair<int, int>>& colliding_pairs, int age
             {
                 for (auto a2: path_table.table[from][t])
                 {
+                    if (a1 == agent_id || a2 == agent_id)
+                        continue;
                     if (a1 == a2)
                     {
                         succ = true;
@@ -1183,10 +1268,16 @@ void InitLNS::writeResultToFile(const string & file_name, int sum_of_distances, 
         auc += prev->num_of_colliding_pairs * (time_limit - prev->runtime);
     }
 
+    bool skip = came_from_optimizing_phase;
+
+    int init_sum_of_cost = iteration_stats.front().sum_of_costs;
+    //if (skip) // reparační fáze
+       // init_sum_of_cost = iteration_stats.back().sum_of_costs;
+
     ofstream stats(file_name, std::ios::app);
     stats << runtime << "," << iteration_stats.back().num_of_colliding_pairs << "," <<
           sum_of_costs << "," << iteration_stats.front().num_of_colliding_pairs << "," <<
-          iteration_stats.front().sum_of_costs << "," << sum_of_distances << "," <<
+          init_sum_of_cost << "," << sum_of_distances << "," <<
           iteration_stats.size() << "," << average_group_size << "," <<
           iteration_stats.front().runtime << "," << auc << "," <<
           num_LL_expanded << "," << num_LL_generated << "," << num_LL_reopened << "," << num_LL_runs << "," <<
@@ -1246,13 +1337,22 @@ void InitLNS::printResult()
     if (average_group_size > 0)
         average_group_size /= (double)(iteration_stats.size() - 1);
     assert(!iteration_stats.empty());
+
+    bool skip = came_from_optimizing_phase;
+
+    int initial_cost_to_print = iteration_stats.front().sum_of_costs;
+    //if (skip && iteration_stats.size() > 1) {
+        // v reparační fázi použijeme iteration_stats.back()
+      //  initial_cost_to_print = iteration_stats.back().sum_of_costs;
+    //}
+
     cout << "\t" << getSolverName() << ": "
          << "runtime = " << runtime << ", "
          << "iterations = " << iteration_stats.size() << ", "
          << "colliding pairs = " << num_of_colliding_pairs << ", "
          << "initial colliding pairs = " << iteration_stats.front().num_of_colliding_pairs << ", "
          << "solution cost = " << sum_of_costs << ", "
-         << "initial solution cost = " << iteration_stats.front().sum_of_costs << ", "
+         << "initial solution cost = " << initial_cost_to_print << ", "
          << "failed iterations = " << num_of_failures << endl;
 }
 

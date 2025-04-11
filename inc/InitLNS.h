@@ -32,6 +32,7 @@ private:
     vector<set<int>> collision_graph;
     vector<int> goal_table;
 
+    bool came_from_optimizing_phase = false;
 
     bool runPP();
     bool runGCBS();
@@ -62,4 +63,5 @@ private:
     bool runSAT(); // new repair operator
     pair<vector<vector<int>>, vector<int>> getSubmapAndAgents(int agent_id, int submap_size, int agent_location, int timestep); // helper function for getting sub-map
     void prepareOldNeighborInfo();
+    void buildCollisionData();
 };

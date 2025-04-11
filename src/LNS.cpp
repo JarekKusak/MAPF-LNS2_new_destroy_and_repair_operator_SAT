@@ -354,33 +354,15 @@ bool LNS::run()
 
     bool needConflictRepair = false;
 
-    /*
-    for (auto a : agents) {
-        for (int t = 0; t < (int) agents[a.id].path.size(); t++) {
-            if (a.id == 3 || a.id == 89) {
-                cout << "[DEBUG] Kontrola STARÉ path_table pro agenta " << a.id << ":\n";
-                int loc = agents[a.id].path[t].location;
-                if (loc >= 0 && loc < (int) path_table.table.size()) {
-                    // zkontrolovat table[loc].size() > t
-                    if ((int) path_table.table[loc].size() > t)
-                        cout << "  time=" << t << ", loc=" << loc
-                             << ", table=" << path_table.table[loc][t] << endl;
-                    else
-                        cout << "  time=" << t << ", loc=" << loc << " => out of range\n";
-                }
-            }
-        }
-    }*/
-
     // optimalizace
     while (runtime < time_limit && iteration_stats.size() <= num_of_iterations)
     {
         cout.flush();
         runtime = ((fsec)(Time::now() - start_time)).count();
         // validace řešení – pokud dojde k chybě, chyť výjimku a spusť opravu
-        try { // TODO: i po poslední iteraci!!
-            if (screen >= 1)
-                validateSolution(); // TODO: zprovoznit...
+        try {
+            if (screen >= 1) // TODO: zprovoznit
+                validateSolution();
             needConflictRepair = false;
         } catch (const ValidationException& e) {
             cout << "[WARNING] Conflict detected (ValidationException): " << e.what() << endl;
@@ -517,23 +499,26 @@ bool LNS::run()
                 cout << "[DEBUG] In LNS, we pass " << agents.size()
                      << " agents to init_lns (skip=true). " << endl;
 
-                // TODO: kontext měnit i výše + opravit chybějící atributy
+                // TODO: kontext přidat i výše
                 // [NEW CONTEXT PUBLISH]
-                //init_lns->sum_of_costs          = sum_of_costs;
+                sum_of_costs += neighbor.sum_of_costs - neighbor.old_sum_of_costs;
 
                 cout << "[DEBUG] aktuální sum_of_cost v LNS.cpp: " << sum_of_costs << endl;
                 cout << "[DEBUG] sum_of_cost před přiřazením do init_lns: " << init_lns->sum_of_costs << endl;
                 init_lns->sum_of_costs = this->sum_of_costs;
                 cout << "[DEBUG] sum_of_cost po přiřazení do init_lns: " << init_lns->sum_of_costs << endl;
-                init_lns->iteration_stats = iteration_stats;
+                //init_lns->iteration_stats = iteration_stats;
                 cout << "[DEBUG] init_lns->iteration_stats.back().sum_of_costs po přiřazení iteration_stats do init_lns: " << init_lns->iteration_stats.back().sum_of_costs << endl;
                 //init_lns->iteration_stats.front().sum_of_costs = iteration_stats.back().sum_of_costs;
 
                 bool fixed = init_lns->run(true);
 
+                cout << "[DEBUG] init_lns->sum_of_costs po doběhnutí init_lns->run: " << init_lns->sum_of_costs << endl;
+
                 if (fixed)
                 {
                     sum_of_costs = init_lns->sum_of_costs;
+                    cout << "[DEBUG] sum_of_costs po přiřazení init_lns->run: " << sum_of_costs << endl;
                     path_table.reset();
                     for (const auto &agent : agents)
                         path_table.insertPath(agent.id, agent.path);
@@ -558,39 +543,18 @@ bool LNS::run()
         }
 
         runtime = ((fsec)(Time::now() - start_time)).count();
-        sum_of_costs += neighbor.sum_of_costs - neighbor.old_sum_of_costs;
+
+
+        cout << "[DEBUG] sum_of_costs před opětovném přepočtu: " << sum_of_costs << endl;
+        sum_of_costs += neighbor.sum_of_costs - neighbor.old_sum_of_costs; // TODO: po fázi řešení konfliktů musíme přeskočit/počítat jinak
+        cout << "[DEBUG] sum_of_costs po opětovném přepočtu: " << sum_of_costs << endl;
+
+
         if (screen >= 1)
             cout << "Iteration " << iteration_stats.size() << ", group size = " << neighbor.agents.size()
                  << ", solution cost = " << sum_of_costs << ", remaining time = " << time_limit - runtime << endl;
         iteration_stats.emplace_back(neighbor.agents.size(), sum_of_costs, runtime, replan_algo_name);
     }
-
-    /*
-    // Závěrečná kontrola
-    try {
-        //if (screen >= 1)
-        validateSolution();
-    } catch (const ValidationException& e) {
-        cout << "[WARNING] Final solution is invalid: " << e.what() << endl;
-        if (destroy_strategy == SAT) {
-            cout << "[DEBUG] Attempting final repair via init_lns..." << endl;
-            delete init_lns;
-            init_lns = new InitLNS(instance, agents, time_limit - runtime, replan_algo_name, init_destory_name, neighbor_size, screen);
-            bool fixed = init_lns->run(true);
-            if (fixed) {
-                path_table.reset();
-                for (const auto& agent : agents)
-                    path_table.insertPath(agent.id, agent.path);
-                sum_of_costs = init_lns->sum_of_costs;
-                init_lns->clear();
-            } else {
-                cout << "[ERROR] Could not repair final invalid solution." << endl;
-                return false;
-            }
-        } else {
-            return false;
-        }
-    }*/
 
     average_group_size = -iteration_stats.front().num_of_agents;
     for (const auto& data : iteration_stats)

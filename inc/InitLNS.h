@@ -32,8 +32,6 @@ private:
     vector<set<int>> collision_graph;
     vector<int> goal_table;
 
-    bool came_from_optimizing_phase = false;
-
     bool runPP();
     bool runGCBS();
     bool runPBS();

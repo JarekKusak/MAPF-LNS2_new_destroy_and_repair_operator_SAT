@@ -1,8 +1,9 @@
 [DEBUG] hodnota skip_initial_solution=0
 [DEBUG] getInitialSolution() => succ=1, sum_of_costs=4461, num_of_colliding_pairs=1
+num_of_colliding_pairs: 1, sum_of_costs: 4461
 [DEBUG] After skip/init build => iteration_stats.back(): sum_of_costs=4461, collisions=1
 [DEBUG] Using default neighbor generation strategy for conflicts: 0
-	InitLNS(PP): runtime = 0.019794, iterations = 2, colliding pairs = 0, initial colliding pairs = 1, solution cost = 4490, initial solution cost = 4461, failed iterations = 0
+	InitLNS(PP): runtime = 0.018898, iterations = 2, colliding pairs = 0, initial colliding pairs = 1, solution cost = 4490, initial solution cost = 4461, failed iterations = 0
 [DEBUG] hodnota needConflictRepair: 0
 [DEBUG] Using SAT operator (destroy+repair SAT) with probability 20 %.
 ====================
@@ -300,6 +301,8 @@ Paths successfully updated.
 (LNS.cpp) Nová cesta v agents[a].path agenta 101: 985, 984, 983, 982, 981, 980, 948, 916, 884, 883, 851, 850, 849, 848, 847, 815, 814, 782, 750, 718, 686, 654, 622, 590, 589, 588, 587, 555, 523, 491, 459, 427, 395, 363, 331, 330, 329, 328, 296, 264, 232, 200, 168, 
 (LNS.cpp) Nová cesta v agents[a].path agenta 118: 887, 886, 885, 884, 883, 851, 850, 849, 848, 847, 815, 814, 782, 781, 780, 748, 747, 715, 714, 682, 650, 649, 648, 647, 615, 583, 551, 519, 487, 455, 454, 422, 421, 420, 388, 387, 355, 323, 291, 259, 227, 
 [DEBUG] Validate solution immediately after SAT success.
+[DEBUG] sum_of_costs před opětovném přepočtu: 4490
+[DEBUG] sum_of_costs po opětovném přepočtu: 4490
 [DEBUG] hodnota needConflictRepair: 0
 [DEBUG] Using SAT operator (destroy+repair SAT) with probability 20 %.
 ====================
@@ -464,164 +467,14 @@ Paths successfully updated.
 [WARNING] Conflict after SAT: Vertex conflict between agents 3 and 14 at location 848 at timestep 26
 [DEBUG] Attempting immediate repair via init_lns after SAT.
 [DEBUG] In LNS, we pass 150 agents to init_lns (skip=true). 
-[DEBUG] aktuální sum_of_cost v LNS.cpp: 4490
+[DEBUG] aktuální sum_of_cost v LNS.cpp: 4478
 [DEBUG] sum_of_cost před přiřazením do init_lns: 0
-[DEBUG] sum_of_cost po přiřazení do init_lns: 4490
-[DEBUG] init_lns->iteration_stats.back().sum_of_costs po přiřazení iteration_stats do init_lns: 4490
+[DEBUG] sum_of_cost po přiřazení do init_lns: 4478
+[DEBUG] init_lns->iteration_stats.back().sum_of_costs po přiřazení iteration_stats do init_lns: 0
 [DEBUG] hodnota skip_initial_solution=1
 [DEBUG] We skip initialSolution => call buildCollisionData()
 [DEBUG] buildCollisionData() called – skip_initial_solution case.
 [DEBUG] Agents.size()=150, collision_graph.size()=150
-[DEBUG] Agent 0 has path length=43
-[DEBUG] Agent 1 has path length=20
-[DEBUG] Agent 2 has path length=36
-[DEBUG] Agent 3 has path length=31
-[DEBUG] Agent 4 has path length=54
-[DEBUG] Agent 5 has path length=30
-[DEBUG] Agent 6 has path length=16
-[DEBUG] Agent 7 has path length=20
-[DEBUG] Agent 8 has path length=5
-[DEBUG] Agent 9 has path length=20
-[DEBUG] Agent 10 has path length=24
-[DEBUG] Agent 11 has path length=24
-[DEBUG] Agent 12 has path length=11
-[DEBUG] Agent 13 has path length=49
-[DEBUG] Agent 14 has path length=39
-[DEBUG] Agent 15 has path length=43
-[DEBUG] Agent 16 has path length=25
-[DEBUG] Agent 17 has path length=17
-[DEBUG] Agent 18 has path length=13
-[DEBUG] Agent 19 has path length=30
-[DEBUG] Agent 20 has path length=33
-[DEBUG] Agent 21 has path length=34
-[DEBUG] Agent 22 has path length=30
-[DEBUG] Agent 23 has path length=48
-[DEBUG] Agent 24 has path length=20
-[DEBUG] Agent 25 has path length=34
-[DEBUG] Agent 26 has path length=37
-[DEBUG] Agent 27 has path length=19
-[DEBUG] Agent 28 has path length=44
-[DEBUG] Agent 29 has path length=30
-[DEBUG] Agent 30 has path length=31
-[DEBUG] Agent 31 has path length=21
-[DEBUG] Agent 32 has path length=12
-[DEBUG] Agent 33 has path length=27
-[DEBUG] Agent 34 has path length=28
-[DEBUG] Agent 35 has path length=47
-[DEBUG] Agent 36 has path length=25
-[DEBUG] Agent 37 has path length=19
-[DEBUG] Agent 38 has path length=15
-[DEBUG] Agent 39 has path length=28
-[DEBUG] Agent 40 has path length=19
-[DEBUG] Agent 41 has path length=13
-[DEBUG] Agent 42 has path length=44
-[DEBUG] Agent 43 has path length=40
-[DEBUG] Agent 44 has path length=42
-[DEBUG] Agent 45 has path length=41
-[DEBUG] Agent 46 has path length=30
-[DEBUG] Agent 47 has path length=22
-[DEBUG] Agent 48 has path length=17
-[DEBUG] Agent 49 has path length=45
-[DEBUG] Agent 50 has path length=41
-[DEBUG] Agent 51 has path length=32
-[DEBUG] Agent 52 has path length=17
-[DEBUG] Agent 53 has path length=40
-[DEBUG] Agent 54 has path length=27
-[DEBUG] Agent 55 has path length=47
-[DEBUG] Agent 56 has path length=45
-[DEBUG] Agent 57 has path length=43
-[DEBUG] Agent 58 has path length=25
-[DEBUG] Agent 59 has path length=46
-[DEBUG] Agent 60 has path length=14
-[DEBUG] Agent 61 has path length=43
-[DEBUG] Agent 62 has path length=33
-[DEBUG] Agent 63 has path length=36
-[DEBUG] Agent 64 has path length=30
-[DEBUG] Agent 65 has path length=34
-[DEBUG] Agent 66 has path length=24
-[DEBUG] Agent 67 has path length=39
-[DEBUG] Agent 68 has path length=15
-[DEBUG] Agent 69 has path length=44
-[DEBUG] Agent 70 has path length=32
-[DEBUG] Agent 71 has path length=35
-[DEBUG] Agent 72 has path length=17
-[DEBUG] Agent 73 has path length=29
-[DEBUG] Agent 74 has path length=31
-[DEBUG] Agent 75 has path length=28
-[DEBUG] Agent 76 has path length=13
-[DEBUG] Agent 77 has path length=26
-[DEBUG] Agent 78 has path length=36
-[DEBUG] Agent 79 has path length=45
-[DEBUG] Agent 80 has path length=24
-[DEBUG] Agent 81 has path length=25
-[DEBUG] Agent 82 has path length=25
-[DEBUG] Agent 83 has path length=39
-[DEBUG] Agent 84 has path length=39
-[DEBUG] Agent 85 has path length=28
-[DEBUG] Agent 86 has path length=28
-[DEBUG] Agent 87 has path length=27
-[DEBUG] Agent 88 has path length=26
-[DEBUG] Agent 89 has path length=26
-[DEBUG] Agent 90 has path length=17
-[DEBUG] Agent 91 has path length=51
-[DEBUG] Agent 92 has path length=43
-[DEBUG] Agent 93 has path length=18
-[DEBUG] Agent 94 has path length=47
-[DEBUG] Agent 95 has path length=7
-[DEBUG] Agent 96 has path length=31
-[DEBUG] Agent 97 has path length=19
-[DEBUG] Agent 98 has path length=31
-[DEBUG] Agent 99 has path length=8
-[DEBUG] Agent 100 has path length=49
-[DEBUG] Agent 101 has path length=43
-[DEBUG] Agent 102 has path length=27
-[DEBUG] Agent 103 has path length=33
-[DEBUG] Agent 104 has path length=21
-[DEBUG] Agent 105 has path length=41
-[DEBUG] Agent 106 has path length=33
-[DEBUG] Agent 107 has path length=39
-[DEBUG] Agent 108 has path length=26
-[DEBUG] Agent 109 has path length=54
-[DEBUG] Agent 110 has path length=26
-[DEBUG] Agent 111 has path length=43
-[DEBUG] Agent 112 has path length=40
-[DEBUG] Agent 113 has path length=35
-[DEBUG] Agent 114 has path length=44
-[DEBUG] Agent 115 has path length=27
-[DEBUG] Agent 116 has path length=36
-[DEBUG] Agent 117 has path length=30
-[DEBUG] Agent 118 has path length=41
-[DEBUG] Agent 119 has path length=42
-[DEBUG] Agent 120 has path length=43
-[DEBUG] Agent 121 has path length=29
-[DEBUG] Agent 122 has path length=33
-[DEBUG] Agent 123 has path length=32
-[DEBUG] Agent 124 has path length=24
-[DEBUG] Agent 125 has path length=21
-[DEBUG] Agent 126 has path length=19
-[DEBUG] Agent 127 has path length=17
-[DEBUG] Agent 128 has path length=42
-[DEBUG] Agent 129 has path length=14
-[DEBUG] Agent 130 has path length=31
-[DEBUG] Agent 131 has path length=26
-[DEBUG] Agent 132 has path length=36
-[DEBUG] Agent 133 has path length=46
-[DEBUG] Agent 134 has path length=17
-[DEBUG] Agent 135 has path length=43
-[DEBUG] Agent 136 has path length=36
-[DEBUG] Agent 137 has path length=53
-[DEBUG] Agent 138 has path length=12
-[DEBUG] Agent 139 has path length=39
-[DEBUG] Agent 140 has path length=55
-[DEBUG] Agent 141 has path length=3
-[DEBUG] Agent 142 has path length=32
-[DEBUG] Agent 143 has path length=22
-[DEBUG] Agent 144 has path length=26
-[DEBUG] Agent 145 has path length=36
-[DEBUG] Agent 146 has path length=36
-[DEBUG] Agent 147 has path length=34
-[DEBUG] Agent 148 has path length=40
-[DEBUG] Agent 149 has path length=30
 [DEBUG] agent 3 => updateCollidingPairs => foundCollision
 [DEBUG] agent 11 => updateCollidingPairs => foundCollision
 [DEBUG] agent 14 => updateCollidingPairs => foundCollision
@@ -639,8 +492,13 @@ Paths successfully updated.
 [DEBUG] buildCollisionData() => sum_of_costs=4478, num_of_colliding_pairs=15
 [DEBUG] buildCollisionData done => sum_of_costs=4478, num_of_colliding_pairs=15
 [DEBUG] sum_of_cost hodnota: 4478
+num_of_colliding_pairs: 15, sum_of_costs: 4478
 [DEBUG] After skip/init build => iteration_stats.back(): sum_of_costs=4478, collisions=15
 [DEBUG] Using default neighbor generation strategy for conflicts: 1
 [DEBUG] Using default neighbor generation strategy for conflicts: 1
-	InitLNS(PP): runtime = 0.000953459, iterations = 5, colliding pairs = 0, initial colliding pairs = 0, solution cost = 4366, initial solution cost = 4490, failed iterations = 0
-LNS(PP;PP): runtime = 0.0249639, iterations = 3, solution cost = 4354, initial solution cost = 4490, failed iterations = 1
+	InitLNS(PP): runtime = 0.000655542, iterations = 3, colliding pairs = 0, initial colliding pairs = 15, solution cost = 4366, initial solution cost = 4478, failed iterations = 0
+[DEBUG] init_lns->sum_of_costs po doběhnutí init_lns->run: 4366
+[DEBUG] sum_of_costs po přiřazení init_lns->run: 4366
+[DEBUG] sum_of_costs před opětovném přepočtu: 4366
+[DEBUG] sum_of_costs po opětovném přepočtu: 4354
+LNS(PP;PP): runtime = 0.0767782, iterations = 3, solution cost = 4354, initial solution cost = 4490, failed iterations = 1

@@ -341,10 +341,8 @@ bool LNS::run()
         return false;
     }
 
-    bool needConflictRepair = false;
-
     // ============================================
-    // Pomocná lambda funkce pro unify opravu konfliktu
+    // pomocná lambda funkce pro unify opravu konfliktu
     // ============================================
     auto doInitLNSRepair = [&](const string& debug_reason)
     {
@@ -354,6 +352,48 @@ bool LNS::run()
 
         cout << "[DEBUG] In LNS, we pass " << agents.size()
              << " agents to init_lns (skip=true). " << endl;
+
+        /*
+        // ------------------------------------------------------------------
+        // 1) Výpis: cesty všech agentů ještě PŘED voláním init_lns->run(true)
+        // ------------------------------------------------------------------
+        cout << "[DEBUG] Aktuální cesty všech agentů (globální location IDs):" << endl;
+        for (size_t ag = 0; ag < agents.size(); ag++)
+        {
+            cout << "  Agent " << ag << " [id=" << agents[ag].id << "], path.size()=" << agents[ag].path.size() << ": ";
+            for (size_t t = 0; t < agents[ag].path.size(); t++)
+            {
+                cout << agents[ag].path[t].location << " ";
+            }
+            cout << endl;
+        }
+         */
+
+        // ------------------------------------------------------------------
+        // 2) Výpis: path_table pro vybrané agenty (např. neighbor.agents)
+        // ------------------------------------------------------------------
+        cout << "[DEBUG] Obsah path_table pro vybrané agenty (neighbor.agents):" << endl;
+        for (int a : neighbor.agents)
+        {
+            cout << "  Agent " << a << " => controlling path length=" << agents[a].path.size() << endl;
+            for (int t = 0; t < (int)agents[a].path.size(); t++)
+            {
+                int loc = agents[a].path[t].location;
+                // zkontrolovat, zda loc je validní index
+                if (loc < 0 || loc >= (int)path_table.table.size())
+                {
+                    cout << "    [time=" << t << "]: loc=" << loc << " (out of range)" << endl;
+                    continue;
+                }
+                // zkontrolovat, zda path_table.table[loc].size() > t
+                if ((int)path_table.table[loc].size() <= t)
+                {
+                    cout << "    [time=" << t << ", loc=" << loc << "]: path_table.table[loc].size()="
+                         << path_table.table[loc].size() << " => out of range pro t=" << t << endl;
+                    continue;
+                }
+            }
+        }
 
         bool fixed = init_lns->run(true);
 
@@ -369,12 +409,17 @@ bool LNS::run()
 
             init_lns->clear();
             cameFromInitLNS = true;
+            // ======== PŘIDÁNO ========
+            cout << "ZKOUŠÍM TO ZNOVU, MĚLO BY TO BÝT BEZ PROBLÉMU" << endl;
+            validateSolution();
+            // ======== PŘIDÁNO ========
         }
         else
             cout << "[ERROR] Could not repair solution right after SAT." << endl;
     };
     // ============================================
 
+    bool needConflictRepair = false;
     // optimalizace
     while (runtime < time_limit && iteration_stats.size() <= num_of_iterations)
     {
@@ -383,8 +428,7 @@ bool LNS::run()
         cameFromInitLNS = false;
         // validace řešení – pokud dojde k chybě, chyť výjimku a spusť opravu
         try {
-            if (destroy_strategy == SAT)
-            //if (screen >= 1) // TODO: zprovoznit
+            if (destroy_strategy == SAT) // only needed while using SAT destroy&repair -> can cause conflicts
                 validateSolution();
             needConflictRepair = false;
         } catch (const ValidationException& e) {
@@ -417,7 +461,7 @@ bool LNS::run()
         if (destroy_strategy == SAT)
         {
             int r = rand() % 100;
-            if (r < 100) // 20% pravděpodobnost
+            if (r < 100) // číslo zde bude hyperparametr
             {
                 cout << "[DEBUG] Using SAT operator (destroy+repair SAT) with probability 20 %." << endl;
                 const int MAX_SAT_ATTEMPTS = 10;
@@ -436,10 +480,7 @@ bool LNS::run()
                     opSuccess = runSAT();
                 }
             }
-            else
-            {
-                cout << "[DEBUG] Random chance did not select SAT operator (r=" << r << "), using default strategy." << endl;
-            }
+            else cout << "[DEBUG] Random chance did not select SAT operator (r=" << r << "), using default strategy." << endl;
         }
 
         if (!opSuccess)
@@ -491,11 +532,7 @@ bool LNS::run()
             else if (DEFAULT_REPLAN_ALGO == "EECBS")succ = runEECBS();
             else { cerr << "Wrong replanning strategy" << endl; exit(-1); }
         }
-        else
-        {
-            // opSuccess = true => runSAT proběhl
-            succ = opSuccess;
-        }
+        else succ = opSuccess;// opSuccess = true => runSAT proběhl
 
         if (!succ)
             continue;

@@ -341,8 +341,9 @@ void InitLNS::buildCollisionData()
 
     // Pro jistotu znovu zajistíme správnou velikost collision_graph
     collision_graph.assign(agents.size(), {});
-    path_table.clear();
+    //path_table.clear();
     sum_of_costs = 0;
+    neighbor.agents.clear();
 
     set<pair<int,int>> colliding_pairs;
     // Vložíme existující cesty do path_table a přepočítáme sum_of_costs
@@ -367,6 +368,7 @@ void InitLNS::buildCollisionData()
         // Najdi kolize s cestou agent[i]
         bool foundCollision = updateCollidingPairs(colliding_pairs, agents[i].id, agents[i].path);
         if (foundCollision) {
+
             cout << "[DEBUG] agent " << i
                  << " => updateCollidingPairs => foundCollision" << endl;
         }
@@ -374,10 +376,13 @@ void InitLNS::buildCollisionData()
 
     // Naplníme collision_graph
     collision_graph.assign(agents.size(), {});
+    cout << "[DEBUG] Dvojice konfliktních agentů: " << endl;
     for(const auto& ap : colliding_pairs)
     {
         auto a1 = ap.first;
+        cout << "agent " << a1 << " je v konfliktu s agentem ";
         auto a2 = ap.second;
+        cout << a2 << endl;
         // Pro jistotu ověřit, zda a1,a2 < agents.size()
         if (a1 < 0 || a1 >= (int)agents.size() ||
             a2 < 0 || a2 >= (int)agents.size()) {
@@ -408,6 +413,26 @@ bool InitLNS::run(bool skip_initial_solution)
     else {
         cout << "[DEBUG] We skip initialSolution => call buildCollisionData()" << endl;
         buildCollisionData();
+
+        /*
+        cout << "[DEBUG] PŘED REPLAN ITERACÍ => obsah path_table všech agentů:" << endl;
+        for (auto a : agents) {
+            for (int t = 0; t < (int) agents[a.id].path.size(); t++) {
+                int loc = agents[a.id].path[t].location;
+                const auto &agents_here = path_table.table[loc][t];
+
+                cout << "    [time=" << t << ", loc=" << loc << "]: ";
+                if (agents_here.empty())
+                    cout << "   (žádní agenti v path_table)" << endl;
+                else {
+                    cout << "   path_table má agenty: ";
+                    for (auto id: agents_here)
+                        cout << id << " ";
+                    cout << endl;
+                }
+            }
+        }*/
+
         succ = true;
         cout << "[DEBUG] buildCollisionData done => sum_of_costs=" << sum_of_costs
              << ", num_of_colliding_pairs=" << num_of_colliding_pairs << endl;
@@ -613,6 +638,34 @@ bool InitLNS::run(bool skip_initial_solution)
                  << "remaining time = " << time_limit - runtime << endl;
         iteration_stats.emplace_back(neighbor.agents.size(), sum_of_costs, runtime, replan_algo_name,
                                      0, num_of_colliding_pairs);
+    }
+
+    /*
+    cout << "[DEBUG] Po replan iteraci => cesty všech agentů (globální ID):" << endl;
+    for (size_t ag = 0; ag < agents.size(); ag++)
+    {
+        cout << "  Agent " << ag << " path.size()=" << agents[ag].path.size() << " : ";
+        for (size_t t = 0; t < agents[ag].path.size(); t++)
+            cout << agents[ag].path[t].location << " ";
+        cout << endl;
+    }*/
+
+    cout << "[DEBUG] PO REPLAN ITERACI => obsah path_table všech agentů:" << endl;
+    for (int a : neighbor.agents) {
+        for (int t = 0; t < (int) agents[a].path.size(); t++) {
+            int loc = agents[a].path[t].location;
+            const auto &agents_here = path_table.table[loc][t];
+
+            cout << "    [time=" << t << ", loc=" << loc << "]: ";
+            if (agents_here.empty())
+                cout << "   (žádní agenti v path_table)" << endl;
+            else {
+                cout << "   path_table má agenty: ";
+                for (auto id: agents_here)
+                    cout << id << " ";
+                cout << endl;
+            }
+        }
     }
 
     printResult();

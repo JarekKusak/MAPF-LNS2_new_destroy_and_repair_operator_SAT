@@ -94,13 +94,6 @@ pair<vector<vector<int>>, vector<int>> LNS::getSubmapAndAgents(int agent_id, int
     return {submap, agents_in_submap};
 }
 
-/* NOTE:
- * náš operátor by se měl správně volat na vyřešení konfliktů, jakmile se konflikty vyřeší,
- * bude se volat optimalizace (na to máme nějaký určený čas, třeba 10 s), nicméně náš operátor při optimalizaci
- * může působit nové konflikty, což ostatní operátory nedělají, proto je potřeba najít v projektu flag,
- * který přepíná z řešení konfliktů na optimalizaci, u našeho operátoru by bylo třeba přepínat mezi
- * naším optimalizačním operátorem a řešením konfliktů (na přeskáčku přepínat: je konflikt -> vyřeš -> optimalizace -> ...)
- * */
 // --------------------------------------------------------
 // DESTROY fáze: generateNeighborBySAT() – najde submapu, agenty, T_sync atd.
 // --------------------------------------------------------
@@ -210,7 +203,6 @@ bool LNS::runSAT()
 
     if (!success) {
         cout << "[WARN] SAT solver failed to find a valid solution." << endl;
-        // TODO: přidat do seznamu na failed_agents
         return false;
     }
 
@@ -246,7 +238,6 @@ bool LNS::runSAT()
             cout << endl;
 
             /*
-            // TODO: přidat kontrolu na všechny agenty v buňce
             cout << "[DEBUG] Kontrola NOVÉ path_table pro agenta " << a << ":\n";
             for (int t = 0; t < (int) agents[a].path.size(); t++)
             {
@@ -294,8 +285,6 @@ bool LNS::runSAT()
         return false;
     }
 }
-
-// TODO: ověřit argumenty programu a kombinaci s ostatními
 
 bool LNS::run()
 {
@@ -354,6 +343,51 @@ bool LNS::run()
 
     bool needConflictRepair = false;
 
+    // ============================================
+    // Pomocná lambda funkce pro unify opravu konfliktu
+    // ============================================
+    auto doInitLNSRepair = [&](const string& debug_reason)
+    {
+        cout << "[DEBUG] Attempting immediate repair via init_lns " << debug_reason << "." << endl;
+        init_lns = new InitLNS(instance, agents, time_limit - runtime,
+                               replan_algo_name, init_destory_name, neighbor_size, screen);
+
+        cout << "[DEBUG] In LNS, we pass " << agents.size()
+             << " agents to init_lns (skip=true). " << endl;
+
+        // Předáme kontext:
+        // Pokud potřebujete, aby init_lns->iteration_stats vždy začínalo zčerstva:
+        init_lns->iteration_stats.clear();
+        // Nastavíme “baseline” pro init_lns, aby initial solution cost v init_lns odpovídal sum_of_costs
+        init_lns->iteration_stats.emplace_back(
+                (int) agents.size(), // num_of_agents
+                (int) sum_of_costs,  // sum_of_costs
+                0.0,                 // runtime
+                replan_algo_name     // algorithm
+        );
+
+        // Nastavíme sum_of_costs i uvnitř init_lns
+        init_lns->sum_of_costs = this->sum_of_costs;
+
+        bool fixed = init_lns->run(true);
+
+        cout << "[DEBUG] init_lns->sum_of_costs po doběhnutí init_lns->run: " << init_lns->sum_of_costs << endl;
+
+        if (fixed)
+        {
+            sum_of_costs = init_lns->sum_of_costs;
+            cout << "[DEBUG] sum_of_costs po přiřazení init_lns->run: " << sum_of_costs << endl;
+            path_table.reset();
+            for (const auto &agent : agents)
+                path_table.insertPath(agent.id, agent.path);
+
+            init_lns->clear();
+        }
+        else
+            cout << "[ERROR] Could not repair solution right after SAT." << endl;
+    };
+    // ============================================
+
     // optimalizace
     while (runtime < time_limit && iteration_stats.size() <= num_of_iterations)
     {
@@ -377,20 +411,14 @@ bool LNS::run()
 
         cout << "[DEBUG] hodnota needConflictRepair: " << needConflictRepair << endl;
 
-        if (needConflictRepair && destroy_strategy == SAT) {
+        // ------------------------------------------------
+        // 1) Oprava konfliktu pokud needConflictRepair==true
+        // ------------------------------------------------
+        if (needConflictRepair && destroy_strategy == SAT)
+        {
             cout << "[DEBUG] Switching to conflict repair mode via init_lns." << endl;
-            init_lns = new InitLNS(instance, agents, time_limit - runtime,
-                                   replan_algo_name, init_destory_name, neighbor_size, screen);
-            succ = init_lns->run(true);
-            if (succ)
-            {
-                path_table.reset();
-                for (const auto & agent : agents)
-                    path_table.insertPath(agent.id, agent.path);
-                init_lns->clear();
-                sum_of_costs = init_lns->sum_of_costs;
-            }
-            //delete init_lns; // volitelně
+            // Zde unify s doInitLNSRepair
+            doInitLNSRepair("(because needConflictRepair==true)");
             continue;
         }
 
@@ -427,6 +455,7 @@ bool LNS::run()
 
         if (!opSuccess)
         {
+            // fallback neighbor generation
             int DEFAULT_DESTROY_STRATEGY = INTERSECTION;
             switch (DEFAULT_DESTROY_STRATEGY)
             {
@@ -440,7 +469,7 @@ bool LNS::run()
                 {
                     neighbor.agents.resize(agents.size());
                     for (int i = 0; i < (int)agents.size(); i++) neighbor.agents[i] = i;
-                    if (neighbor.agents.size() > neighbor_size)
+                    if ((int)neighbor.agents.size() > neighbor_size)
                     {
                         std::random_shuffle(neighbor.agents.begin(), neighbor.agents.end());
                         neighbor.agents.resize(neighbor_size);
@@ -466,20 +495,25 @@ bool LNS::run()
                 neighbor.old_sum_of_costs += (int)agents[a].path.size() - 1;
             }
 
+            // NATVRDO replan
             std::string DEFAULT_REPLAN_ALGO = "PP"; // NATVRDO
-
-            if (DEFAULT_REPLAN_ALGO == "PP") succ = runPP();
-            else if (DEFAULT_REPLAN_ALGO == "CBS") succ = runCBS();
-            else if (DEFAULT_REPLAN_ALGO == "EECBS") succ = runEECBS();
+            if      (DEFAULT_REPLAN_ALGO == "PP")   succ = runPP();
+            else if (DEFAULT_REPLAN_ALGO == "CBS")  succ = runCBS();
+            else if (DEFAULT_REPLAN_ALGO == "EECBS")succ = runEECBS();
             else { cerr << "Wrong replanning strategy" << endl; exit(-1); }
         }
-        else succ = opSuccess; // opSuccess = true => runSAT proběhl
+        else
+        {
+            // opSuccess = true => runSAT proběhl
+            succ = opSuccess;
+        }
 
         if (!succ)
             continue;
 
-        // Pokud proběhl SAT a uspěl, chceme hned zvalidovat a případně volat init_lns
-        // Po úspěšném SAT => validace a oprava
+        // ------------------------------------------------
+        // 2) Po SAT => validace a případný conflict repair
+        // ------------------------------------------------
         if (destroy_strategy == SAT && opSuccess)
         {
             cout << "[DEBUG] Validate solution immediately after SAT success." << endl;
@@ -487,46 +521,8 @@ bool LNS::run()
                 validateSolution();
             } catch (const ValidationException& e) {
                 cout << "[WARNING] Conflict after SAT: " << e.what() << endl;
-                cout << "[DEBUG] Attempting immediate repair via init_lns after SAT." << endl;
-
-                init_lns = new InitLNS(instance, agents,
-                                       time_limit - runtime,
-                                       replan_algo_name,
-                                       init_destory_name,
-                                       neighbor_size,
-                                       screen);
-
-                cout << "[DEBUG] In LNS, we pass " << agents.size()
-                     << " agents to init_lns (skip=true). " << endl;
-
-                // TODO: kontext přidat i výše
-                // [NEW CONTEXT PUBLISH]
-                sum_of_costs += neighbor.sum_of_costs - neighbor.old_sum_of_costs;
-
-                cout << "[DEBUG] aktuální sum_of_cost v LNS.cpp: " << sum_of_costs << endl;
-                cout << "[DEBUG] sum_of_cost před přiřazením do init_lns: " << init_lns->sum_of_costs << endl;
-                init_lns->sum_of_costs = this->sum_of_costs;
-                cout << "[DEBUG] sum_of_cost po přiřazení do init_lns: " << init_lns->sum_of_costs << endl;
-                //init_lns->iteration_stats = iteration_stats;
-                cout << "[DEBUG] init_lns->iteration_stats.back().sum_of_costs po přiřazení iteration_stats do init_lns: " << init_lns->iteration_stats.back().sum_of_costs << endl;
-                //init_lns->iteration_stats.front().sum_of_costs = iteration_stats.back().sum_of_costs;
-
-                bool fixed = init_lns->run(true);
-
-                cout << "[DEBUG] init_lns->sum_of_costs po doběhnutí init_lns->run: " << init_lns->sum_of_costs << endl;
-
-                if (fixed)
-                {
-                    sum_of_costs = init_lns->sum_of_costs;
-                    cout << "[DEBUG] sum_of_costs po přiřazení init_lns->run: " << sum_of_costs << endl;
-                    path_table.reset();
-                    for (const auto &agent : agents)
-                        path_table.insertPath(agent.id, agent.path);
-
-                    init_lns->clear();
-                }
-                else
-                    cout << "[ERROR] Could not repair solution right after SAT." << endl;
+                // unify
+                doInitLNSRepair("(because conflict after SAT)");
             }
         }
 
@@ -544,15 +540,18 @@ bool LNS::run()
 
         runtime = ((fsec)(Time::now() - start_time)).count();
 
-
         cout << "[DEBUG] sum_of_costs před opětovném přepočtu: " << sum_of_costs << endl;
         sum_of_costs += neighbor.sum_of_costs - neighbor.old_sum_of_costs; // TODO: po fázi řešení konfliktů musíme přeskočit/počítat jinak
         cout << "[DEBUG] sum_of_costs po opětovném přepočtu: " << sum_of_costs << endl;
 
-
         if (screen >= 1)
-            cout << "Iteration " << iteration_stats.size() << ", group size = " << neighbor.agents.size()
-                 << ", solution cost = " << sum_of_costs << ", remaining time = " << time_limit - runtime << endl;
+        {
+            cout << "Iteration " << iteration_stats.size()
+                 << ", group size = " << neighbor.agents.size()
+                 << ", solution cost = " << sum_of_costs
+                 << ", remaining time = " << time_limit - runtime
+                 << endl;
+        }
         iteration_stats.emplace_back(neighbor.agents.size(), sum_of_costs, runtime, replan_algo_name);
     }
 
@@ -562,9 +561,13 @@ bool LNS::run()
     if (average_group_size > 0)
         average_group_size /= (double)(iteration_stats.size() - 1);
 
-    cout << getSolverName() << ": runtime = " << runtime << ", iterations = " << iteration_stats.size()
-         << ", solution cost = " << sum_of_costs << ", initial solution cost = " << initial_sum_of_costs
-         << ", failed iterations = " << num_of_failures << endl;
+    cout << getSolverName()
+         << ": runtime = " << runtime
+         << ", iterations = " << iteration_stats.size()
+         << ", solution cost = " << sum_of_costs
+         << ", initial solution cost = " << initial_sum_of_costs
+         << ", failed iterations = " << num_of_failures
+         << endl;
 
     return true;
 }

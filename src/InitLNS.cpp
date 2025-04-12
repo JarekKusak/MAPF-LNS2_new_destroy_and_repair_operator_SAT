@@ -415,12 +415,11 @@ bool InitLNS::run(bool skip_initial_solution)
     }
 
     runtime = ((fsec)(Time::now() - start_time)).count();
-    cout << "num_of_colliding_pairs: "  << num_of_colliding_pairs << ", sum_of_costs: " << sum_of_costs << endl;
     if (skip_initial_solution) // pro jistotu
         iteration_stats.clear();
     iteration_stats.emplace_back(neighbor.agents.size(), sum_of_costs, runtime, "PP", 0, num_of_colliding_pairs);
 
-    // Můžete vypsat sanity-check
+    // sanity-check
     cout << "[DEBUG] After skip/init build => iteration_stats.back(): sum_of_costs="
          << iteration_stats.back().sum_of_costs
          << ", collisions=" << iteration_stats.back().num_of_colliding_pairs << endl;

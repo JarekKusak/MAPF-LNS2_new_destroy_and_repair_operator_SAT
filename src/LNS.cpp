@@ -355,6 +355,7 @@ bool LNS::run()
         cout << "[DEBUG] In LNS, we pass " << agents.size()
              << " agents to init_lns (skip=true). " << endl;
 
+        /*
         // Předáme kontext:
         // Pokud potřebujete, aby init_lns->iteration_stats vždy začínalo zčerstva:
         init_lns->iteration_stats.clear();
@@ -365,9 +366,9 @@ bool LNS::run()
                 0.0,                 // runtime
                 replan_algo_name     // algorithm
         );
-
         // Nastavíme sum_of_costs i uvnitř init_lns
-        init_lns->sum_of_costs = this->sum_of_costs;
+        //init_lns->sum_of_costs = this->sum_of_costs;
+         */
 
         bool fixed = init_lns->run(true);
 
@@ -395,8 +396,8 @@ bool LNS::run()
         runtime = ((fsec)(Time::now() - start_time)).count();
         // validace řešení – pokud dojde k chybě, chyť výjimku a spusť opravu
         try {
-            if (screen >= 1) // TODO: zprovoznit
-                validateSolution();
+            //if (screen >= 1) // TODO: zprovoznit
+            validateSolution();
             needConflictRepair = false;
         } catch (const ValidationException& e) {
             cout << "[WARNING] Conflict detected (ValidationException): " << e.what() << endl;

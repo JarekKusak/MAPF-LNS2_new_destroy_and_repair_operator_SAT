@@ -2,7 +2,7 @@
 [DEBUG] getInitialSolution() => succ=1, sum_of_costs=4461, num_of_colliding_pairs=1
 [DEBUG] After skip/init build => iteration_stats.back(): sum_of_costs=4461, collisions=1
 [DEBUG] Using default neighbor generation strategy for conflicts: 0
-	InitLNS(PP): runtime = 0.0265807, iterations = 2, colliding pairs = 0, initial colliding pairs = 1, solution cost = 4490, initial solution cost = 4461, failed iterations = 0
+	InitLNS(PP): runtime = 0.0196183, iterations = 2, colliding pairs = 0, initial colliding pairs = 1, solution cost = 4490, initial solution cost = 4461, failed iterations = 0
 [DEBUG] hodnota needConflictRepair: 0
 [DEBUG] Using SAT operator (destroy+repair SAT) with probability 20 %.
 ====================
@@ -300,7 +300,10 @@ Paths successfully updated.
 (LNS.cpp) Nová cesta v agents[a].path agenta 101: 985, 984, 983, 982, 981, 980, 948, 916, 884, 883, 851, 850, 849, 848, 847, 815, 814, 782, 750, 718, 686, 654, 622, 590, 589, 588, 587, 555, 523, 491, 459, 427, 395, 363, 331, 330, 329, 328, 296, 264, 232, 200, 168, 
 (LNS.cpp) Nová cesta v agents[a].path agenta 118: 887, 886, 885, 884, 883, 851, 850, 849, 848, 847, 815, 814, 782, 781, 780, 748, 747, 715, 714, 682, 650, 649, 648, 647, 615, 583, 551, 519, 487, 455, 454, 422, 421, 420, 388, 387, 355, 323, 291, 259, 227, 
 [DEBUG] Validate solution immediately after SAT success.
+[DEBUG] neighbor.sum_of_costs před opětovném přepočtu: 200
+[DEBUG] neighbor.old_sum_of_costs před opětovném přepočtu: 200
 [DEBUG] sum_of_costs před opětovném přepočtu: 4490
+jsem tu, jo, PP
 [DEBUG] sum_of_costs po opětovném přepočtu: 4490
 [DEBUG] hodnota needConflictRepair: 0
 [DEBUG] Using SAT operator (destroy+repair SAT) with probability 20 %.
@@ -490,9 +493,11 @@ Paths successfully updated.
 [DEBUG] After skip/init build => iteration_stats.back(): sum_of_costs=4478, collisions=15
 [DEBUG] Using default neighbor generation strategy for conflicts: 1
 [DEBUG] Using default neighbor generation strategy for conflicts: 1
-	InitLNS(PP): runtime = 0.00113838, iterations = 3, colliding pairs = 0, initial colliding pairs = 15, solution cost = 4366, initial solution cost = 4478, failed iterations = 0
+	InitLNS(PP): runtime = 0.000800083, iterations = 3, colliding pairs = 0, initial colliding pairs = 15, solution cost = 4366, initial solution cost = 4478, failed iterations = 0
 [DEBUG] init_lns->sum_of_costs po doběhnutí init_lns->run: 4366
 [DEBUG] sum_of_costs po přiřazení init_lns->run: 4366
+[DEBUG] neighbor.sum_of_costs před opětovném přepočtu: 55
+[DEBUG] neighbor.old_sum_of_costs před opětovném přepočtu: 67
 [DEBUG] sum_of_costs před opětovném přepočtu: 4366
-[DEBUG] sum_of_costs po opětovném přepočtu: 4354
-LNS(PP;PP): runtime = 0.0900713, iterations = 3, solution cost = 4354, initial solution cost = 4490, failed iterations = 1
+[DEBUG] sum_of_costs po opětovném přepočtu: 4366
+LNS(PP;PP): runtime = 0.0838044, iterations = 3, solution cost = 4366, initial solution cost = 4490, failed iterations = 1

@@ -344,8 +344,7 @@ bool LNS::run()
     // ============================================
     // pomocná lambda funkce pro unify opravu konfliktu
     // ============================================
-    auto doInitLNSRepair = [&](const string& debug_reason)
-    {
+    auto doInitLNSRepair = [&](const string& debug_reason){
         cout << "[DEBUG] Attempting immediate repair via init_lns " << debug_reason << "." << endl;
         init_lns = new InitLNS(instance, agents, time_limit - runtime,
                                replan_algo_name, init_destory_name, neighbor_size, screen);
@@ -373,21 +372,17 @@ bool LNS::run()
         // 2) Výpis: path_table pro vybrané agenty (např. neighbor.agents)
         // ------------------------------------------------------------------
         cout << "[DEBUG] Obsah path_table pro vybrané agenty (neighbor.agents):" << endl;
-        for (int a : neighbor.agents)
-        {
+        for (int a : neighbor.agents) {
             cout << "  Agent " << a << " => controlling path length=" << agents[a].path.size() << endl;
-            for (int t = 0; t < (int)agents[a].path.size(); t++)
-            {
+            for (int t = 0; t < (int)agents[a].path.size(); t++) {
                 int loc = agents[a].path[t].location;
                 // zkontrolovat, zda loc je validní index
-                if (loc < 0 || loc >= (int)path_table.table.size())
-                {
+                if (loc < 0 || loc >= (int)path_table.table.size()) {
                     cout << "    [time=" << t << "]: loc=" << loc << " (out of range)" << endl;
                     continue;
                 }
                 // zkontrolovat, zda path_table.table[loc].size() > t
-                if ((int)path_table.table[loc].size() <= t)
-                {
+                if ((int)path_table.table[loc].size() <= t) {
                     cout << "    [time=" << t << ", loc=" << loc << "]: path_table.table[loc].size()="
                          << path_table.table[loc].size() << " => out of range pro t=" << t << endl;
                     continue;
@@ -399,8 +394,7 @@ bool LNS::run()
 
         cout << "[DEBUG] init_lns->sum_of_costs po doběhnutí init_lns->run: " << init_lns->sum_of_costs << endl;
 
-        if (fixed)
-        {
+        if (fixed) {
             sum_of_costs = init_lns->sum_of_costs;
             cout << "[DEBUG] sum_of_costs po přiřazení init_lns->run: " << sum_of_costs << endl;
             path_table.reset();
@@ -414,15 +408,13 @@ bool LNS::run()
             validateSolution();
             // ======== PŘIDÁNO ========
         }
-        else
-            cout << "[ERROR] Could not repair solution right after SAT." << endl;
+        else cout << "[ERROR] Could not repair solution right after SAT." << endl;
     };
     // ============================================
 
     bool needConflictRepair = false;
     // optimalizace
-    while (runtime < time_limit && iteration_stats.size() <= num_of_iterations)
-    {
+    while (runtime < time_limit && iteration_stats.size() <= num_of_iterations) {
         cout.flush();
         runtime = ((fsec)(Time::now() - start_time)).count();
         cameFromInitLNS = false;
@@ -447,8 +439,7 @@ bool LNS::run()
         // ------------------------------------------------
         // 1) Oprava konfliktu pokud needConflictRepair==true
         // ------------------------------------------------
-        if (needConflictRepair && destroy_strategy == SAT)
-        {
+        if (needConflictRepair && destroy_strategy == SAT) {
             cout << "[DEBUG] Switching to conflict repair mode via init_lns." << endl;
             // Zde unify s doInitLNSRepair
             doInitLNSRepair("(because needConflictRepair==true)");
@@ -458,20 +449,16 @@ bool LNS::run()
         if (ALNS) chooseDestroyHeuristicbyALNS();
 
         bool opSuccess = false;
-        if (destroy_strategy == SAT)
-        {
+        if (destroy_strategy == SAT) {
             int r = rand() % 100;
-            if (r < 100) // číslo zde bude hyperparametr
-            {
+            if (r < 100) { // číslo zde bude hyperparametr
                 cout << "[DEBUG] Using SAT operator (destroy+repair SAT) with probability 20 %." << endl;
                 const int MAX_SAT_ATTEMPTS = 10;
-                for (int attempt = 0; attempt < MAX_SAT_ATTEMPTS && !opSuccess; attempt++)
-                {
+                for (int attempt = 0; attempt < MAX_SAT_ATTEMPTS && !opSuccess; attempt++) {
                     if (!generateNeighborBySAT()) continue;
                     neighbor.old_paths.resize(neighbor.agents.size());
                     neighbor.old_sum_of_costs = 0;
-                    for (int i = 0; i < (int)neighbor.agents.size(); i++)
-                    {
+                    for (int i = 0; i < (int)neighbor.agents.size(); i++) {
                         int a = neighbor.agents[i];
                         neighbor.old_paths[i] = agents[a].path;
                         path_table.deletePath(a, agents[a].path);

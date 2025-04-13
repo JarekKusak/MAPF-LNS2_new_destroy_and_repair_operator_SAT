@@ -96,7 +96,7 @@ int main(int argc, char** argv)
         }
         if (succ)
         {
-            //lns.validateSolution();
+            lns.validateSolution();
             if (vm.count("outputPaths"))
                 lns.writePathsToFile(vm["outputPaths"].as<string>());
         }

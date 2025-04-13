@@ -1,289 +1,121 @@
 [DEBUG] hodnota skip_initial_solution=0
-[DEBUG] getInitialSolution() => succ=1, sum_of_costs=4461, num_of_colliding_pairs=1
-[DEBUG] After skip/init build => iteration_stats.back(): sum_of_costs=4461, collisions=1
+[DEBUG] getInitialSolution() => succ=1, sum_of_costs=11622, num_of_colliding_pairs=65
+[DEBUG] After skip/init build => iteration_stats.back(): sum_of_costs=11622, collisions=65
 [DEBUG] Using default neighbor generation strategy for conflicts: 0
-[DEBUG] PO REPLAN ITERACI => obsah path_table všech agentů:
-    [time=0, loc=949]:    path_table má agenty: 1 
-    [time=1, loc=950]:    path_table má agenty: 1 
-    [time=2, loc=918]:    path_table má agenty: 1 
-    [time=3, loc=886]:    path_table má agenty: 1 
-    [time=4, loc=854]:    path_table má agenty: 1 
-    [time=5, loc=822]:    path_table má agenty: 1 
-    [time=6, loc=821]:    path_table má agenty: 1 
-    [time=7, loc=820]:    path_table má agenty: 1 
-    [time=8, loc=819]:    path_table má agenty: 1 
-    [time=9, loc=787]:    path_table má agenty: 1 
-    [time=10, loc=755]:    path_table má agenty: 1 
-    [time=11, loc=755]:    path_table má agenty: 1 
-    [time=12, loc=755]:    path_table má agenty: 1 
-    [time=13, loc=755]:    path_table má agenty: 1 
-    [time=14, loc=756]:    path_table má agenty: 1 
-    [time=15, loc=724]:    path_table má agenty: 1 
-    [time=16, loc=725]:    path_table má agenty: 1 
-    [time=17, loc=726]:    path_table má agenty: 1 
-    [time=18, loc=727]:    path_table má agenty: 1 
-    [time=19, loc=728]:    path_table má agenty: 1 
-    [time=0, loc=661]:    path_table má agenty: 28 
-    [time=1, loc=661]:    path_table má agenty: 28 
-    [time=2, loc=661]:    path_table má agenty: 28 
-    [time=3, loc=661]:    path_table má agenty: 28 
-    [time=4, loc=661]:    path_table má agenty: 28 
-    [time=5, loc=661]:    path_table má agenty: 28 
-    [time=6, loc=661]:    path_table má agenty: 28 
-    [time=7, loc=661]:    path_table má agenty: 28 
-    [time=8, loc=661]:    path_table má agenty: 28 
-    [time=9, loc=661]:    path_table má agenty: 28 
-    [time=10, loc=661]:    path_table má agenty: 28 
-    [time=11, loc=661]:    path_table má agenty: 28 
-    [time=12, loc=661]:    path_table má agenty: 28 
-    [time=13, loc=661]:    path_table má agenty: 28 
-    [time=14, loc=661]:    path_table má agenty: 28 
-    [time=15, loc=661]:    path_table má agenty: 28 
-    [time=16, loc=661]:    path_table má agenty: 28 
-    [time=17, loc=661]:    path_table má agenty: 28 
-    [time=18, loc=661]:    path_table má agenty: 28 
-    [time=19, loc=661]:    path_table má agenty: 28 
-    [time=20, loc=661]:    path_table má agenty: 28 
-    [time=21, loc=661]:    path_table má agenty: 28 
-    [time=22, loc=661]:    path_table má agenty: 28 
-    [time=23, loc=661]:    path_table má agenty: 28 
-    [time=24, loc=661]:    path_table má agenty: 28 
-    [time=25, loc=661]:    path_table má agenty: 28 
-    [time=26, loc=661]:    path_table má agenty: 28 
-    [time=27, loc=661]:    path_table má agenty: 28 
-    [time=28, loc=661]:    path_table má agenty: 28 
-    [time=29, loc=661]:    path_table má agenty: 28 
-    [time=30, loc=661]:    path_table má agenty: 28 
-    [time=31, loc=661]:    path_table má agenty: 28 
-    [time=32, loc=661]:    path_table má agenty: 28 
-    [time=33, loc=661]:    path_table má agenty: 28 
-    [time=34, loc=661]:    path_table má agenty: 28 
-    [time=35, loc=661]:    path_table má agenty: 28 
-    [time=36, loc=661]:    path_table má agenty: 28 
-    [time=37, loc=661]:    path_table má agenty: 28 
-    [time=38, loc=660]:    path_table má agenty: 28 
-    [time=39, loc=692]:    path_table má agenty: 28 
-    [time=40, loc=724]:    path_table má agenty: 28 
-    [time=41, loc=725]:    path_table má agenty: 28 
-    [time=42, loc=726]:    path_table má agenty: 28 
-    [time=43, loc=727]:    path_table má agenty: 28 
-    [time=0, loc=922]:    path_table má agenty: 30 
-    [time=1, loc=890]:    path_table má agenty: 30 
-    [time=2, loc=858]:    path_table má agenty: 30 
-    [time=3, loc=857]:    path_table má agenty: 30 
-    [time=4, loc=856]:    path_table má agenty: 30 
-    [time=5, loc=888]:    path_table má agenty: 30 
-    [time=6, loc=887]:    path_table má agenty: 30 
-    [time=7, loc=886]:    path_table má agenty: 30 
-    [time=8, loc=885]:    path_table má agenty: 30 
-    [time=9, loc=884]:    path_table má agenty: 30 
-    [time=10, loc=884]:    path_table má agenty: 30 
-    [time=11, loc=884]:    path_table má agenty: 30 
-    [time=12, loc=883]:    path_table má agenty: 30 
-    [time=13, loc=882]:    path_table má agenty: 30 
-    [time=14, loc=850]:    path_table má agenty: 30 
-    [time=15, loc=818]:    path_table má agenty: 30 
-    [time=16, loc=786]:    path_table má agenty: 30 
-    [time=17, loc=787]:    path_table má agenty: 30 
-    [time=18, loc=788]:    path_table má agenty: 30 
-    [time=19, loc=756]:    path_table má agenty: 30 
-    [time=20, loc=724]:    path_table má agenty: 30 
-    [time=21, loc=692]:    path_table má agenty: 30 
-    [time=22, loc=660]:    path_table má agenty: 30 
-    [time=23, loc=628]:    path_table má agenty: 30 
-    [time=24, loc=596]:    path_table má agenty: 30 
-    [time=25, loc=597]:    path_table má agenty: 30 
-    [time=26, loc=565]:    path_table má agenty: 30 
-    [time=27, loc=566]:    path_table má agenty: 30 
-    [time=28, loc=534]:    path_table má agenty: 30 
-    [time=29, loc=502]:    path_table má agenty: 30 
-    [time=30, loc=503]:    path_table má agenty: 30 
-    [time=0, loc=786]:    path_table má agenty: 46 
-    [time=1, loc=787]:    path_table má agenty: 46 
-    [time=2, loc=788]:    path_table má agenty: 46 
-    [time=3, loc=756]:    path_table má agenty: 46 
-    [time=4, loc=724]:    path_table má agenty: 46 
-    [time=5, loc=725]:    path_table má agenty: 46 
-    [time=6, loc=726]:    path_table má agenty: 46 
-    [time=7, loc=727]:    path_table má agenty: 46 
-    [time=8, loc=728]:    path_table má agenty: 46 
-    [time=9, loc=696]:    path_table má agenty: 46 
-    [time=10, loc=664]:    path_table má agenty: 46 
-    [time=11, loc=632]:    path_table má agenty: 46 
-    [time=12, loc=633]:    path_table má agenty: 46 
-    [time=13, loc=601]:    path_table má agenty: 46 
-    [time=14, loc=569]:    path_table má agenty: 46 
-    [time=15, loc=570]:    path_table má agenty: 46 
-    [time=16, loc=538]:    path_table má agenty: 46 
-    [time=17, loc=539]:    path_table má agenty: 46 
-    [time=18, loc=540]:    path_table má agenty: 46 
-    [time=19, loc=508]:    path_table má agenty: 46 
-    [time=20, loc=509]:    path_table má agenty: 46 
-    [time=21, loc=477]:    path_table má agenty: 46 
-    [time=22, loc=445]:    path_table má agenty: 46 
-    [time=23, loc=413]:    path_table má agenty: 46 
-    [time=24, loc=381]:    path_table má agenty: 46 
-    [time=25, loc=349]:    path_table má agenty: 46 
-    [time=26, loc=317]:    path_table má agenty: 46 
-    [time=27, loc=285]:    path_table má agenty: 46 
-    [time=28, loc=284]:    path_table má agenty: 46 
-    [time=29, loc=252]:    path_table má agenty: 46 
-    [time=0, loc=984]:    path_table má agenty: 49 
-    [time=1, loc=952]:    path_table má agenty: 49 
-    [time=2, loc=920]:    path_table má agenty: 49 
-    [time=3, loc=888]:    path_table má agenty: 49 
-    [time=4, loc=887]:    path_table má agenty: 49 
-    [time=5, loc=886]:    path_table má agenty: 49 
-    [time=6, loc=885]:    path_table má agenty: 49 
-    [time=7, loc=884]:    path_table má agenty: 49 
-    [time=8, loc=883]:    path_table má agenty: 49 
-    [time=9, loc=851]:    path_table má agenty: 49 
-    [time=10, loc=850]:    path_table má agenty: 49 
-    [time=11, loc=849]:    path_table má agenty: 49 
-    [time=12, loc=848]:    path_table má agenty: 49 
-    [time=13, loc=847]:    path_table má agenty: 49 
-    [time=14, loc=846]:    path_table má agenty: 49 
-    [time=15, loc=814]:    path_table má agenty: 49 
-    [time=16, loc=782]:    path_table má agenty: 49 
-    [time=17, loc=750]:    path_table má agenty: 49 
-    [time=18, loc=718]:    path_table má agenty: 49 
-    [time=19, loc=686]:    path_table má agenty: 49 
-    [time=20, loc=687]:    path_table má agenty: 49 
-    [time=21, loc=686]:    path_table má agenty: 49 
-    [time=22, loc=685]:    path_table má agenty: 49 
-    [time=23, loc=653]:    path_table má agenty: 49 
-    [time=24, loc=653]:    path_table má agenty: 49 
-    [time=25, loc=653]:    path_table má agenty: 49 
-    [time=26, loc=653]:    path_table má agenty: 49 
-    [time=27, loc=653]:    path_table má agenty: 49 
-    [time=28, loc=653]:    path_table má agenty: 49 
-    [time=29, loc=653]:    path_table má agenty: 49 
-    [time=30, loc=653]:    path_table má agenty: 49 
-    [time=31, loc=654]:    path_table má agenty: 49 
-    [time=32, loc=622]:    path_table má agenty: 49 
-    [time=33, loc=590]:    path_table má agenty: 49 
-    [time=34, loc=591]:    path_table má agenty: 49 
-    [time=35, loc=592]:    path_table má agenty: 49 
-    [time=36, loc=593]:    path_table má agenty: 49 
-    [time=37, loc=561]:    path_table má agenty: 49 
-    [time=38, loc=529]:    path_table má agenty: 49 
-    [time=39, loc=528]:    path_table má agenty: 49 
-    [time=40, loc=496]:    path_table má agenty: 49 
-    [time=41, loc=464]:    path_table má agenty: 49 
-    [time=42, loc=432]:    path_table má agenty: 49 
-    [time=43, loc=400]:    path_table má agenty: 49 
-    [time=44, loc=368]:    path_table má agenty: 49 
-    [time=0, loc=776]:    path_table má agenty: 148 
-    [time=1, loc=744]:    path_table má agenty: 148 
-    [time=2, loc=744]:    path_table má agenty: 148 
-    [time=3, loc=744]:    path_table má agenty: 148 
-    [time=4, loc=745]:    path_table má agenty: 148 
-    [time=5, loc=745]:    path_table má agenty: 148 
-    [time=6, loc=745]:    path_table má agenty: 148 
-    [time=7, loc=745]:    path_table má agenty: 148 
-    [time=8, loc=746]:    path_table má agenty: 148 
-    [time=9, loc=778]:    path_table má agenty: 148 
-    [time=10, loc=778]:    path_table má agenty: 148 
-    [time=11, loc=777]:    path_table má agenty: 148 
-    [time=12, loc=809]:    path_table má agenty: 148 
-    [time=13, loc=841]:    path_table má agenty: 148 
-    [time=14, loc=873]:    path_table má agenty: 148 
-    [time=15, loc=874]:    path_table má agenty: 148 
-    [time=16, loc=875]:    path_table má agenty: 148 
-    [time=17, loc=876]:    path_table má agenty: 148 
-    [time=18, loc=877]:    path_table má agenty: 148 
-    [time=19, loc=878]:    path_table má agenty: 148 
-    [time=20, loc=879]:    path_table má agenty: 148 
-    [time=21, loc=880]:    path_table má agenty: 148 
-    [time=22, loc=848]:    path_table má agenty: 148 
-    [time=23, loc=849]:    path_table má agenty: 148 
-    [time=24, loc=817]:    path_table má agenty: 148 
-    [time=25, loc=818]:    path_table má agenty: 148 
-    [time=26, loc=786]:    path_table má agenty: 148 
-    [time=27, loc=787]:    path_table má agenty: 148 
-    [time=28, loc=755]:    path_table má agenty: 148 
-    [time=29, loc=756]:    path_table má agenty: 148 
-    [time=30, loc=724]:    path_table má agenty: 148 
-    [time=31, loc=692]:    path_table má agenty: 148 
-    [time=32, loc=691]:    path_table má agenty: 148 
-    [time=33, loc=659]:    path_table má agenty: 148 
-    [time=34, loc=659]:    path_table má agenty: 148 
-    [time=35, loc=659]:    path_table má agenty: 148 
-    [time=36, loc=659]:    path_table má agenty: 148 
-    [time=37, loc=659]:    path_table má agenty: 148 
-    [time=38, loc=659]:    path_table má agenty: 148 
-    [time=39, loc=660]:    path_table má agenty: 148 
-	InitLNS(PP): runtime = 0.0250616, iterations = 2, colliding pairs = 0, initial colliding pairs = 1, solution cost = 4490, initial solution cost = 4461, failed iterations = 0
-[DEBUG] hodnota needConflictRepair: 0
-[DEBUG] Random chance did not select SAT operator (r=34), using default strategy.
-[DEBUG] hodnota needConflictRepair: 0
-[DEBUG] Random chance did not select SAT operator (r=3), using default strategy.
-[DEBUG] hodnota needConflictRepair: 0
-[DEBUG] Random chance did not select SAT operator (r=77), using default strategy.
-[DEBUG] Validate solution immediately after SAT success.
-[WARNING] Conflict after SAT: Sum of costs mismatch: sum_of_costs = 4490, but computed sum = 4476
-[DEBUG] Attempting immediate repair via init_lns (because conflict after SAT).
-[DEBUG] In LNS, we pass 150 agents to init_lns (skip=true). 
-[DEBUG] Obsah path_table pro vybrané agenty (neighbor.agents):
-  Agent 0 => controlling path length=43
-  Agent 11 => controlling path length=26
-  Agent 24 => controlling path length=20
-  Agent 25 => controlling path length=34
-  Agent 35 => controlling path length=47
-  Agent 39 => controlling path length=30
-  Agent 102 => controlling path length=9
-  Agent 133 => controlling path length=46
-[DEBUG] hodnota skip_initial_solution=1
-[DEBUG] We skip initialSolution => call buildCollisionData()
-[DEBUG] buildCollisionData() called – skip_initial_solution case.
-[DEBUG] Agents.size()=150, collision_graph.size()=150
-[DEBUG] Dvojice konfliktních agentů: 
-[DEBUG] buildCollisionData() => sum_of_costs=4476, num_of_colliding_pairs=0
-[DEBUG] buildCollisionData done => sum_of_costs=4476, num_of_colliding_pairs=0
-[DEBUG] sum_of_cost hodnota: 4476
-[DEBUG] After skip/init build => iteration_stats.back(): sum_of_costs=4476, collisions=0
-[DEBUG] PO REPLAN ITERACI => obsah path_table všech agentů:
-	InitLNS(PP): runtime = 0.000326459, iterations = 1, colliding pairs = 0, initial colliding pairs = 0, solution cost = 4476, initial solution cost = 4476, failed iterations = 0
-[DEBUG] init_lns->sum_of_costs po doběhnutí init_lns->run: 4476
-[DEBUG] sum_of_costs po přiřazení init_lns->run: 4476
-ZKOUŠÍM TO ZNOVU, MĚLO BY TO BÝT BEZ PROBLÉMU
-[DEBUG] neighbor.sum_of_costs před opětovném přepočtu: 247
-[DEBUG] neighbor.old_sum_of_costs před opětovném přepočtu: 261
-[DEBUG] sum_of_costs před opětovném přepočtu: 4476
-[DEBUG] sum_of_costs po opětovném přepočtu: 4476
-[DEBUG] hodnota needConflictRepair: 0
-[DEBUG] Random chance did not select SAT operator (r=23), using default strategy.
-[DEBUG] hodnota needConflictRepair: 0
-[DEBUG] Random chance did not select SAT operator (r=92), using default strategy.
-[DEBUG] Validate solution immediately after SAT success.
-[WARNING] Conflict after SAT: Sum of costs mismatch: sum_of_costs = 4476, but computed sum = 4475
-[DEBUG] Attempting immediate repair via init_lns (because conflict after SAT).
-[DEBUG] In LNS, we pass 150 agents to init_lns (skip=true). 
-[DEBUG] Obsah path_table pro vybrané agenty (neighbor.agents):
-  Agent 20 => controlling path length=33
-  Agent 37 => controlling path length=19
-  Agent 41 => controlling path length=14
-  Agent 68 => controlling path length=15
-  Agent 85 => controlling path length=28
-  Agent 97 => controlling path length=17
-  Agent 103 => controlling path length=33
-  Agent 105 => controlling path length=41
-[DEBUG] hodnota skip_initial_solution=1
-[DEBUG] We skip initialSolution => call buildCollisionData()
-[DEBUG] buildCollisionData() called – skip_initial_solution case.
-[DEBUG] Agents.size()=150, collision_graph.size()=150
-[DEBUG] Dvojice konfliktních agentů: 
-[DEBUG] buildCollisionData() => sum_of_costs=4475, num_of_colliding_pairs=0
-[DEBUG] buildCollisionData done => sum_of_costs=4475, num_of_colliding_pairs=0
-[DEBUG] sum_of_cost hodnota: 4475
-[DEBUG] After skip/init build => iteration_stats.back(): sum_of_costs=4475, collisions=0
-[DEBUG] PO REPLAN ITERACI => obsah path_table všech agentů:
-	InitLNS(PP): runtime = 0.000273375, iterations = 1, colliding pairs = 0, initial colliding pairs = 0, solution cost = 4475, initial solution cost = 4475, failed iterations = 0
-[DEBUG] init_lns->sum_of_costs po doběhnutí init_lns->run: 4475
-[DEBUG] sum_of_costs po přiřazení init_lns->run: 4475
-ZKOUŠÍM TO ZNOVU, MĚLO BY TO BÝT BEZ PROBLÉMU
-[DEBUG] neighbor.sum_of_costs před opětovném přepočtu: 192
-[DEBUG] neighbor.old_sum_of_costs před opětovném přepočtu: 193
-[DEBUG] sum_of_costs před opětovném přepočtu: 4475
-[DEBUG] sum_of_costs po opětovném přepočtu: 4475
-LNS(PP;PP): runtime = 0.0356481, iterations = 3, solution cost = 4475, initial solution cost = 4490, failed iterations = 4
+[DEBUG] Using default neighbor generation strategy for conflicts: 2
+[DEBUG] Using default neighbor generation strategy for conflicts: 2
+[DEBUG] Using default neighbor generation strategy for conflicts: 1
+[DEBUG] Using default neighbor generation strategy for conflicts: 0
+[DEBUG] Using default neighbor generation strategy for conflicts: 2
+[DEBUG] Using default neighbor generation strategy for conflicts: 0
+[DEBUG] Using default neighbor generation strategy for conflicts: 2
+[DEBUG] Using default neighbor generation strategy for conflicts: 1
+[DEBUG] Using default neighbor generation strategy for conflicts: 1
+[DEBUG] Using default neighbor generation strategy for conflicts: 2
+[DEBUG] Using default neighbor generation strategy for conflicts: 0
+[DEBUG] Using default neighbor generation strategy for conflicts: 2
+[DEBUG] Using default neighbor generation strategy for conflicts: 0
+[DEBUG] Using default neighbor generation strategy for conflicts: 2
+[DEBUG] Using default neighbor generation strategy for conflicts: 0
+[DEBUG] Using default neighbor generation strategy for conflicts: 2
+[DEBUG] Using default neighbor generation strategy for conflicts: 2
+[DEBUG] Using default neighbor generation strategy for conflicts: 1
+[DEBUG] Using default neighbor generation strategy for conflicts: 1
+[DEBUG] Using default neighbor generation strategy for conflicts: 2
+[DEBUG] Using default neighbor generation strategy for conflicts: 0
+[DEBUG] Using default neighbor generation strategy for conflicts: 0
+[DEBUG] Using default neighbor generation strategy for conflicts: 0
+[DEBUG] Using default neighbor generation strategy for conflicts: 1
+[DEBUG] Using default neighbor generation strategy for conflicts: 2
+[DEBUG] Using default neighbor generation strategy for conflicts: 0
+[DEBUG] Using default neighbor generation strategy for conflicts: 0
+[DEBUG] Using default neighbor generation strategy for conflicts: 2
+[DEBUG] Using default neighbor generation strategy for conflicts: 2
+[DEBUG] Using default neighbor generation strategy for conflicts: 2
+[DEBUG] Using default neighbor generation strategy for conflicts: 2
+[DEBUG] Using default neighbor generation strategy for conflicts: 2
+[DEBUG] Using default neighbor generation strategy for conflicts: 1
+[DEBUG] Using default neighbor generation strategy for conflicts: 2
+[DEBUG] Using default neighbor generation strategy for conflicts: 1
+[DEBUG] Using default neighbor generation strategy for conflicts: 0
+[DEBUG] Using default neighbor generation strategy for conflicts: 1
+[DEBUG] Using default neighbor generation strategy for conflicts: 0
+[DEBUG] Using default neighbor generation strategy for conflicts: 2
+[DEBUG] Using default neighbor generation strategy for conflicts: 2
+[DEBUG] Using default neighbor generation strategy for conflicts: 1
+[DEBUG] Using default neighbor generation strategy for conflicts: 0
+[DEBUG] Using default neighbor generation strategy for conflicts: 0
+[DEBUG] Using default neighbor generation strategy for conflicts: 1
+[DEBUG] Using default neighbor generation strategy for conflicts: 2
+[DEBUG] Using default neighbor generation strategy for conflicts: 2
+[DEBUG] Using default neighbor generation strategy for conflicts: 0
+[DEBUG] Using default neighbor generation strategy for conflicts: 1
+[DEBUG] Using default neighbor generation strategy for conflicts: 1
+[DEBUG] Using default neighbor generation strategy for conflicts: 0
+[DEBUG] Using default neighbor generation strategy for conflicts: 2
+[DEBUG] Using default neighbor generation strategy for conflicts: 1
+[DEBUG] Using default neighbor generation strategy for conflicts: 0
+[DEBUG] Using default neighbor generation strategy for conflicts: 1
+[DEBUG] Using default neighbor generation strategy for conflicts: 1
+[DEBUG] Using default neighbor generation strategy for conflicts: 0
+[DEBUG] Using default neighbor generation strategy for conflicts: 2
+[DEBUG] Using default neighbor generation strategy for conflicts: 2
+[DEBUG] Using default neighbor generation strategy for conflicts: 1
+[DEBUG] Using default neighbor generation strategy for conflicts: 1
+[DEBUG] Using default neighbor generation strategy for conflicts: 1
+[DEBUG] Using default neighbor generation strategy for conflicts: 2
+[DEBUG] Using default neighbor generation strategy for conflicts: 2
+[DEBUG] Using default neighbor generation strategy for conflicts: 2
+[DEBUG] Using default neighbor generation strategy for conflicts: 2
+[DEBUG] Using default neighbor generation strategy for conflicts: 1
+[DEBUG] Using default neighbor generation strategy for conflicts: 2
+[DEBUG] Using default neighbor generation strategy for conflicts: 1
+[DEBUG] Using default neighbor generation strategy for conflicts: 1
+[DEBUG] Using default neighbor generation strategy for conflicts: 0
+[DEBUG] Using default neighbor generation strategy for conflicts: 1
+[DEBUG] Using default neighbor generation strategy for conflicts: 2
+[DEBUG] Using default neighbor generation strategy for conflicts: 1
+[DEBUG] Using default neighbor generation strategy for conflicts: 0
+[DEBUG] Using default neighbor generation strategy for conflicts: 0
+[DEBUG] Using default neighbor generation strategy for conflicts: 1
+[DEBUG] Using default neighbor generation strategy for conflicts: 0
+[DEBUG] Using default neighbor generation strategy for conflicts: 1
+[DEBUG] Using default neighbor generation strategy for conflicts: 0
+[DEBUG] Using default neighbor generation strategy for conflicts: 1
+[DEBUG] Using default neighbor generation strategy for conflicts: 0
+[DEBUG] Using default neighbor generation strategy for conflicts: 2
+[DEBUG] Using default neighbor generation strategy for conflicts: 1
+[DEBUG] Using default neighbor generation strategy for conflicts: 1
+[DEBUG] Using default neighbor generation strategy for conflicts: 1
+	InitLNS(PP): runtime = 0.635065, iterations = 87, colliding pairs = 0, initial colliding pairs = 65, solution cost = 12974, initial solution cost = 11622, failed iterations = 23
+[DEBUG] neighbor.sum_of_costs před opětovném přepočtu: 466
+[DEBUG] neighbor.old_sum_of_costs před opětovném přepočtu: 469
+[DEBUG] sum_of_costs před opětovném přepočtu: 12974
+[DEBUG] recomputing sum_of_cost by dividing neighbor.sum_of_costs and neighbor.old_sum_of_costs
+[DEBUG] sum_of_costs po opětovném přepočtu: 12971
+[DEBUG] neighbor.sum_of_costs před opětovném přepočtu: 349
+[DEBUG] neighbor.old_sum_of_costs před opětovném přepočtu: 384
+[DEBUG] sum_of_costs před opětovném přepočtu: 12971
+[DEBUG] recomputing sum_of_cost by dividing neighbor.sum_of_costs and neighbor.old_sum_of_costs
+[DEBUG] sum_of_costs po opětovném přepočtu: 12936
+[DEBUG] neighbor.sum_of_costs před opětovném přepočtu: 384
+[DEBUG] neighbor.old_sum_of_costs před opětovném přepočtu: 407
+[DEBUG] sum_of_costs před opětovném přepočtu: 12936
+[DEBUG] recomputing sum_of_cost by dividing neighbor.sum_of_costs and neighbor.old_sum_of_costs
+[DEBUG] sum_of_costs po opětovném přepočtu: 12913
+[DEBUG] neighbor.sum_of_costs před opětovném přepočtu: 348
+[DEBUG] neighbor.old_sum_of_costs před opětovném přepočtu: 351
+[DEBUG] sum_of_costs před opětovném přepočtu: 12913
+[DEBUG] recomputing sum_of_cost by dividing neighbor.sum_of_costs and neighbor.old_sum_of_costs
+[DEBUG] sum_of_costs po opětovném přepočtu: 12910
+[DEBUG] neighbor.sum_of_costs před opětovném přepočtu: 326
+[DEBUG] neighbor.old_sum_of_costs před opětovném přepočtu: 330
+[DEBUG] sum_of_costs před opětovném přepočtu: 12910
+[DEBUG] recomputing sum_of_cost by dividing neighbor.sum_of_costs and neighbor.old_sum_of_costs
+[DEBUG] sum_of_costs po opětovném přepočtu: 12906
+[DEBUG] neighbor.sum_of_costs před opětovném přepočtu: 437
+[DEBUG] neighbor.old_sum_of_costs před opětovném přepočtu: 470
+[DEBUG] sum_of_costs před opětovném přepočtu: 12906
+[DEBUG] recomputing sum_of_cost by dividing neighbor.sum_of_costs and neighbor.old_sum_of_costs
+[DEBUG] sum_of_costs po opětovném přepočtu: 12873
+LNS(PP;PP): runtime = 0.675087, iterations = 7, solution cost = 12873, initial solution cost = 12974, failed iterations = 7

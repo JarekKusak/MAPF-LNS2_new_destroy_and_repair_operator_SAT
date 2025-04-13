@@ -11,7 +11,7 @@ LNS::LNS(const Instance& instance, double time_limit, const string & init_algo_n
          const string & init_destory_name, bool use_sipp, int screen, PIBTPPS_option pipp_option) :
          BasicLNS(instance, time_limit, neighbor_size, screen),
          init_algo_name(init_algo_name),  replan_algo_name(replan_algo_name),
-         num_of_iterations(num_of_iterations > 0 ? 0 : 2), // nastavuje se v argumentu
+         num_of_iterations(num_of_iterations > 0 ? 0 : 6), // nastavuje se v argumentu
          use_init_lns(use_init_lns),init_destory_name(init_destory_name),
          path_table(instance.map_size), pipp_option(pipp_option) {
     start_time = Time::now();
@@ -334,8 +334,7 @@ bool LNS::run()
     iteration_stats.emplace_back(neighbor.agents.size(),
                                  initial_sum_of_costs, initial_solution_runtime, init_algo_name);
     runtime = initial_solution_runtime;
-    if (!succ)
-    {
+    if (!succ) {
         cout << "Failed to find an initial solution in "
              << runtime << " seconds after  " << restart_times << " restarts" << endl;
         return false;
@@ -354,7 +353,7 @@ bool LNS::run()
 
         /*
         // ------------------------------------------------------------------
-        // 1) Výpis: cesty všech agentů ještě PŘED voláním init_lns->run(true)
+        // Výpis: cesty všech agentů ještě PŘED voláním init_lns->run(true)
         // ------------------------------------------------------------------
         cout << "[DEBUG] Aktuální cesty všech agentů (globální location IDs):" << endl;
         for (size_t ag = 0; ag < agents.size(); ag++)
@@ -369,7 +368,7 @@ bool LNS::run()
          */
 
         // ------------------------------------------------------------------
-        // 2) Výpis: path_table pro vybrané agenty (např. neighbor.agents)
+        // Výpis: path_table pro vybrané agenty (např. neighbor.agents)
         // ------------------------------------------------------------------
         cout << "[DEBUG] Obsah path_table pro vybrané agenty (neighbor.agents):" << endl;
         for (int a : neighbor.agents) {
@@ -403,10 +402,6 @@ bool LNS::run()
 
             init_lns->clear();
             cameFromInitLNS = true;
-            // ======== PŘIDÁNO ========
-            cout << "ZKOUŠÍM TO ZNOVU, MĚLO BY TO BÝT BEZ PROBLÉMU" << endl;
-            validateSolution();
-            // ======== PŘIDÁNO ========
         }
         else cout << "[ERROR] Could not repair solution right after SAT." << endl;
     };
@@ -434,8 +429,6 @@ bool LNS::run()
             needConflictRepair = true;
         }
 
-        cout << "[DEBUG] hodnota needConflictRepair: " << needConflictRepair << endl;
-
         // ------------------------------------------------
         // 1) Oprava konfliktu pokud needConflictRepair==true
         // ------------------------------------------------
@@ -448,10 +441,14 @@ bool LNS::run()
 
         if (ALNS) chooseDestroyHeuristicbyALNS();
 
+
         bool opSuccess = false;
+        bool SATchosen = false;
+
         if (destroy_strategy == SAT) {
             int r = rand() % 100;
-            if (r < 100) { // číslo zde bude hyperparametr
+            if (r < 0) { // číslo zde bude hyperparametr
+                SATchosen = true;
                 cout << "[DEBUG] Using SAT operator (destroy+repair SAT) with probability 20 %." << endl;
                 const int MAX_SAT_ATTEMPTS = 10;
                 for (int attempt = 0; attempt < MAX_SAT_ATTEMPTS && !opSuccess; attempt++) {
@@ -527,7 +524,7 @@ bool LNS::run()
         // ------------------------------------------------
         // 2) Po SAT => validace a případný conflict repair
         // ------------------------------------------------
-        if (destroy_strategy == SAT && opSuccess)
+        if (destroy_strategy == SAT && opSuccess && SATchosen)
         {
             cout << "[DEBUG] Validate solution immediately after SAT success." << endl;
             try {

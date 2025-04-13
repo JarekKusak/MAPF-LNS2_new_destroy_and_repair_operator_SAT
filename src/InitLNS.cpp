@@ -650,6 +650,7 @@ bool InitLNS::run(bool skip_initial_solution)
         cout << endl;
     }*/
 
+    /* ==================== UŽITEČNÝ DEBUG ====================
     cout << "[DEBUG] PO REPLAN ITERACI => obsah path_table všech agentů:" << endl;
     for (int a : neighbor.agents) {
         for (int t = 0; t < (int) agents[a].path.size(); t++) {
@@ -666,7 +667,7 @@ bool InitLNS::run(bool skip_initial_solution)
                 cout << endl;
             }
         }
-    }
+    }*/
 
     printResult();
     return (num_of_colliding_pairs == 0);

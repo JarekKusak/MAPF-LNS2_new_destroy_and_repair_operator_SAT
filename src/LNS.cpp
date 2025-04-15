@@ -404,7 +404,6 @@ bool LNS::run()
                 path_table.insertPath(agent.id, agent.path);
 
             init_lns->clear();
-            cameFromInitLNS = true;
         }
         else cout << "[ERROR] Could not repair solution right after SAT." << endl;
     };
@@ -415,7 +414,6 @@ bool LNS::run()
     while (runtime < time_limit && iteration_stats.size() <= num_of_iterations) {
         cout.flush();
         runtime = ((fsec)(Time::now() - start_time)).count();
-        cameFromInitLNS = false;
         // validace řešení – pokud dojde k chybě, chyť výjimku a spusť opravu
         try {
             if (destroy_strategy == SAT) // only needed while using SAT destroy&repair -> can cause conflicts
@@ -450,7 +448,7 @@ bool LNS::run()
 
         if (destroy_strategy == SAT) {
             int r = rand() % 100;
-            if (r < 100) { // číslo zde bude hyperparametr
+            if (r < 50) { // číslo zde bude hyperparametr
                 SATchosen = true;
                 cout << "[DEBUG] Using SAT operator (destroy+repair SAT) with probability 20 %." << endl;
                 const int MAX_SAT_ATTEMPTS = 10;
@@ -468,6 +466,7 @@ bool LNS::run()
                 }
             }
             else cout << "[DEBUG] Random chance did not select SAT operator (r=" << r << "), using default strategy." << endl;
+            //cout << "[DEBUG] hodnota opSuccess: " << opSuccess << endl;
         }
 
         if (!opSuccess)
@@ -556,11 +555,9 @@ bool LNS::run()
         cout << "[DEBUG] neighbor.sum_of_costs před opětovném přepočtu: " << neighbor.sum_of_costs << endl;
         cout << "[DEBUG] neighbor.old_sum_of_costs před opětovném přepočtu: " << neighbor.old_sum_of_costs << endl;
         cout << "[DEBUG] sum_of_costs před opětovném přepočtu: " << sum_of_costs << endl;
-        //if (!cameFromInitLNS) {
-            sum_of_costs += neighbor.sum_of_costs -
-                            neighbor.old_sum_of_costs;
-            cout << "[DEBUG] recomputing sum_of_cost by dividing neighbor.sum_of_costs and neighbor.old_sum_of_costs" << endl;
-        //}
+        sum_of_costs += neighbor.sum_of_costs -
+                        neighbor.old_sum_of_costs;
+        cout << "[DEBUG] recomputing sum_of_cost by dividing neighbor.sum_of_costs and neighbor.old_sum_of_costs" << endl;
         cout << "[DEBUG] sum_of_costs po opětovném přepočtu: " << sum_of_costs << endl;
 
         if (screen >= 1)

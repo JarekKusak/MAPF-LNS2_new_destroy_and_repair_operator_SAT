@@ -69,7 +69,6 @@ private:
     list<int> intersections;
 
     std::unordered_set<int> ignored_agents; // MOJE
-    bool cameFromInitLNS = false;
 
     bool runEECBS();
     bool runCBS();

@@ -394,7 +394,7 @@ bool LNS::run()
         cout << "[DEBUG] init_lns->sum_of_costs po doběhnutí init_lns->run: " << init_lns->sum_of_costs << endl;
 
         if (fixed) {
-            sum_of_costs = init_lns->sum_of_costs;
+            sum_of_costs = init_lns->sum_of_costs; // možná by to bylo vhodnější uložit do neighbor.sum_of_cost a na konci to nemusíme přeskakovat speciální podmínkou
             cout << "[DEBUG] sum_of_costs po přiřazení init_lns->run: " << sum_of_costs << endl;
             path_table.reset();
             for (const auto &agent : agents)
@@ -430,7 +430,7 @@ bool LNS::run()
         }
 
         // ------------------------------------------------
-        // 1) Oprava konfliktu pokud needConflictRepair==true
+        // Oprava konfliktu pokud needConflictRepair==true
         // ------------------------------------------------
         if (needConflictRepair && destroy_strategy == SAT) {
             cout << "[DEBUG] Switching to conflict repair mode via init_lns." << endl;

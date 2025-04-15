@@ -11,7 +11,7 @@ LNS::LNS(const Instance& instance, double time_limit, const string & init_algo_n
          const string & init_destory_name, bool use_sipp, int screen, PIBTPPS_option pipp_option) :
          BasicLNS(instance, time_limit, neighbor_size, screen),
          init_algo_name(init_algo_name),  replan_algo_name(replan_algo_name),
-         num_of_iterations(num_of_iterations > 0 ? 0 : 50), // nastavuje se v argumentu
+         num_of_iterations(num_of_iterations > 0 ? 0 : 150), // nastavuje se v argumentu
          use_init_lns(use_init_lns),init_destory_name(init_destory_name),
          path_table(instance.map_size), pipp_option(pipp_option) {
     start_time = Time::now();
@@ -559,6 +559,8 @@ bool LNS::run()
                         neighbor.old_sum_of_costs;
         cout << "[DEBUG] recomputing sum_of_cost by dividing neighbor.sum_of_costs and neighbor.old_sum_of_costs" << endl;
         cout << "[DEBUG] sum_of_costs po opětovném přepočtu: " << sum_of_costs << endl;
+
+        cout << "Iteration " << iteration_stats.size() << endl;
 
         if (screen >= 1)
         {

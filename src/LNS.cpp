@@ -389,12 +389,15 @@ bool LNS::run()
             }
         }
 
+        neighbor.old_sum_of_costs = sum_of_costs; // přidáno
+
         bool fixed = init_lns->run(true);
 
         cout << "[DEBUG] init_lns->sum_of_costs po doběhnutí init_lns->run: " << init_lns->sum_of_costs << endl;
 
         if (fixed) {
-            sum_of_costs = init_lns->sum_of_costs; // možná by to bylo vhodnější uložit do neighbor.sum_of_cost a na konci to nemusíme přeskakovat speciální podmínkou
+            neighbor.sum_of_costs = init_lns->sum_of_costs; // přidáno
+            //sum_of_costs = init_lns->sum_of_costs; // možná by to bylo vhodnější uložit do neighbor.sum_of_cost a na konci to nemusíme přeskakovat speciální podmínkou
             cout << "[DEBUG] sum_of_costs po přiřazení init_lns->run: " << sum_of_costs << endl;
             path_table.reset();
             for (const auto &agent : agents)
@@ -553,11 +556,11 @@ bool LNS::run()
         cout << "[DEBUG] neighbor.sum_of_costs před opětovném přepočtu: " << neighbor.sum_of_costs << endl;
         cout << "[DEBUG] neighbor.old_sum_of_costs před opětovném přepočtu: " << neighbor.old_sum_of_costs << endl;
         cout << "[DEBUG] sum_of_costs před opětovném přepočtu: " << sum_of_costs << endl;
-        if (!cameFromInitLNS) {
+        //if (!cameFromInitLNS) {
             sum_of_costs += neighbor.sum_of_costs -
                             neighbor.old_sum_of_costs;
             cout << "[DEBUG] recomputing sum_of_cost by dividing neighbor.sum_of_costs and neighbor.old_sum_of_costs" << endl;
-        }
+        //}
         cout << "[DEBUG] sum_of_costs po opětovném přepočtu: " << sum_of_costs << endl;
 
         if (screen >= 1)

@@ -2,7 +2,7 @@
 [DEBUG] getInitialSolution() => succ=1, sum_of_costs=4461, num_of_colliding_pairs=1
 [DEBUG] After skip/init build => iteration_stats.back(): sum_of_costs=4461, collisions=1
 [DEBUG] Using default neighbor generation strategy for conflicts: 0
-	InitLNS(PP): runtime = 0.0177133, iterations = 2, colliding pairs = 0, initial colliding pairs = 1, solution cost = 4490, initial solution cost = 4461, failed iterations = 0
+	InitLNS(PP): runtime = 0.0267882, iterations = 2, colliding pairs = 0, initial colliding pairs = 1, solution cost = 4490, initial solution cost = 4461, failed iterations = 0
 [DEBUG] Using SAT operator (destroy+repair SAT) with probability 20 %.
 ====================
 SAT destroy operator called.
@@ -514,12 +514,13 @@ agent 89 je v konfliktu s agentem 104
 [DEBUG] Using default neighbor generation strategy for conflicts: 0
 [DEBUG] Using default neighbor generation strategy for conflicts: 2
 [DEBUG] Using default neighbor generation strategy for conflicts: 1
-	InitLNS(PP): runtime = 0.0108917, iterations = 5, colliding pairs = 0, initial colliding pairs = 15, solution cost = 4516, initial solution cost = 4478, failed iterations = 1
+	InitLNS(PP): runtime = 0.0177458, iterations = 5, colliding pairs = 0, initial colliding pairs = 15, solution cost = 4516, initial solution cost = 4478, failed iterations = 1
 [DEBUG] init_lns->sum_of_costs po doběhnutí init_lns->run: 4516
-[DEBUG] sum_of_costs po přiřazení init_lns->run: 4516
-[DEBUG] neighbor.sum_of_costs před opětovném přepočtu: 55
-[DEBUG] neighbor.old_sum_of_costs před opětovném přepočtu: 67
-[DEBUG] sum_of_costs před opětovném přepočtu: 4516
+[DEBUG] sum_of_costs po přiřazení init_lns->run: 4490
+[DEBUG] neighbor.sum_of_costs před opětovném přepočtu: 4516
+[DEBUG] neighbor.old_sum_of_costs před opětovném přepočtu: 4490
+[DEBUG] sum_of_costs před opětovném přepočtu: 4490
+[DEBUG] recomputing sum_of_cost by dividing neighbor.sum_of_costs and neighbor.old_sum_of_costs
 [DEBUG] sum_of_costs po opětovném přepočtu: 4516
 [DEBUG] Using SAT operator (destroy+repair SAT) with probability 20 %.
 ====================
@@ -792,12 +793,13 @@ agent 94 je v konfliktu s agentem 144
 [DEBUG] Using default neighbor generation strategy for conflicts: 2
 [DEBUG] Using default neighbor generation strategy for conflicts: 1
 [DEBUG] Using default neighbor generation strategy for conflicts: 1
-	InitLNS(PP): runtime = 0.0121369, iterations = 8, colliding pairs = 0, initial colliding pairs = 19, solution cost = 4480, initial solution cost = 4495, failed iterations = 0
+	InitLNS(PP): runtime = 0.0147233, iterations = 8, colliding pairs = 0, initial colliding pairs = 19, solution cost = 4480, initial solution cost = 4495, failed iterations = 0
 [DEBUG] init_lns->sum_of_costs po doběhnutí init_lns->run: 4480
-[DEBUG] sum_of_costs po přiřazení init_lns->run: 4480
-[DEBUG] neighbor.sum_of_costs před opětovném přepočtu: 236
-[DEBUG] neighbor.old_sum_of_costs před opětovném přepočtu: 257
-[DEBUG] sum_of_costs před opětovném přepočtu: 4480
+[DEBUG] sum_of_costs po přiřazení init_lns->run: 4516
+[DEBUG] neighbor.sum_of_costs před opětovném přepočtu: 4480
+[DEBUG] neighbor.old_sum_of_costs před opětovném přepočtu: 4516
+[DEBUG] sum_of_costs před opětovném přepočtu: 4516
+[DEBUG] recomputing sum_of_cost by dividing neighbor.sum_of_costs and neighbor.old_sum_of_costs
 [DEBUG] sum_of_costs po opětovném přepočtu: 4480
 [DEBUG] Using SAT operator (destroy+repair SAT) with probability 20 %.
 ====================
@@ -1250,12 +1252,13 @@ agent 131 je v konfliktu s agentem 145
 [DEBUG] sum_of_cost hodnota: 4470
 [DEBUG] After skip/init build => iteration_stats.back(): sum_of_costs=4470, collisions=5
 [DEBUG] Using default neighbor generation strategy for conflicts: 1
-	InitLNS(PP): runtime = 0.00131571, iterations = 2, colliding pairs = 0, initial colliding pairs = 5, solution cost = 4485, initial solution cost = 4470, failed iterations = 0
+	InitLNS(PP): runtime = 0.00134637, iterations = 2, colliding pairs = 0, initial colliding pairs = 5, solution cost = 4485, initial solution cost = 4470, failed iterations = 0
 [DEBUG] init_lns->sum_of_costs po doběhnutí init_lns->run: 4485
-[DEBUG] sum_of_costs po přiřazení init_lns->run: 4485
-[DEBUG] neighbor.sum_of_costs před opětovném přepočtu: 100
-[DEBUG] neighbor.old_sum_of_costs před opětovném přepočtu: 110
-[DEBUG] sum_of_costs před opětovném přepočtu: 4485
+[DEBUG] sum_of_costs po přiřazení init_lns->run: 4480
+[DEBUG] neighbor.sum_of_costs před opětovném přepočtu: 4485
+[DEBUG] neighbor.old_sum_of_costs před opětovném přepočtu: 4480
+[DEBUG] sum_of_costs před opětovném přepočtu: 4480
+[DEBUG] recomputing sum_of_cost by dividing neighbor.sum_of_costs and neighbor.old_sum_of_costs
 [DEBUG] sum_of_costs po opětovném přepočtu: 4485
 [DEBUG] Using SAT operator (destroy+repair SAT) with probability 20 %.
 ====================
@@ -1380,12 +1383,13 @@ agent 120 je v konfliktu s agentem 127
 [DEBUG] After skip/init build => iteration_stats.back(): sum_of_costs=4450, collisions=5
 [DEBUG] Using default neighbor generation strategy for conflicts: 2
 [DEBUG] Using default neighbor generation strategy for conflicts: 0
-	InitLNS(PP): runtime = 0.002185, iterations = 3, colliding pairs = 0, initial colliding pairs = 5, solution cost = 4485, initial solution cost = 4450, failed iterations = 0
+	InitLNS(PP): runtime = 0.00226096, iterations = 3, colliding pairs = 0, initial colliding pairs = 5, solution cost = 4485, initial solution cost = 4450, failed iterations = 0
 [DEBUG] init_lns->sum_of_costs po doběhnutí init_lns->run: 4485
 [DEBUG] sum_of_costs po přiřazení init_lns->run: 4485
-[DEBUG] neighbor.sum_of_costs před opětovném přepočtu: 26
-[DEBUG] neighbor.old_sum_of_costs před opětovném přepočtu: 61
+[DEBUG] neighbor.sum_of_costs před opětovném přepočtu: 4485
+[DEBUG] neighbor.old_sum_of_costs před opětovném přepočtu: 4485
 [DEBUG] sum_of_costs před opětovném přepočtu: 4485
+[DEBUG] recomputing sum_of_cost by dividing neighbor.sum_of_costs and neighbor.old_sum_of_costs
 [DEBUG] sum_of_costs po opětovném přepočtu: 4485
 [DEBUG] Using SAT operator (destroy+repair SAT) with probability 20 %.
 ====================
@@ -1658,12 +1662,13 @@ agent 133 je v konfliktu s agentem 140
 [DEBUG] Using default neighbor generation strategy for conflicts: 2
 [DEBUG] Using default neighbor generation strategy for conflicts: 0
 [DEBUG] Using default neighbor generation strategy for conflicts: 1
-	InitLNS(PP): runtime = 0.00305117, iterations = 4, colliding pairs = 0, initial colliding pairs = 9, solution cost = 4462, initial solution cost = 4474, failed iterations = 0
+	InitLNS(PP): runtime = 0.00292354, iterations = 4, colliding pairs = 0, initial colliding pairs = 9, solution cost = 4462, initial solution cost = 4474, failed iterations = 0
 [DEBUG] init_lns->sum_of_costs po doběhnutí init_lns->run: 4462
-[DEBUG] sum_of_costs po přiřazení init_lns->run: 4462
-[DEBUG] neighbor.sum_of_costs před opětovném přepočtu: 78
-[DEBUG] neighbor.old_sum_of_costs před opětovném přepočtu: 89
-[DEBUG] sum_of_costs před opětovném přepočtu: 4462
+[DEBUG] sum_of_costs po přiřazení init_lns->run: 4485
+[DEBUG] neighbor.sum_of_costs před opětovném přepočtu: 4462
+[DEBUG] neighbor.old_sum_of_costs před opětovném přepočtu: 4485
+[DEBUG] sum_of_costs před opětovném přepočtu: 4485
+[DEBUG] recomputing sum_of_cost by dividing neighbor.sum_of_costs and neighbor.old_sum_of_costs
 [DEBUG] sum_of_costs po opětovném přepočtu: 4462
 [DEBUG] Using SAT operator (destroy+repair SAT) with probability 20 %.
 ====================
@@ -1843,12 +1848,13 @@ agent 28 je v konfliktu s agentem 46
 [DEBUG] sum_of_cost hodnota: 4426
 [DEBUG] After skip/init build => iteration_stats.back(): sum_of_costs=4426, collisions=3
 [DEBUG] Using default neighbor generation strategy for conflicts: 2
-	InitLNS(PP): runtime = 0.000965458, iterations = 2, colliding pairs = 0, initial colliding pairs = 3, solution cost = 4464, initial solution cost = 4426, failed iterations = 0
+	InitLNS(PP): runtime = 0.00084425, iterations = 2, colliding pairs = 0, initial colliding pairs = 3, solution cost = 4464, initial solution cost = 4426, failed iterations = 0
 [DEBUG] init_lns->sum_of_costs po doběhnutí init_lns->run: 4464
-[DEBUG] sum_of_costs po přiřazení init_lns->run: 4464
-[DEBUG] neighbor.sum_of_costs před opětovném přepočtu: 99
-[DEBUG] neighbor.old_sum_of_costs před opětovném přepočtu: 135
-[DEBUG] sum_of_costs před opětovném přepočtu: 4464
+[DEBUG] sum_of_costs po přiřazení init_lns->run: 4462
+[DEBUG] neighbor.sum_of_costs před opětovném přepočtu: 4464
+[DEBUG] neighbor.old_sum_of_costs před opětovném přepočtu: 4462
+[DEBUG] sum_of_costs před opětovném přepočtu: 4462
+[DEBUG] recomputing sum_of_cost by dividing neighbor.sum_of_costs and neighbor.old_sum_of_costs
 [DEBUG] sum_of_costs po opětovném přepočtu: 4464
 [DEBUG] Using SAT operator (destroy+repair SAT) with probability 20 %.
 ====================
@@ -2007,11 +2013,12 @@ agent 32 je v konfliktu s agentem 122
 [DEBUG] Using default neighbor generation strategy for conflicts: 2
 [DEBUG] Using default neighbor generation strategy for conflicts: 2
 [DEBUG] Using default neighbor generation strategy for conflicts: 1
-	InitLNS(PP): runtime = 0.003503, iterations = 4, colliding pairs = 0, initial colliding pairs = 2, solution cost = 4460, initial solution cost = 4462, failed iterations = 0
+	InitLNS(PP): runtime = 0.0032975, iterations = 4, colliding pairs = 0, initial colliding pairs = 2, solution cost = 4460, initial solution cost = 4462, failed iterations = 0
 [DEBUG] init_lns->sum_of_costs po doběhnutí init_lns->run: 4460
-[DEBUG] sum_of_costs po přiřazení init_lns->run: 4460
-[DEBUG] neighbor.sum_of_costs před opětovném přepočtu: 131
-[DEBUG] neighbor.old_sum_of_costs před opětovném přepočtu: 133
-[DEBUG] sum_of_costs před opětovném přepočtu: 4460
+[DEBUG] sum_of_costs po přiřazení init_lns->run: 4464
+[DEBUG] neighbor.sum_of_costs před opětovném přepočtu: 4460
+[DEBUG] neighbor.old_sum_of_costs před opětovném přepočtu: 4464
+[DEBUG] sum_of_costs před opětovném přepočtu: 4464
+[DEBUG] recomputing sum_of_cost by dividing neighbor.sum_of_costs and neighbor.old_sum_of_costs
 [DEBUG] sum_of_costs po opětovném přepočtu: 4460
-LNS(PP;PP): runtime = 0.0662665, iterations = 12, solution cost = 4460, initial solution cost = 4490, failed iterations = 1
+LNS(PP;PP): runtime = 0.142948, iterations = 12, solution cost = 4460, initial solution cost = 4490, failed iterations = 1

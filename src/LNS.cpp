@@ -252,6 +252,7 @@ bool LNS::runSAT()
                 }
             }*/
         }
+        //ignored_agents.clear();
         return true;
     } else {
         // revert

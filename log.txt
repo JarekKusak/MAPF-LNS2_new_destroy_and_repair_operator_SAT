@@ -2,7 +2,7 @@
 [DEBUG] getInitialSolution() => succ=1, sum_of_costs=4461, num_of_colliding_pairs=1
 [DEBUG] After skip/init build => iteration_stats.back(): sum_of_costs=4461, collisions=1
 [DEBUG] Using default neighbor generation strategy for conflicts: 0
-	InitLNS(PP): runtime = 0.0184148, iterations = 2, colliding pairs = 0, initial colliding pairs = 1, solution cost = 4490, initial solution cost = 4461, failed iterations = 0
+	InitLNS(PP): runtime = 0.0178787, iterations = 2, colliding pairs = 0, initial colliding pairs = 1, solution cost = 4490, initial solution cost = 4461, failed iterations = 0
 [DEBUG] Using SAT operator (destroy+repair SAT) with probability 20 %.
 ====================
 SAT destroy operator called.
@@ -515,7 +515,7 @@ agent 89 je v konfliktu s agentem 104
 [DEBUG] Using default neighbor generation strategy for conflicts: 0
 [DEBUG] Using default neighbor generation strategy for conflicts: 2
 [DEBUG] Using default neighbor generation strategy for conflicts: 1
-	InitLNS(PP): runtime = 0.0119915, iterations = 5, colliding pairs = 0, initial colliding pairs = 15, solution cost = 4516, initial solution cost = 4478, failed iterations = 1
+	InitLNS(PP): runtime = 0.0117081, iterations = 5, colliding pairs = 0, initial colliding pairs = 15, solution cost = 4516, initial solution cost = 4478, failed iterations = 1
 [DEBUG] init_lns->sum_of_costs po doběhnutí init_lns->run: 4516
 [DEBUG] sum_of_costs po přiřazení init_lns->run: 4490
 [DEBUG] neighbor.sum_of_costs před opětovném přepočtu: 4516
@@ -795,7 +795,7 @@ agent 94 je v konfliktu s agentem 144
 [DEBUG] Using default neighbor generation strategy for conflicts: 2
 [DEBUG] Using default neighbor generation strategy for conflicts: 1
 [DEBUG] Using default neighbor generation strategy for conflicts: 1
-	InitLNS(PP): runtime = 0.0139205, iterations = 8, colliding pairs = 0, initial colliding pairs = 19, solution cost = 4480, initial solution cost = 4495, failed iterations = 0
+	InitLNS(PP): runtime = 0.0147902, iterations = 8, colliding pairs = 0, initial colliding pairs = 19, solution cost = 4480, initial solution cost = 4495, failed iterations = 0
 [DEBUG] init_lns->sum_of_costs po doběhnutí init_lns->run: 4480
 [DEBUG] sum_of_costs po přiřazení init_lns->run: 4516
 [DEBUG] neighbor.sum_of_costs před opětovném přepočtu: 4480
@@ -1257,7 +1257,7 @@ agent 131 je v konfliktu s agentem 145
 [DEBUG] sum_of_cost hodnota: 4470
 [DEBUG] After skip/init build => iteration_stats.back(): sum_of_costs=4470, collisions=5
 [DEBUG] Using default neighbor generation strategy for conflicts: 1
-	InitLNS(PP): runtime = 0.00151754, iterations = 2, colliding pairs = 0, initial colliding pairs = 5, solution cost = 4485, initial solution cost = 4470, failed iterations = 0
+	InitLNS(PP): runtime = 0.00139692, iterations = 2, colliding pairs = 0, initial colliding pairs = 5, solution cost = 4485, initial solution cost = 4470, failed iterations = 0
 [DEBUG] init_lns->sum_of_costs po doběhnutí init_lns->run: 4485
 [DEBUG] sum_of_costs po přiřazení init_lns->run: 4480
 [DEBUG] neighbor.sum_of_costs před opětovném přepočtu: 4485
@@ -1389,7 +1389,7 @@ agent 120 je v konfliktu s agentem 127
 [DEBUG] After skip/init build => iteration_stats.back(): sum_of_costs=4450, collisions=5
 [DEBUG] Using default neighbor generation strategy for conflicts: 2
 [DEBUG] Using default neighbor generation strategy for conflicts: 0
-	InitLNS(PP): runtime = 0.00521554, iterations = 3, colliding pairs = 0, initial colliding pairs = 5, solution cost = 4485, initial solution cost = 4450, failed iterations = 0
+	InitLNS(PP): runtime = 0.00227537, iterations = 3, colliding pairs = 0, initial colliding pairs = 5, solution cost = 4485, initial solution cost = 4450, failed iterations = 0
 [DEBUG] init_lns->sum_of_costs po doběhnutí init_lns->run: 4485
 [DEBUG] sum_of_costs po přiřazení init_lns->run: 4485
 [DEBUG] neighbor.sum_of_costs před opětovném přepočtu: 4485
@@ -1670,7 +1670,7 @@ agent 133 je v konfliktu s agentem 140
 [DEBUG] Using default neighbor generation strategy for conflicts: 2
 [DEBUG] Using default neighbor generation strategy for conflicts: 0
 [DEBUG] Using default neighbor generation strategy for conflicts: 1
-	InitLNS(PP): runtime = 0.00458729, iterations = 4, colliding pairs = 0, initial colliding pairs = 9, solution cost = 4462, initial solution cost = 4474, failed iterations = 0
+	InitLNS(PP): runtime = 0.00308446, iterations = 4, colliding pairs = 0, initial colliding pairs = 9, solution cost = 4462, initial solution cost = 4474, failed iterations = 0
 [DEBUG] init_lns->sum_of_costs po doběhnutí init_lns->run: 4462
 [DEBUG] sum_of_costs po přiřazení init_lns->run: 4485
 [DEBUG] neighbor.sum_of_costs před opětovném přepočtu: 4462
@@ -1857,7 +1857,7 @@ agent 28 je v konfliktu s agentem 46
 [DEBUG] sum_of_cost hodnota: 4426
 [DEBUG] After skip/init build => iteration_stats.back(): sum_of_costs=4426, collisions=3
 [DEBUG] Using default neighbor generation strategy for conflicts: 2
-	InitLNS(PP): runtime = 0.00104583, iterations = 2, colliding pairs = 0, initial colliding pairs = 3, solution cost = 4464, initial solution cost = 4426, failed iterations = 0
+	InitLNS(PP): runtime = 0.000859958, iterations = 2, colliding pairs = 0, initial colliding pairs = 3, solution cost = 4464, initial solution cost = 4426, failed iterations = 0
 [DEBUG] init_lns->sum_of_costs po doběhnutí init_lns->run: 4464
 [DEBUG] sum_of_costs po přiřazení init_lns->run: 4462
 [DEBUG] neighbor.sum_of_costs před opětovném přepočtu: 4464
@@ -2023,7 +2023,7 @@ agent 32 je v konfliktu s agentem 122
 [DEBUG] Using default neighbor generation strategy for conflicts: 2
 [DEBUG] Using default neighbor generation strategy for conflicts: 2
 [DEBUG] Using default neighbor generation strategy for conflicts: 1
-	InitLNS(PP): runtime = 0.00438063, iterations = 4, colliding pairs = 0, initial colliding pairs = 2, solution cost = 4460, initial solution cost = 4462, failed iterations = 0
+	InitLNS(PP): runtime = 0.00351833, iterations = 4, colliding pairs = 0, initial colliding pairs = 2, solution cost = 4460, initial solution cost = 4462, failed iterations = 0
 [DEBUG] init_lns->sum_of_costs po doběhnutí init_lns->run: 4460
 [DEBUG] sum_of_costs po přiřazení init_lns->run: 4464
 [DEBUG] neighbor.sum_of_costs před opětovném přepočtu: 4460
@@ -2304,7 +2304,7 @@ agent 133 je v konfliktu s agentem 144
 [DEBUG] Using default neighbor generation strategy for conflicts: 0
 [DEBUG] Using default neighbor generation strategy for conflicts: 2
 [DEBUG] Using default neighbor generation strategy for conflicts: 0
-	InitLNS(PP): runtime = 0.00949362, iterations = 7, colliding pairs = 0, initial colliding pairs = 19, solution cost = 4464, initial solution cost = 4436, failed iterations = 0
+	InitLNS(PP): runtime = 0.00816896, iterations = 7, colliding pairs = 0, initial colliding pairs = 19, solution cost = 4464, initial solution cost = 4436, failed iterations = 0
 [DEBUG] init_lns->sum_of_costs po doběhnutí init_lns->run: 4464
 [DEBUG] sum_of_costs po přiřazení init_lns->run: 4460
 [DEBUG] neighbor.sum_of_costs před opětovném přepočtu: 4464
@@ -2502,7 +2502,7 @@ agent 42 je v konfliktu s agentem 137
 [DEBUG] Using default neighbor generation strategy for conflicts: 2
 [DEBUG] Using default neighbor generation strategy for conflicts: 2
 [DEBUG] Using default neighbor generation strategy for conflicts: 0
-	InitLNS(PP): runtime = 0.0154794, iterations = 7, colliding pairs = 0, initial colliding pairs = 10, solution cost = 4497, initial solution cost = 4461, failed iterations = 0
+	InitLNS(PP): runtime = 0.0112777, iterations = 7, colliding pairs = 0, initial colliding pairs = 10, solution cost = 4497, initial solution cost = 4461, failed iterations = 0
 [DEBUG] init_lns->sum_of_costs po doběhnutí init_lns->run: 4497
 [DEBUG] sum_of_costs po přiřazení init_lns->run: 4464
 [DEBUG] neighbor.sum_of_costs před opětovném přepočtu: 4497
@@ -2773,7 +2773,7 @@ agent 130 je v konfliktu s agentem 135
 [DEBUG] Using default neighbor generation strategy for conflicts: 1
 [DEBUG] Using default neighbor generation strategy for conflicts: 2
 [DEBUG] Using default neighbor generation strategy for conflicts: 1
-	InitLNS(PP): runtime = 0.0161229, iterations = 9, colliding pairs = 0, initial colliding pairs = 22, solution cost = 4516, initial solution cost = 4479, failed iterations = 0
+	InitLNS(PP): runtime = 0.00938042, iterations = 9, colliding pairs = 0, initial colliding pairs = 22, solution cost = 4516, initial solution cost = 4479, failed iterations = 0
 [DEBUG] init_lns->sum_of_costs po doběhnutí init_lns->run: 4516
 [DEBUG] sum_of_costs po přiřazení init_lns->run: 4497
 [DEBUG] neighbor.sum_of_costs před opětovném přepočtu: 4516
@@ -3091,7 +3091,7 @@ agent 92 je v konfliktu s agentem 116
 [DEBUG] After skip/init build => iteration_stats.back(): sum_of_costs=4501, collisions=3
 [DEBUG] Using default neighbor generation strategy for conflicts: 0
 [DEBUG] Using default neighbor generation strategy for conflicts: 1
-	InitLNS(PP): runtime = 0.00185287, iterations = 3, colliding pairs = 0, initial colliding pairs = 3, solution cost = 4516, initial solution cost = 4501, failed iterations = 0
+	InitLNS(PP): runtime = 0.00145654, iterations = 3, colliding pairs = 0, initial colliding pairs = 3, solution cost = 4516, initial solution cost = 4501, failed iterations = 0
 [DEBUG] init_lns->sum_of_costs po doběhnutí init_lns->run: 4516
 [DEBUG] sum_of_costs po přiřazení init_lns->run: 4516
 [DEBUG] neighbor.sum_of_costs před opětovném přepočtu: 4516
@@ -3498,7 +3498,7 @@ agent 87 je v konfliktu s agentem 118
 [DEBUG] Using default neighbor generation strategy for conflicts: 0
 [DEBUG] Using default neighbor generation strategy for conflicts: 2
 [DEBUG] Using default neighbor generation strategy for conflicts: 1
-	InitLNS(PP): runtime = 0.00417713, iterations = 4, colliding pairs = 0, initial colliding pairs = 8, solution cost = 4503, initial solution cost = 4501, failed iterations = 0
+	InitLNS(PP): runtime = 0.00383204, iterations = 4, colliding pairs = 0, initial colliding pairs = 8, solution cost = 4503, initial solution cost = 4501, failed iterations = 0
 [DEBUG] init_lns->sum_of_costs po doběhnutí init_lns->run: 4503
 [DEBUG] sum_of_costs po přiřazení init_lns->run: 4516
 [DEBUG] neighbor.sum_of_costs před opětovném přepočtu: 4503
@@ -3902,7 +3902,7 @@ agent 133 je v konfliktu s agentem 140
 [DEBUG] Using default neighbor generation strategy for conflicts: 0
 [DEBUG] Using default neighbor generation strategy for conflicts: 1
 [DEBUG] Using default neighbor generation strategy for conflicts: 0
-	InitLNS(PP): runtime = 0.0106738, iterations = 6, colliding pairs = 0, initial colliding pairs = 11, solution cost = 4488, initial solution cost = 4493, failed iterations = 0
+	InitLNS(PP): runtime = 0.0116783, iterations = 6, colliding pairs = 0, initial colliding pairs = 11, solution cost = 4488, initial solution cost = 4493, failed iterations = 0
 [DEBUG] init_lns->sum_of_costs po doběhnutí init_lns->run: 4488
 [DEBUG] sum_of_costs po přiřazení init_lns->run: 4503
 [DEBUG] neighbor.sum_of_costs před opětovném přepočtu: 4488
@@ -4072,7 +4072,7 @@ agent 133 je v konfliktu s agentem 142
 [DEBUG] After skip/init build => iteration_stats.back(): sum_of_costs=4482, collisions=12
 [DEBUG] Using default neighbor generation strategy for conflicts: 0
 [DEBUG] Using default neighbor generation strategy for conflicts: 0
-	InitLNS(PP): runtime = 0.00336067, iterations = 3, colliding pairs = 0, initial colliding pairs = 12, solution cost = 4493, initial solution cost = 4482, failed iterations = 0
+	InitLNS(PP): runtime = 0.00336937, iterations = 3, colliding pairs = 0, initial colliding pairs = 12, solution cost = 4493, initial solution cost = 4482, failed iterations = 0
 [DEBUG] init_lns->sum_of_costs po doběhnutí init_lns->run: 4493
 [DEBUG] sum_of_costs po přiřazení init_lns->run: 4488
 [DEBUG] neighbor.sum_of_costs před opětovném přepočtu: 4493
@@ -4443,7 +4443,7 @@ agent 28 je v konfliktu s agentem 144
 [DEBUG] After skip/init build => iteration_stats.back(): sum_of_costs=4485, collisions=9
 [DEBUG] Using default neighbor generation strategy for conflicts: 2
 [DEBUG] Using default neighbor generation strategy for conflicts: 2
-	InitLNS(PP): runtime = 0.00255333, iterations = 3, colliding pairs = 0, initial colliding pairs = 9, solution cost = 4473, initial solution cost = 4485, failed iterations = 0
+	InitLNS(PP): runtime = 0.00224758, iterations = 3, colliding pairs = 0, initial colliding pairs = 9, solution cost = 4473, initial solution cost = 4485, failed iterations = 0
 [DEBUG] init_lns->sum_of_costs po doběhnutí init_lns->run: 4473
 [DEBUG] sum_of_costs po přiřazení init_lns->run: 4493
 [DEBUG] neighbor.sum_of_costs před opětovném přepočtu: 4473
@@ -4597,7 +4597,7 @@ agent 92 je v konfliktu s agentem 116
 [DEBUG] sum_of_cost hodnota: 4472
 [DEBUG] After skip/init build => iteration_stats.back(): sum_of_costs=4472, collisions=5
 [DEBUG] Using default neighbor generation strategy for conflicts: 1
-	InitLNS(PP): runtime = 0.000990416, iterations = 2, colliding pairs = 0, initial colliding pairs = 5, solution cost = 4459, initial solution cost = 4472, failed iterations = 0
+	InitLNS(PP): runtime = 0.000926583, iterations = 2, colliding pairs = 0, initial colliding pairs = 5, solution cost = 4459, initial solution cost = 4472, failed iterations = 0
 [DEBUG] init_lns->sum_of_costs po doběhnutí init_lns->run: 4459
 [DEBUG] sum_of_costs po přiřazení init_lns->run: 4473
 [DEBUG] neighbor.sum_of_costs před opětovném přepočtu: 4459
@@ -5006,7 +5006,7 @@ agent 87 je v konfliktu s agentem 127
 [DEBUG] sum_of_cost hodnota: 4457
 [DEBUG] After skip/init build => iteration_stats.back(): sum_of_costs=4457, collisions=6
 [DEBUG] Using default neighbor generation strategy for conflicts: 1
-	InitLNS(PP): runtime = 0.00157679, iterations = 2, colliding pairs = 0, initial colliding pairs = 6, solution cost = 4460, initial solution cost = 4457, failed iterations = 0
+	InitLNS(PP): runtime = 0.00142721, iterations = 2, colliding pairs = 0, initial colliding pairs = 6, solution cost = 4460, initial solution cost = 4457, failed iterations = 0
 [DEBUG] init_lns->sum_of_costs po doběhnutí init_lns->run: 4460
 [DEBUG] sum_of_costs po přiřazení init_lns->run: 4459
 [DEBUG] neighbor.sum_of_costs před opětovném přepočtu: 4460
@@ -5128,7 +5128,7 @@ agent 44 je v konfliktu s agentem 100
 [DEBUG] sum_of_cost hodnota: 4459
 [DEBUG] After skip/init build => iteration_stats.back(): sum_of_costs=4459, collisions=4
 [DEBUG] Using default neighbor generation strategy for conflicts: 0
-	InitLNS(PP): runtime = 0.00265204, iterations = 2, colliding pairs = 0, initial colliding pairs = 4, solution cost = 4461, initial solution cost = 4459, failed iterations = 0
+	InitLNS(PP): runtime = 0.00247196, iterations = 2, colliding pairs = 0, initial colliding pairs = 4, solution cost = 4461, initial solution cost = 4459, failed iterations = 0
 [DEBUG] init_lns->sum_of_costs po doběhnutí init_lns->run: 4461
 [DEBUG] sum_of_costs po přiřazení init_lns->run: 4460
 [DEBUG] neighbor.sum_of_costs před opětovném přepočtu: 4461
@@ -5424,7 +5424,7 @@ agent 125 je v konfliktu s agentem 140
 [DEBUG] Using default neighbor generation strategy for conflicts: 2
 [DEBUG] Using default neighbor generation strategy for conflicts: 1
 [DEBUG] Using default neighbor generation strategy for conflicts: 1
-	InitLNS(PP): runtime = 0.0114344, iterations = 6, colliding pairs = 0, initial colliding pairs = 19, solution cost = 4413, initial solution cost = 4408, failed iterations = 0
+	InitLNS(PP): runtime = 0.0102009, iterations = 6, colliding pairs = 0, initial colliding pairs = 19, solution cost = 4413, initial solution cost = 4408, failed iterations = 0
 [DEBUG] init_lns->sum_of_costs po doběhnutí init_lns->run: 4413
 [DEBUG] sum_of_costs po přiřazení init_lns->run: 4461
 [DEBUG] neighbor.sum_of_costs před opětovném přepočtu: 4413
@@ -5665,7 +5665,7 @@ agent 14 je v konfliktu s agentem 109
 [DEBUG] sum_of_cost hodnota: 4411
 [DEBUG] After skip/init build => iteration_stats.back(): sum_of_costs=4411, collisions=3
 [DEBUG] Using default neighbor generation strategy for conflicts: 1
-	InitLNS(PP): runtime = 0.00125758, iterations = 2, colliding pairs = 0, initial colliding pairs = 3, solution cost = 4414, initial solution cost = 4411, failed iterations = 0
+	InitLNS(PP): runtime = 0.00129358, iterations = 2, colliding pairs = 0, initial colliding pairs = 3, solution cost = 4414, initial solution cost = 4411, failed iterations = 0
 [DEBUG] init_lns->sum_of_costs po doběhnutí init_lns->run: 4414
 [DEBUG] sum_of_costs po přiřazení init_lns->run: 4413
 [DEBUG] neighbor.sum_of_costs před opětovném přepočtu: 4414
@@ -5887,7 +5887,7 @@ agent 55 je v konfliktu s agentem 148
 [DEBUG] sum_of_cost hodnota: 4413
 [DEBUG] After skip/init build => iteration_stats.back(): sum_of_costs=4413, collisions=2
 [DEBUG] Using default neighbor generation strategy for conflicts: 1
-	InitLNS(PP): runtime = 0.003164, iterations = 2, colliding pairs = 0, initial colliding pairs = 2, solution cost = 4417, initial solution cost = 4413, failed iterations = 0
+	InitLNS(PP): runtime = 0.00305408, iterations = 2, colliding pairs = 0, initial colliding pairs = 2, solution cost = 4417, initial solution cost = 4413, failed iterations = 0
 [DEBUG] init_lns->sum_of_costs po doběhnutí init_lns->run: 4417
 [DEBUG] sum_of_costs po přiřazení init_lns->run: 4414
 [DEBUG] neighbor.sum_of_costs před opětovném přepočtu: 4417
@@ -6127,7 +6127,7 @@ agent 105 je v konfliktu s agentem 148
 [DEBUG] After skip/init build => iteration_stats.back(): sum_of_costs=4416, collisions=3
 [DEBUG] Using default neighbor generation strategy for conflicts: 2
 [DEBUG] Using default neighbor generation strategy for conflicts: 0
-	InitLNS(PP): runtime = 0.00346362, iterations = 3, colliding pairs = 0, initial colliding pairs = 3, solution cost = 4408, initial solution cost = 4416, failed iterations = 0
+	InitLNS(PP): runtime = 0.00335512, iterations = 3, colliding pairs = 0, initial colliding pairs = 3, solution cost = 4408, initial solution cost = 4416, failed iterations = 0
 [DEBUG] init_lns->sum_of_costs po doběhnutí init_lns->run: 4408
 [DEBUG] sum_of_costs po přiřazení init_lns->run: 4417
 [DEBUG] neighbor.sum_of_costs před opětovném přepočtu: 4408
@@ -6351,7 +6351,7 @@ agent 51 je v konfliktu s agentem 134
 [DEBUG] sum_of_cost hodnota: 4405
 [DEBUG] After skip/init build => iteration_stats.back(): sum_of_costs=4405, collisions=9
 [DEBUG] Using default neighbor generation strategy for conflicts: 1
-	InitLNS(PP): runtime = 0.00148271, iterations = 2, colliding pairs = 0, initial colliding pairs = 9, solution cost = 4407, initial solution cost = 4405, failed iterations = 0
+	InitLNS(PP): runtime = 0.00148683, iterations = 2, colliding pairs = 0, initial colliding pairs = 9, solution cost = 4407, initial solution cost = 4405, failed iterations = 0
 [DEBUG] init_lns->sum_of_costs po doběhnutí init_lns->run: 4407
 [DEBUG] sum_of_costs po přiřazení init_lns->run: 4408
 [DEBUG] neighbor.sum_of_costs před opětovném přepočtu: 4407
@@ -6757,7 +6757,7 @@ agent 109 je v konfliktu s agentem 144
 [DEBUG] Using default neighbor generation strategy for conflicts: 2
 [DEBUG] Using default neighbor generation strategy for conflicts: 1
 [DEBUG] Using default neighbor generation strategy for conflicts: 1
-	InitLNS(PP): runtime = 0.00425625, iterations = 5, colliding pairs = 0, initial colliding pairs = 22, solution cost = 4435, initial solution cost = 4390, failed iterations = 0
+	InitLNS(PP): runtime = 0.00438983, iterations = 5, colliding pairs = 0, initial colliding pairs = 22, solution cost = 4435, initial solution cost = 4390, failed iterations = 0
 [DEBUG] init_lns->sum_of_costs po doběhnutí init_lns->run: 4435
 [DEBUG] sum_of_costs po přiřazení init_lns->run: 4407
 [DEBUG] neighbor.sum_of_costs před opětovném přepočtu: 4435
@@ -7000,7 +7000,7 @@ agent 38 je v konfliktu s agentem 109
 [DEBUG] sum_of_cost hodnota: 4426
 [DEBUG] After skip/init build => iteration_stats.back(): sum_of_costs=4426, collisions=7
 [DEBUG] Using default neighbor generation strategy for conflicts: 2
-	InitLNS(PP): runtime = 0.0008105, iterations = 2, colliding pairs = 0, initial colliding pairs = 7, solution cost = 4427, initial solution cost = 4426, failed iterations = 0
+	InitLNS(PP): runtime = 0.000840959, iterations = 2, colliding pairs = 0, initial colliding pairs = 7, solution cost = 4427, initial solution cost = 4426, failed iterations = 0
 [DEBUG] init_lns->sum_of_costs po doběhnutí init_lns->run: 4427
 [DEBUG] sum_of_costs po přiřazení init_lns->run: 4435
 [DEBUG] neighbor.sum_of_costs před opětovném přepočtu: 4427
@@ -7169,7 +7169,7 @@ agent 83 je v konfliktu s agentem 117
 [DEBUG] After skip/init build => iteration_stats.back(): sum_of_costs=4426, collisions=2
 [DEBUG] Using default neighbor generation strategy for conflicts: 2
 [DEBUG] Using default neighbor generation strategy for conflicts: 0
-	InitLNS(PP): runtime = 0.00183983, iterations = 3, colliding pairs = 0, initial colliding pairs = 2, solution cost = 4412, initial solution cost = 4426, failed iterations = 0
+	InitLNS(PP): runtime = 0.00171613, iterations = 3, colliding pairs = 0, initial colliding pairs = 2, solution cost = 4412, initial solution cost = 4426, failed iterations = 0
 [DEBUG] init_lns->sum_of_costs po doběhnutí init_lns->run: 4412
 [DEBUG] sum_of_costs po přiřazení init_lns->run: 4427
 [DEBUG] neighbor.sum_of_costs před opětovném přepočtu: 4412
@@ -7750,7 +7750,7 @@ agent 42 je v konfliktu s agentem 115
 [DEBUG] sum_of_cost hodnota: 4411
 [DEBUG] After skip/init build => iteration_stats.back(): sum_of_costs=4411, collisions=2
 [DEBUG] Using default neighbor generation strategy for conflicts: 0
-	InitLNS(PP): runtime = 0.0014125, iterations = 2, colliding pairs = 0, initial colliding pairs = 2, solution cost = 4409, initial solution cost = 4411, failed iterations = 0
+	InitLNS(PP): runtime = 0.00130662, iterations = 2, colliding pairs = 0, initial colliding pairs = 2, solution cost = 4409, initial solution cost = 4411, failed iterations = 0
 [DEBUG] init_lns->sum_of_costs po doběhnutí init_lns->run: 4409
 [DEBUG] sum_of_costs po přiřazení init_lns->run: 4412
 [DEBUG] neighbor.sum_of_costs před opětovném přepočtu: 4409
@@ -8140,7 +8140,7 @@ agent 113 je v konfliktu s agentem 131
 [DEBUG] Using default neighbor generation strategy for conflicts: 2
 [DEBUG] Using default neighbor generation strategy for conflicts: 1
 [DEBUG] Using default neighbor generation strategy for conflicts: 1
-	InitLNS(PP): runtime = 0.00604967, iterations = 4, colliding pairs = 0, initial colliding pairs = 1, solution cost = 4415, initial solution cost = 4408, failed iterations = 0
+	InitLNS(PP): runtime = 0.00587021, iterations = 4, colliding pairs = 0, initial colliding pairs = 1, solution cost = 4415, initial solution cost = 4408, failed iterations = 0
 [DEBUG] init_lns->sum_of_costs po doběhnutí init_lns->run: 4415
 [DEBUG] sum_of_costs po přiřazení init_lns->run: 4409
 [DEBUG] neighbor.sum_of_costs před opětovném přepočtu: 4415
@@ -8529,7 +8529,7 @@ agent 45 je v konfliktu s agentem 136
 [DEBUG] Using default neighbor generation strategy for conflicts: 1
 [DEBUG] Using default neighbor generation strategy for conflicts: 0
 [DEBUG] Using default neighbor generation strategy for conflicts: 0
-	InitLNS(PP): runtime = 0.00873225, iterations = 4, colliding pairs = 0, initial colliding pairs = 6, solution cost = 4415, initial solution cost = 4413, failed iterations = 0
+	InitLNS(PP): runtime = 0.00895854, iterations = 4, colliding pairs = 0, initial colliding pairs = 6, solution cost = 4415, initial solution cost = 4413, failed iterations = 0
 [DEBUG] init_lns->sum_of_costs po doběhnutí init_lns->run: 4415
 [DEBUG] sum_of_costs po přiřazení init_lns->run: 4415
 [DEBUG] neighbor.sum_of_costs před opětovném přepočtu: 4415
@@ -8875,7 +8875,7 @@ agent 47 je v konfliktu s agentem 142
 [DEBUG] After skip/init build => iteration_stats.back(): sum_of_costs=4403, collisions=19
 [DEBUG] Using default neighbor generation strategy for conflicts: 0
 [DEBUG] Using default neighbor generation strategy for conflicts: 2
-	InitLNS(PP): runtime = 0.00352867, iterations = 3, colliding pairs = 0, initial colliding pairs = 19, solution cost = 4412, initial solution cost = 4403, failed iterations = 0
+	InitLNS(PP): runtime = 0.00251842, iterations = 3, colliding pairs = 0, initial colliding pairs = 19, solution cost = 4412, initial solution cost = 4403, failed iterations = 0
 [DEBUG] init_lns->sum_of_costs po doběhnutí init_lns->run: 4412
 [DEBUG] sum_of_costs po přiřazení init_lns->run: 4415
 [DEBUG] neighbor.sum_of_costs před opětovném přepočtu: 4412
@@ -9081,7 +9081,7 @@ agent 15 je v konfliktu s agentem 134
 [DEBUG] sum_of_cost hodnota: 4412
 [DEBUG] After skip/init build => iteration_stats.back(): sum_of_costs=4412, collisions=1
 [DEBUG] Using default neighbor generation strategy for conflicts: 0
-	InitLNS(PP): runtime = 0.00112633, iterations = 2, colliding pairs = 0, initial colliding pairs = 1, solution cost = 4412, initial solution cost = 4412, failed iterations = 0
+	InitLNS(PP): runtime = 0.000880667, iterations = 2, colliding pairs = 0, initial colliding pairs = 1, solution cost = 4412, initial solution cost = 4412, failed iterations = 0
 [DEBUG] init_lns->sum_of_costs po doběhnutí init_lns->run: 4412
 [DEBUG] sum_of_costs po přiřazení init_lns->run: 4412
 [DEBUG] neighbor.sum_of_costs před opětovném přepočtu: 4412
@@ -9464,7 +9464,7 @@ agent 74 je v konfliktu s agentem 108
 [DEBUG] Using default neighbor generation strategy for conflicts: 1
 [DEBUG] Using default neighbor generation strategy for conflicts: 0
 [DEBUG] Using default neighbor generation strategy for conflicts: 1
-	InitLNS(PP): runtime = 0.00519275, iterations = 5, colliding pairs = 0, initial colliding pairs = 10, solution cost = 4386, initial solution cost = 4398, failed iterations = 0
+	InitLNS(PP): runtime = 0.00452046, iterations = 5, colliding pairs = 0, initial colliding pairs = 10, solution cost = 4386, initial solution cost = 4398, failed iterations = 0
 [DEBUG] init_lns->sum_of_costs po doběhnutí init_lns->run: 4386
 [DEBUG] sum_of_costs po přiřazení init_lns->run: 4412
 [DEBUG] neighbor.sum_of_costs před opětovném přepočtu: 4386
@@ -10409,7 +10409,7 @@ agent 18 je v konfliktu s agentem 29
 [DEBUG] sum_of_cost hodnota: 4386
 [DEBUG] After skip/init build => iteration_stats.back(): sum_of_costs=4386, collisions=1
 [DEBUG] Using default neighbor generation strategy for conflicts: 0
-	InitLNS(PP): runtime = 0.00143633, iterations = 2, colliding pairs = 0, initial colliding pairs = 1, solution cost = 4377, initial solution cost = 4386, failed iterations = 0
+	InitLNS(PP): runtime = 0.00141271, iterations = 2, colliding pairs = 0, initial colliding pairs = 1, solution cost = 4377, initial solution cost = 4386, failed iterations = 0
 [DEBUG] init_lns->sum_of_costs po doběhnutí init_lns->run: 4377
 [DEBUG] sum_of_costs po přiřazení init_lns->run: 4386
 [DEBUG] neighbor.sum_of_costs před opětovném přepočtu: 4377
@@ -10588,7 +10588,7 @@ agent 40 je v konfliktu s agentem 126
 [DEBUG] sum_of_cost hodnota: 4377
 [DEBUG] After skip/init build => iteration_stats.back(): sum_of_costs=4377, collisions=1
 [DEBUG] Using default neighbor generation strategy for conflicts: 1
-	InitLNS(PP): runtime = 0.00121117, iterations = 2, colliding pairs = 0, initial colliding pairs = 1, solution cost = 4377, initial solution cost = 4377, failed iterations = 0
+	InitLNS(PP): runtime = 0.00124958, iterations = 2, colliding pairs = 0, initial colliding pairs = 1, solution cost = 4377, initial solution cost = 4377, failed iterations = 0
 [DEBUG] init_lns->sum_of_costs po doběhnutí init_lns->run: 4377
 [DEBUG] sum_of_costs po přiřazení init_lns->run: 4377
 [DEBUG] neighbor.sum_of_costs před opětovném přepočtu: 4377
@@ -10708,7 +10708,7 @@ agent 59 je v konfliktu s agentem 73
 [DEBUG] sum_of_cost hodnota: 4375
 [DEBUG] After skip/init build => iteration_stats.back(): sum_of_costs=4375, collisions=2
 [DEBUG] Using default neighbor generation strategy for conflicts: 1
-	InitLNS(PP): runtime = 0.00148, iterations = 2, colliding pairs = 0, initial colliding pairs = 2, solution cost = 4381, initial solution cost = 4375, failed iterations = 0
+	InitLNS(PP): runtime = 0.00150187, iterations = 2, colliding pairs = 0, initial colliding pairs = 2, solution cost = 4381, initial solution cost = 4375, failed iterations = 0
 [DEBUG] init_lns->sum_of_costs po doběhnutí init_lns->run: 4381
 [DEBUG] sum_of_costs po přiřazení init_lns->run: 4377
 [DEBUG] neighbor.sum_of_costs před opětovném přepočtu: 4381
@@ -10891,7 +10891,7 @@ agent 74 je v konfliktu s agentem 119
 [DEBUG] After skip/init build => iteration_stats.back(): sum_of_costs=4377, collisions=7
 [DEBUG] Using default neighbor generation strategy for conflicts: 0
 [DEBUG] Using default neighbor generation strategy for conflicts: 1
-	InitLNS(PP): runtime = 0.00293879, iterations = 3, colliding pairs = 0, initial colliding pairs = 7, solution cost = 4373, initial solution cost = 4377, failed iterations = 0
+	InitLNS(PP): runtime = 0.00314925, iterations = 3, colliding pairs = 0, initial colliding pairs = 7, solution cost = 4373, initial solution cost = 4377, failed iterations = 0
 [DEBUG] init_lns->sum_of_costs po doběhnutí init_lns->run: 4373
 [DEBUG] sum_of_costs po přiřazení init_lns->run: 4381
 [DEBUG] neighbor.sum_of_costs před opětovném přepočtu: 4373
@@ -11384,7 +11384,7 @@ agent 78 je v konfliktu s agentem 146
 [DEBUG] sum_of_cost hodnota: 4368
 [DEBUG] After skip/init build => iteration_stats.back(): sum_of_costs=4368, collisions=4
 [DEBUG] Using default neighbor generation strategy for conflicts: 1
-	InitLNS(PP): runtime = 0.00128621, iterations = 2, colliding pairs = 0, initial colliding pairs = 4, solution cost = 4366, initial solution cost = 4368, failed iterations = 0
+	InitLNS(PP): runtime = 0.00144462, iterations = 2, colliding pairs = 0, initial colliding pairs = 4, solution cost = 4366, initial solution cost = 4368, failed iterations = 0
 [DEBUG] init_lns->sum_of_costs po doběhnutí init_lns->run: 4366
 [DEBUG] sum_of_costs po přiřazení init_lns->run: 4373
 [DEBUG] neighbor.sum_of_costs před opětovném přepočtu: 4366
@@ -11836,7 +11836,7 @@ agent 21 je v konfliktu s agentem 132
 [DEBUG] sum_of_cost hodnota: 4356
 [DEBUG] After skip/init build => iteration_stats.back(): sum_of_costs=4356, collisions=4
 [DEBUG] Using default neighbor generation strategy for conflicts: 0
-	InitLNS(PP): runtime = 0.00172817, iterations = 2, colliding pairs = 0, initial colliding pairs = 4, solution cost = 4371, initial solution cost = 4356, failed iterations = 0
+	InitLNS(PP): runtime = 0.00183808, iterations = 2, colliding pairs = 0, initial colliding pairs = 4, solution cost = 4371, initial solution cost = 4356, failed iterations = 0
 [DEBUG] init_lns->sum_of_costs po doběhnutí init_lns->run: 4371
 [DEBUG] sum_of_costs po přiřazení init_lns->run: 4366
 [DEBUG] neighbor.sum_of_costs před opětovném přepočtu: 4371
@@ -11961,7 +11961,7 @@ agent 82 je v konfliktu s agentem 112
 [DEBUG] Using default neighbor generation strategy for conflicts: 2
 [DEBUG] Using default neighbor generation strategy for conflicts: 0
 [DEBUG] Using default neighbor generation strategy for conflicts: 1
-	InitLNS(PP): runtime = 0.00853271, iterations = 6, colliding pairs = 0, initial colliding pairs = 3, solution cost = 4402, initial solution cost = 4363, failed iterations = 0
+	InitLNS(PP): runtime = 0.00904, iterations = 6, colliding pairs = 0, initial colliding pairs = 3, solution cost = 4402, initial solution cost = 4363, failed iterations = 0
 [DEBUG] init_lns->sum_of_costs po doběhnutí init_lns->run: 4402
 [DEBUG] sum_of_costs po přiřazení init_lns->run: 4371
 [DEBUG] neighbor.sum_of_costs před opětovném přepočtu: 4402
@@ -12086,7 +12086,7 @@ agent 40 je v konfliktu s agentem 126
 [DEBUG] After skip/init build => iteration_stats.back(): sum_of_costs=4402, collisions=2
 [DEBUG] Using default neighbor generation strategy for conflicts: 2
 [DEBUG] Using default neighbor generation strategy for conflicts: 0
-	InitLNS(PP): runtime = 0.00163321, iterations = 3, colliding pairs = 0, initial colliding pairs = 2, solution cost = 4401, initial solution cost = 4402, failed iterations = 0
+	InitLNS(PP): runtime = 0.00195121, iterations = 3, colliding pairs = 0, initial colliding pairs = 2, solution cost = 4401, initial solution cost = 4402, failed iterations = 0
 [DEBUG] init_lns->sum_of_costs po doběhnutí init_lns->run: 4401
 [DEBUG] sum_of_costs po přiřazení init_lns->run: 4402
 [DEBUG] neighbor.sum_of_costs před opětovném přepočtu: 4401
@@ -12235,7 +12235,7 @@ agent 61 je v konfliktu s agentem 135
 [DEBUG] sum_of_cost hodnota: 4397
 [DEBUG] After skip/init build => iteration_stats.back(): sum_of_costs=4397, collisions=7
 [DEBUG] Using default neighbor generation strategy for conflicts: 1
-	InitLNS(PP): runtime = 0.00209537, iterations = 2, colliding pairs = 0, initial colliding pairs = 7, solution cost = 4403, initial solution cost = 4397, failed iterations = 0
+	InitLNS(PP): runtime = 0.00222775, iterations = 2, colliding pairs = 0, initial colliding pairs = 7, solution cost = 4403, initial solution cost = 4397, failed iterations = 0
 [DEBUG] init_lns->sum_of_costs po doběhnutí init_lns->run: 4403
 [DEBUG] sum_of_costs po přiřazení init_lns->run: 4401
 [DEBUG] neighbor.sum_of_costs před opětovném přepočtu: 4403
@@ -12495,7 +12495,7 @@ agent 67 je v konfliktu s agentem 145
 [DEBUG] sum_of_cost hodnota: 4395
 [DEBUG] After skip/init build => iteration_stats.back(): sum_of_costs=4395, collisions=6
 [DEBUG] Using default neighbor generation strategy for conflicts: 1
-	InitLNS(PP): runtime = 0.00152963, iterations = 2, colliding pairs = 0, initial colliding pairs = 6, solution cost = 4396, initial solution cost = 4395, failed iterations = 0
+	InitLNS(PP): runtime = 0.00148917, iterations = 2, colliding pairs = 0, initial colliding pairs = 6, solution cost = 4396, initial solution cost = 4395, failed iterations = 0
 [DEBUG] init_lns->sum_of_costs po doběhnutí init_lns->run: 4396
 [DEBUG] sum_of_costs po přiřazení init_lns->run: 4403
 [DEBUG] neighbor.sum_of_costs před opětovném přepočtu: 4396
@@ -12674,7 +12674,7 @@ agent 61 je v konfliktu s agentem 114
 [DEBUG] sum_of_cost hodnota: 4394
 [DEBUG] After skip/init build => iteration_stats.back(): sum_of_costs=4394, collisions=4
 [DEBUG] Using default neighbor generation strategy for conflicts: 2
-	InitLNS(PP): runtime = 0.00188833, iterations = 2, colliding pairs = 0, initial colliding pairs = 4, solution cost = 4394, initial solution cost = 4394, failed iterations = 0
+	InitLNS(PP): runtime = 0.00204233, iterations = 2, colliding pairs = 0, initial colliding pairs = 4, solution cost = 4394, initial solution cost = 4394, failed iterations = 0
 [DEBUG] init_lns->sum_of_costs po doběhnutí init_lns->run: 4394
 [DEBUG] sum_of_costs po přiřazení init_lns->run: 4396
 [DEBUG] neighbor.sum_of_costs před opětovném přepočtu: 4394
@@ -12843,7 +12843,7 @@ agent 87 je v konfliktu s agentem 131
 [DEBUG] Using default neighbor generation strategy for conflicts: 0
 [DEBUG] Using default neighbor generation strategy for conflicts: 0
 [DEBUG] Using default neighbor generation strategy for conflicts: 0
-	InitLNS(PP): runtime = 0.00430921, iterations = 4, colliding pairs = 0, initial colliding pairs = 4, solution cost = 4364, initial solution cost = 4388, failed iterations = 0
+	InitLNS(PP): runtime = 0.00460708, iterations = 4, colliding pairs = 0, initial colliding pairs = 4, solution cost = 4364, initial solution cost = 4388, failed iterations = 0
 [DEBUG] init_lns->sum_of_costs po doběhnutí init_lns->run: 4364
 [DEBUG] sum_of_costs po přiřazení init_lns->run: 4394
 [DEBUG] neighbor.sum_of_costs před opětovném přepočtu: 4364
@@ -13017,7 +13017,7 @@ agent 54 je v konfliktu s agentem 74
 [DEBUG] Using default neighbor generation strategy for conflicts: 2
 [DEBUG] Using default neighbor generation strategy for conflicts: 2
 [DEBUG] Using default neighbor generation strategy for conflicts: 1
-	InitLNS(PP): runtime = 0.006265, iterations = 6, colliding pairs = 0, initial colliding pairs = 3, solution cost = 4388, initial solution cost = 4361, failed iterations = 0
+	InitLNS(PP): runtime = 0.00685771, iterations = 6, colliding pairs = 0, initial colliding pairs = 3, solution cost = 4388, initial solution cost = 4361, failed iterations = 0
 [DEBUG] init_lns->sum_of_costs po doběhnutí init_lns->run: 4388
 [DEBUG] sum_of_costs po přiřazení init_lns->run: 4364
 [DEBUG] neighbor.sum_of_costs před opětovném přepočtu: 4388
@@ -13224,7 +13224,7 @@ agent 83 je v konfliktu s agentem 104
 [DEBUG] Using default neighbor generation strategy for conflicts: 1
 [DEBUG] Using default neighbor generation strategy for conflicts: 2
 [DEBUG] Using default neighbor generation strategy for conflicts: 1
-	InitLNS(PP): runtime = 0.00917454, iterations = 6, colliding pairs = 0, initial colliding pairs = 19, solution cost = 4379, initial solution cost = 4368, failed iterations = 0
+	InitLNS(PP): runtime = 0.00957512, iterations = 6, colliding pairs = 0, initial colliding pairs = 19, solution cost = 4379, initial solution cost = 4368, failed iterations = 0
 [DEBUG] init_lns->sum_of_costs po doběhnutí init_lns->run: 4379
 [DEBUG] sum_of_costs po přiřazení init_lns->run: 4388
 [DEBUG] neighbor.sum_of_costs před opětovném přepočtu: 4379
@@ -13687,7 +13687,7 @@ agent 109 je v konfliktu s agentem 137
 [DEBUG] Using default neighbor generation strategy for conflicts: 0
 [DEBUG] Using default neighbor generation strategy for conflicts: 2
 [DEBUG] Using default neighbor generation strategy for conflicts: 1
-	InitLNS(PP): runtime = 0.00358696, iterations = 4, colliding pairs = 0, initial colliding pairs = 6, solution cost = 4396, initial solution cost = 4378, failed iterations = 0
+	InitLNS(PP): runtime = 0.00358692, iterations = 4, colliding pairs = 0, initial colliding pairs = 6, solution cost = 4396, initial solution cost = 4378, failed iterations = 0
 [DEBUG] init_lns->sum_of_costs po doběhnutí init_lns->run: 4396
 [DEBUG] sum_of_costs po přiřazení init_lns->run: 4379
 [DEBUG] neighbor.sum_of_costs před opětovném přepočtu: 4396
@@ -14458,7 +14458,7 @@ agent 101 je v konfliktu s agentem 148
 [DEBUG] Using default neighbor generation strategy for conflicts: 1
 [DEBUG] Using default neighbor generation strategy for conflicts: 1
 [DEBUG] Using default neighbor generation strategy for conflicts: 0
-	InitLNS(PP): runtime = 0.0200593, iterations = 8, colliding pairs = 0, initial colliding pairs = 9, solution cost = 4355, initial solution cost = 4390, failed iterations = 0
+	InitLNS(PP): runtime = 0.0194723, iterations = 8, colliding pairs = 0, initial colliding pairs = 9, solution cost = 4355, initial solution cost = 4390, failed iterations = 0
 [DEBUG] init_lns->sum_of_costs po doběhnutí init_lns->run: 4355
 [DEBUG] sum_of_costs po přiřazení init_lns->run: 4396
 [DEBUG] neighbor.sum_of_costs před opětovném přepočtu: 4355
@@ -15117,7 +15117,7 @@ agent 133 je v konfliktu s agentem 142
 [DEBUG] sum_of_cost hodnota: 4335
 [DEBUG] After skip/init build => iteration_stats.back(): sum_of_costs=4335, collisions=9
 [DEBUG] Using default neighbor generation strategy for conflicts: 1
-	InitLNS(PP): runtime = 0.00101742, iterations = 2, colliding pairs = 0, initial colliding pairs = 9, solution cost = 4367, initial solution cost = 4335, failed iterations = 0
+	InitLNS(PP): runtime = 0.00110229, iterations = 2, colliding pairs = 0, initial colliding pairs = 9, solution cost = 4367, initial solution cost = 4335, failed iterations = 0
 [DEBUG] init_lns->sum_of_costs po doběhnutí init_lns->run: 4367
 [DEBUG] sum_of_costs po přiřazení init_lns->run: 4355
 [DEBUG] neighbor.sum_of_costs před opětovném přepočtu: 4367
@@ -15312,7 +15312,7 @@ agent 133 je v konfliktu s agentem 144
 [DEBUG] Using default neighbor generation strategy for conflicts: 0
 [DEBUG] Using default neighbor generation strategy for conflicts: 0
 [DEBUG] Using default neighbor generation strategy for conflicts: 0
-	InitLNS(PP): runtime = 0.00780217, iterations = 7, colliding pairs = 0, initial colliding pairs = 23, solution cost = 4359, initial solution cost = 4341, failed iterations = 0
+	InitLNS(PP): runtime = 0.00823138, iterations = 7, colliding pairs = 0, initial colliding pairs = 23, solution cost = 4359, initial solution cost = 4341, failed iterations = 0
 [DEBUG] init_lns->sum_of_costs po doběhnutí init_lns->run: 4359
 [DEBUG] sum_of_costs po přiřazení init_lns->run: 4367
 [DEBUG] neighbor.sum_of_costs před opětovném přepočtu: 4359
@@ -15548,7 +15548,7 @@ agent 31 je v konfliktu s agentem 104
 [DEBUG] After skip/init build => iteration_stats.back(): sum_of_costs=4356, collisions=1
 [DEBUG] Using default neighbor generation strategy for conflicts: 2
 [DEBUG] Using default neighbor generation strategy for conflicts: 1
-	InitLNS(PP): runtime = 0.00206117, iterations = 3, colliding pairs = 0, initial colliding pairs = 1, solution cost = 4354, initial solution cost = 4356, failed iterations = 0
+	InitLNS(PP): runtime = 0.00214592, iterations = 3, colliding pairs = 0, initial colliding pairs = 1, solution cost = 4354, initial solution cost = 4356, failed iterations = 0
 [DEBUG] init_lns->sum_of_costs po doběhnutí init_lns->run: 4354
 [DEBUG] sum_of_costs po přiřazení init_lns->run: 4359
 [DEBUG] neighbor.sum_of_costs před opětovném přepočtu: 4354
@@ -16081,7 +16081,7 @@ agent 49 je v konfliktu s agentem 108
 [DEBUG] sum_of_cost hodnota: 4339
 [DEBUG] After skip/init build => iteration_stats.back(): sum_of_costs=4339, collisions=8
 [DEBUG] Using default neighbor generation strategy for conflicts: 1
-	InitLNS(PP): runtime = 0.00154408, iterations = 2, colliding pairs = 0, initial colliding pairs = 8, solution cost = 4372, initial solution cost = 4339, failed iterations = 0
+	InitLNS(PP): runtime = 0.00175979, iterations = 2, colliding pairs = 0, initial colliding pairs = 8, solution cost = 4372, initial solution cost = 4339, failed iterations = 0
 [DEBUG] init_lns->sum_of_costs po doběhnutí init_lns->run: 4372
 [DEBUG] sum_of_costs po přiřazení init_lns->run: 4354
 [DEBUG] neighbor.sum_of_costs před opětovném přepočtu: 4372
@@ -16365,7 +16365,7 @@ agent 51 je v konfliktu s agentem 121
 [DEBUG] sum_of_cost hodnota: 4369
 [DEBUG] After skip/init build => iteration_stats.back(): sum_of_costs=4369, collisions=2
 [DEBUG] Using default neighbor generation strategy for conflicts: 1
-	InitLNS(PP): runtime = 0.00112362, iterations = 2, colliding pairs = 0, initial colliding pairs = 2, solution cost = 4355, initial solution cost = 4369, failed iterations = 0
+	InitLNS(PP): runtime = 0.00130404, iterations = 2, colliding pairs = 0, initial colliding pairs = 2, solution cost = 4355, initial solution cost = 4369, failed iterations = 0
 [DEBUG] init_lns->sum_of_costs po doběhnutí init_lns->run: 4355
 [DEBUG] sum_of_costs po přiřazení init_lns->run: 4372
 [DEBUG] neighbor.sum_of_costs před opětovném přepočtu: 4355
@@ -16660,7 +16660,7 @@ agent 121 je v konfliktu s agentem 135
 [DEBUG] After skip/init build => iteration_stats.back(): sum_of_costs=4352, collisions=10
 [DEBUG] Using default neighbor generation strategy for conflicts: 2
 [DEBUG] Using default neighbor generation strategy for conflicts: 1
-	InitLNS(PP): runtime = 0.00258383, iterations = 3, colliding pairs = 0, initial colliding pairs = 10, solution cost = 4343, initial solution cost = 4352, failed iterations = 0
+	InitLNS(PP): runtime = 0.00281313, iterations = 3, colliding pairs = 0, initial colliding pairs = 10, solution cost = 4343, initial solution cost = 4352, failed iterations = 0
 [DEBUG] init_lns->sum_of_costs po doběhnutí init_lns->run: 4343
 [DEBUG] sum_of_costs po přiřazení init_lns->run: 4355
 [DEBUG] neighbor.sum_of_costs před opětovném přepočtu: 4343
@@ -16814,7 +16814,7 @@ agent 54 je v konfliktu s agentem 128
 [DEBUG] After skip/init build => iteration_stats.back(): sum_of_costs=4340, collisions=4
 [DEBUG] Using default neighbor generation strategy for conflicts: 0
 [DEBUG] Using default neighbor generation strategy for conflicts: 2
-	InitLNS(PP): runtime = 0.00109625, iterations = 3, colliding pairs = 0, initial colliding pairs = 4, solution cost = 4332, initial solution cost = 4340, failed iterations = 0
+	InitLNS(PP): runtime = 0.00113379, iterations = 3, colliding pairs = 0, initial colliding pairs = 4, solution cost = 4332, initial solution cost = 4340, failed iterations = 0
 [DEBUG] init_lns->sum_of_costs po doběhnutí init_lns->run: 4332
 [DEBUG] sum_of_costs po přiřazení init_lns->run: 4343
 [DEBUG] neighbor.sum_of_costs před opětovném přepočtu: 4332
@@ -17332,7 +17332,7 @@ Paths successfully updated.
 [DEBUG] buildCollisionData done => sum_of_costs=4331, num_of_colliding_pairs=0
 [DEBUG] sum_of_cost hodnota: 4331
 [DEBUG] After skip/init build => iteration_stats.back(): sum_of_costs=4331, collisions=0
-	InitLNS(PP): runtime = 0.000223708, iterations = 1, colliding pairs = 0, initial colliding pairs = 0, solution cost = 4331, initial solution cost = 4331, failed iterations = 0
+	InitLNS(PP): runtime = 0.00024175, iterations = 1, colliding pairs = 0, initial colliding pairs = 0, solution cost = 4331, initial solution cost = 4331, failed iterations = 0
 [DEBUG] init_lns->sum_of_costs po doběhnutí init_lns->run: 4331
 [DEBUG] sum_of_costs po přiřazení init_lns->run: 4332
 [DEBUG] neighbor.sum_of_costs před opětovném přepočtu: 4331
@@ -17499,7 +17499,7 @@ agent 50 je v konfliktu s agentem 135
 [DEBUG] sum_of_cost hodnota: 4322
 [DEBUG] After skip/init build => iteration_stats.back(): sum_of_costs=4322, collisions=10
 [DEBUG] Using default neighbor generation strategy for conflicts: 1
-	InitLNS(PP): runtime = 0.00121325, iterations = 2, colliding pairs = 0, initial colliding pairs = 10, solution cost = 4347, initial solution cost = 4322, failed iterations = 0
+	InitLNS(PP): runtime = 0.00128271, iterations = 2, colliding pairs = 0, initial colliding pairs = 10, solution cost = 4347, initial solution cost = 4322, failed iterations = 0
 [DEBUG] init_lns->sum_of_costs po doběhnutí init_lns->run: 4347
 [DEBUG] sum_of_costs po přiřazení init_lns->run: 4331
 [DEBUG] neighbor.sum_of_costs před opětovném přepočtu: 4347
@@ -17779,7 +17779,7 @@ agent 142 je v konfliktu s agentem 144
 [DEBUG] Using default neighbor generation strategy for conflicts: 1
 [DEBUG] Using default neighbor generation strategy for conflicts: 1
 [DEBUG] Using default neighbor generation strategy for conflicts: 0
-	InitLNS(PP): runtime = 0.00615613, iterations = 6, colliding pairs = 0, initial colliding pairs = 14, solution cost = 4313, initial solution cost = 4325, failed iterations = 0
+	InitLNS(PP): runtime = 0.00654058, iterations = 6, colliding pairs = 0, initial colliding pairs = 14, solution cost = 4313, initial solution cost = 4325, failed iterations = 0
 [DEBUG] init_lns->sum_of_costs po doběhnutí init_lns->run: 4313
 [DEBUG] sum_of_costs po přiřazení init_lns->run: 4347
 [DEBUG] neighbor.sum_of_costs před opětovném přepočtu: 4313
@@ -17914,7 +17914,7 @@ agent 116 je v konfliktu s agentem 120
 [DEBUG] Using default neighbor generation strategy for conflicts: 2
 [DEBUG] Using default neighbor generation strategy for conflicts: 2
 [DEBUG] Using default neighbor generation strategy for conflicts: 1
-	InitLNS(PP): runtime = 0.00405867, iterations = 5, colliding pairs = 0, initial colliding pairs = 5, solution cost = 4281, initial solution cost = 4278, failed iterations = 0
+	InitLNS(PP): runtime = 0.00436638, iterations = 5, colliding pairs = 0, initial colliding pairs = 5, solution cost = 4281, initial solution cost = 4278, failed iterations = 0
 [DEBUG] init_lns->sum_of_costs po doběhnutí init_lns->run: 4281
 [DEBUG] sum_of_costs po přiřazení init_lns->run: 4313
 [DEBUG] neighbor.sum_of_costs před opětovném přepočtu: 4281
@@ -19369,7 +19369,7 @@ agent 143 je v konfliktu s agentem 148
 [DEBUG] After skip/init build => iteration_stats.back(): sum_of_costs=4253, collisions=10
 [DEBUG] Using default neighbor generation strategy for conflicts: 0
 [DEBUG] Using default neighbor generation strategy for conflicts: 0
-	InitLNS(PP): runtime = 0.00486254, iterations = 3, colliding pairs = 0, initial colliding pairs = 10, solution cost = 4273, initial solution cost = 4253, failed iterations = 0
+	InitLNS(PP): runtime = 0.00520138, iterations = 3, colliding pairs = 0, initial colliding pairs = 10, solution cost = 4273, initial solution cost = 4253, failed iterations = 0
 [DEBUG] init_lns->sum_of_costs po doběhnutí init_lns->run: 4273
 [DEBUG] sum_of_costs po přiřazení init_lns->run: 4281
 [DEBUG] neighbor.sum_of_costs před opětovném přepočtu: 4273
@@ -19519,7 +19519,7 @@ agent 121 je v konfliktu s agentem 131
 [DEBUG] Using default neighbor generation strategy for conflicts: 2
 [DEBUG] Using default neighbor generation strategy for conflicts: 0
 [DEBUG] Using default neighbor generation strategy for conflicts: 1
-	InitLNS(PP): runtime = 0.00323175, iterations = 4, colliding pairs = 0, initial colliding pairs = 5, solution cost = 4271, initial solution cost = 4271, failed iterations = 0
+	InitLNS(PP): runtime = 0.00343929, iterations = 4, colliding pairs = 0, initial colliding pairs = 5, solution cost = 4271, initial solution cost = 4271, failed iterations = 0
 [DEBUG] init_lns->sum_of_costs po doběhnutí init_lns->run: 4271
 [DEBUG] sum_of_costs po přiřazení init_lns->run: 4273
 [DEBUG] neighbor.sum_of_costs před opětovném přepočtu: 4271
@@ -19766,7 +19766,7 @@ agent 133 je v konfliktu s agentem 144
 [DEBUG] After skip/init build => iteration_stats.back(): sum_of_costs=4256, collisions=19
 [DEBUG] Using default neighbor generation strategy for conflicts: 2
 [DEBUG] Using default neighbor generation strategy for conflicts: 0
-	InitLNS(PP): runtime = 0.00389621, iterations = 3, colliding pairs = 0, initial colliding pairs = 19, solution cost = 4271, initial solution cost = 4256, failed iterations = 0
+	InitLNS(PP): runtime = 0.00402592, iterations = 3, colliding pairs = 0, initial colliding pairs = 19, solution cost = 4271, initial solution cost = 4256, failed iterations = 0
 [DEBUG] init_lns->sum_of_costs po doběhnutí init_lns->run: 4271
 [DEBUG] sum_of_costs po přiřazení init_lns->run: 4271
 [DEBUG] neighbor.sum_of_costs před opětovném přepočtu: 4271
@@ -20234,7 +20234,7 @@ agent 124 je v konfliktu s agentem 137
 [DEBUG] Using default neighbor generation strategy for conflicts: 2
 [DEBUG] Using default neighbor generation strategy for conflicts: 0
 [DEBUG] Using default neighbor generation strategy for conflicts: 0
-	InitLNS(PP): runtime = 0.00508563, iterations = 6, colliding pairs = 0, initial colliding pairs = 3, solution cost = 4285, initial solution cost = 4269, failed iterations = 0
+	InitLNS(PP): runtime = 0.00556662, iterations = 6, colliding pairs = 0, initial colliding pairs = 3, solution cost = 4285, initial solution cost = 4269, failed iterations = 0
 [DEBUG] init_lns->sum_of_costs po doběhnutí init_lns->run: 4285
 [DEBUG] sum_of_costs po přiřazení init_lns->run: 4271
 [DEBUG] neighbor.sum_of_costs před opětovném přepočtu: 4285
@@ -20732,7 +20732,7 @@ agent 82 je v konfliktu s agentem 88
 [DEBUG] After skip/init build => iteration_stats.back(): sum_of_costs=4283, collisions=1
 [DEBUG] Using default neighbor generation strategy for conflicts: 2
 [DEBUG] Using default neighbor generation strategy for conflicts: 1
-	InitLNS(PP): runtime = 0.00163008, iterations = 3, colliding pairs = 0, initial colliding pairs = 1, solution cost = 4270, initial solution cost = 4283, failed iterations = 0
+	InitLNS(PP): runtime = 0.00174233, iterations = 3, colliding pairs = 0, initial colliding pairs = 1, solution cost = 4270, initial solution cost = 4283, failed iterations = 0
 [DEBUG] init_lns->sum_of_costs po doběhnutí init_lns->run: 4270
 [DEBUG] sum_of_costs po přiřazení init_lns->run: 4285
 [DEBUG] neighbor.sum_of_costs před opětovném přepočtu: 4270
@@ -20988,7 +20988,7 @@ agent 142 je v konfliktu s agentem 144
 [DEBUG] Using default neighbor generation strategy for conflicts: 1
 [DEBUG] Using default neighbor generation strategy for conflicts: 2
 [DEBUG] Using default neighbor generation strategy for conflicts: 1
-	InitLNS(PP): runtime = 0.00329163, iterations = 4, colliding pairs = 0, initial colliding pairs = 11, solution cost = 4237, initial solution cost = 4256, failed iterations = 0
+	InitLNS(PP): runtime = 0.00342979, iterations = 4, colliding pairs = 0, initial colliding pairs = 11, solution cost = 4237, initial solution cost = 4256, failed iterations = 0
 [DEBUG] init_lns->sum_of_costs po doběhnutí init_lns->run: 4237
 [DEBUG] sum_of_costs po přiřazení init_lns->run: 4270
 [DEBUG] neighbor.sum_of_costs před opětovném přepočtu: 4237
@@ -21272,7 +21272,7 @@ agent 48 je v konfliktu s agentem 139
 [DEBUG] sum_of_cost hodnota: 4234
 [DEBUG] After skip/init build => iteration_stats.back(): sum_of_costs=4234, collisions=3
 [DEBUG] Using default neighbor generation strategy for conflicts: 1
-	InitLNS(PP): runtime = 0.0016415, iterations = 2, colliding pairs = 0, initial colliding pairs = 3, solution cost = 4227, initial solution cost = 4234, failed iterations = 0
+	InitLNS(PP): runtime = 0.00168696, iterations = 2, colliding pairs = 0, initial colliding pairs = 3, solution cost = 4227, initial solution cost = 4234, failed iterations = 0
 [DEBUG] init_lns->sum_of_costs po doběhnutí init_lns->run: 4227
 [DEBUG] sum_of_costs po přiřazení init_lns->run: 4237
 [DEBUG] neighbor.sum_of_costs před opětovném přepočtu: 4227
@@ -21473,7 +21473,7 @@ agent 112 je v konfliktu s agentem 122
 [DEBUG] sum_of_cost hodnota: 4226
 [DEBUG] After skip/init build => iteration_stats.back(): sum_of_costs=4226, collisions=4
 [DEBUG] Using default neighbor generation strategy for conflicts: 1
-	InitLNS(PP): runtime = 0.00127683, iterations = 2, colliding pairs = 0, initial colliding pairs = 4, solution cost = 4227, initial solution cost = 4226, failed iterations = 0
+	InitLNS(PP): runtime = 0.00135742, iterations = 2, colliding pairs = 0, initial colliding pairs = 4, solution cost = 4227, initial solution cost = 4226, failed iterations = 0
 [DEBUG] init_lns->sum_of_costs po doběhnutí init_lns->run: 4227
 [DEBUG] sum_of_costs po přiřazení init_lns->run: 4227
 [DEBUG] neighbor.sum_of_costs před opětovném přepočtu: 4227
@@ -21616,7 +21616,7 @@ agent 21 je v konfliktu s agentem 146
 [DEBUG] sum_of_cost hodnota: 4226
 [DEBUG] After skip/init build => iteration_stats.back(): sum_of_costs=4226, collisions=1
 [DEBUG] Using default neighbor generation strategy for conflicts: 0
-	InitLNS(PP): runtime = 0.000751042, iterations = 2, colliding pairs = 0, initial colliding pairs = 1, solution cost = 4217, initial solution cost = 4226, failed iterations = 0
+	InitLNS(PP): runtime = 0.000794667, iterations = 2, colliding pairs = 0, initial colliding pairs = 1, solution cost = 4217, initial solution cost = 4226, failed iterations = 0
 [DEBUG] init_lns->sum_of_costs po doběhnutí init_lns->run: 4217
 [DEBUG] sum_of_costs po přiřazení init_lns->run: 4227
 [DEBUG] neighbor.sum_of_costs před opětovném přepočtu: 4217
@@ -21979,4 +21979,4 @@ Paths successfully updated.
 [DEBUG] recomputing sum_of_cost by dividing neighbor.sum_of_costs and neighbor.old_sum_of_costs
 [DEBUG] sum_of_costs po opětovném přepočtu: 4217
 Iteration 122
-LNS(PP;PP): runtime = 0.511388, iterations = 123, solution cost = 4217, initial solution cost = 4490, failed iterations = 1
+LNS(PP;PP): runtime = 0.8161, iterations = 123, solution cost = 4217, initial solution cost = 4490, failed iterations = 1

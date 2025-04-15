@@ -12,7 +12,7 @@ def parse_sum_of_costs(logfile_path):
     return sum_of_costs
 
 def plot_sum_of_costs(sum_of_costs):
-    plt.plot(sum_of_costs)  # vykreslení průběhu
+    plt.plot(sum_of_costs)
     plt.xlabel("Iterace")
     plt.ylabel("Sum of cost")
     plt.title("Vývoj hodnoty Sum of cost v průběhu LNS iterací")

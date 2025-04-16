@@ -11,7 +11,7 @@ LNS::LNS(const Instance& instance, double time_limit, const string & init_algo_n
          const string & init_destory_name, bool use_sipp, int screen, PIBTPPS_option pipp_option) :
          BasicLNS(instance, time_limit, neighbor_size, screen),
          init_algo_name(init_algo_name),  replan_algo_name(replan_algo_name),
-         num_of_iterations(num_of_iterations > 0 ? 0 : 122), // nastavuje se v argumentu
+         num_of_iterations(num_of_iterations > 0 ? 0 : 27), // nastavuje se v argumentu
          use_init_lns(use_init_lns),init_destory_name(init_destory_name),
          path_table(instance.map_size), pipp_option(pipp_option) {
     start_time = Time::now();
@@ -449,7 +449,7 @@ bool LNS::run()
 
         if (destroy_strategy == SAT) {
             int r = rand() % 100;
-            if (r < 100) { // číslo zde bude hyperparametr
+            if (r < 50) { // číslo zde bude hyperparametr
                 SATchosen = true;
                 cout << "[DEBUG] Using SAT operator (destroy+repair SAT) with probability 20 %." << endl;
                 const int MAX_SAT_ATTEMPTS = 10;

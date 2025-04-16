@@ -33,6 +33,7 @@ struct Agent
         int max_delays = 0;
         int problematic_timestep = -1;
 
+        // TODO: v rámci téhle funkci můžeme vybírat timestep, který vybereme
         for (int t = 0; t < path.size(); t++) {
             int delays = path_planner->getNumOfDelaysAtTimestep(path_table, path, path[t].location, t);
             if (delays > max_delays) { // finding the most problematic place

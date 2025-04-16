@@ -72,6 +72,16 @@ namespace SATUtils {
             }
             std::cout << std::endl;
         }
+
+        cout << "[DEBUG] obsah struktury map, kterou předáváme SAT solveru: " << endl;
+
+        for (auto a : map){
+            for (auto b : a){
+                cout << b << "  ";
+            }
+            cout <<endl;
+        }
+
         return map;
     }
 

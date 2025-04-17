@@ -303,6 +303,39 @@ namespace SATUtils {
 
         vector<vector<int>> plan = solver->GetPlan();
 
+        for (size_t a = 0; a < plan.size(); ++a)
+        {
+            auto& local_path = plan[a];
+            if (local_path.empty()) continue;
+
+            /* Souřadnice cíle, který jsme solveru zadali
+               (uložené při konstrukci start_positions / goal_positions). */
+            const auto goal_coord = goal_positions[a];        // pair<int,int>
+
+            // 1) Najdi PRVNÍ výskyt cíle v cestě
+            size_t cut_pos = local_path.size();               // výchozí: nic nestříháme
+            for (size_t t = 0; t < local_path.size(); ++t)
+            {
+                if (decodeLocalID(local_path[t], map) == goal_coord)
+                {
+                    cut_pos = t + 1;                          // necháme vrchol cíle
+                    break;
+                }
+            }
+
+            // 2) Odřízni vše za prvním dosažením cíle
+            if (cut_pos < local_path.size())
+                local_path.erase(local_path.begin() + cut_pos, local_path.end());
+
+            // 3) Smaž případná opakování cíle na úplném konci (… 6 6 6)
+            while (local_path.size() > 1 &&
+                   local_path.back() == local_path[local_path.size() - 2])
+            {
+                local_path.pop_back();
+            }
+        }
+
+        /* OD KONCE
         int i = 0;
         for (auto& path_for_agent : plan) {
             if (path_for_agent.empty()) continue;
@@ -310,7 +343,7 @@ namespace SATUtils {
             while (path_for_agent.size() > 1 && path_for_agent.back() == path_for_agent[path_for_agent.size() - 2]) {
                 path_for_agent.pop_back();
             }
-        }
+        }*/
 
         // Debug: vypsat novou lokální cestu (v 1D indexech submapy).
         for (size_t a = 0; a < plan.size(); ++a) {

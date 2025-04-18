@@ -29,19 +29,24 @@ struct Agent
     }
 
     /* analysis path of the agent and returns maximum delay count and the most problematic time step */
-    pair<int, int> getMostProblematicDelay(const PathTable& path_table) const {
+    pair<int,int> getMostProblematicDelay(
+            const PathTable& path_table,
+            const std::set<std::pair<int,int>>& ignored_ts) const {
         int max_delays = 0;
         int problematic_timestep = -1;
 
-        // TODO: v rámci téhle funkci můžeme vybírat timestep, který vybereme
         for (int t = 0; t < path.size(); t++) {
-            int delays = path_planner->getNumOfDelaysAtTimestep(path_table, path, path[t].location, t);
-            if (delays > max_delays) { // finding the most problematic place
+            if (ignored_ts.count({id, t}))         // nově: přeskoč už ignorované
+                continue;
+
+            int delays = path_planner->getNumOfDelaysAtTimestep(
+                    path_table, path, path[t].location, t);
+
+            if (delays > max_delays) {
                 max_delays = delays;
                 problematic_timestep = t;
             }
         }
-
         return {max_delays, problematic_timestep};
     }
 };

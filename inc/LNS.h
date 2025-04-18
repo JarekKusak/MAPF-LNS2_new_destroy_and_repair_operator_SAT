@@ -68,7 +68,7 @@ private:
     unordered_set<int> tabu_list; // used by randomwalk strategy
     list<int> intersections;
 
-    std::unordered_set<int> ignored_agents; // MOJE
+    std::set<std::pair<int,int>> ignored_agents_with_timestep;
 
     bool runEECBS();
     bool runCBS();

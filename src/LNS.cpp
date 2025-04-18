@@ -11,7 +11,7 @@ LNS::LNS(const Instance& instance, double time_limit, const string & init_algo_n
          const string & init_destory_name, bool use_sipp, int screen, PIBTPPS_option pipp_option) :
          BasicLNS(instance, time_limit, neighbor_size, screen),
          init_algo_name(init_algo_name),  replan_algo_name(replan_algo_name),
-         num_of_iterations(num_of_iterations > 0 ? 0 : 125), // nastavuje se v argumentu
+         num_of_iterations(num_of_iterations), // nastavuje se v argumentu
          use_init_lns(use_init_lns),init_destory_name(init_destory_name),
          path_table(instance.map_size), pipp_option(pipp_option) {
     start_time = Time::now();
@@ -175,7 +175,7 @@ bool LNS::generateNeighborBySAT() {
     neighbor.global_to_local = global_to_local;
     neighbor.map = map;
     neighbor.T_sync = T_sync;
-    ignored_agents.insert(key_agent_id);
+    ignored_agents_with_timestep.insert({key_agent_id, T_sync});
 
     return true;
 }
@@ -228,7 +228,7 @@ bool LNS::runSAT()
             }
         }
 
-        if (invalid_move) // Obnovíme starou cestu, index v old_paths odpovídá pořadí agents_to_replan.
+        if (invalid_move) // Obnovíme starou cestu, index v old_paths odpovídá pořadí agents_to_replan.
             agents[ag].path = neighbor.old_paths[idx];
     }
 
@@ -419,13 +419,15 @@ bool LNS::run()
 
         bool fixed = init_lns->run(true);
 
-
-
         cout << "[DEBUG] init_lns->sum_of_costs po doběhnutí init_lns->run: " << init_lns->sum_of_costs << endl;
 
         if (fixed) {
             neighbor.sum_of_costs = init_lns->sum_of_costs; // přidáno
-            //sum_of_costs = init_lns->sum_of_costs; // možná by to bylo vhodnější uložit do neighbor.sum_of_cost a na konci to nemusíme přeskakovat speciální podmínkou
+
+            sum_of_costs = init_lns->sum_of_costs; // TODO: pořádně prověřit
+            //neighbor.old_sum_of_costs = init_lns->sum_of_costs; // TODO: pořádně prověřit
+
+
             cout << "[DEBUG] sum_of_costs po přiřazení init_lns->run: " << sum_of_costs << endl;
             path_table.reset();
             for (const auto &agent : agents)
@@ -442,6 +444,7 @@ bool LNS::run()
     while (runtime < time_limit && iteration_stats.size() <= num_of_iterations) {
         cout.flush();
         runtime = ((fsec)(Time::now() - start_time)).count();
+
         // validace řešení – pokud dojde k chybě, chyť výjimku a spusť opravu
         try {
             if (destroy_strategy == SAT) // only needed while using SAT destroy&repair -> can cause conflicts
@@ -462,6 +465,7 @@ bool LNS::run()
         // Oprava konfliktu pokud needConflictRepair==true
         // ------------------------------------------------
         if (needConflictRepair && destroy_strategy == SAT) {
+            cout << "sem by to spadnout nemělo ne?" << endl;
             cout << "[DEBUG] Switching to conflict repair mode via init_lns." << endl;
             // Zde unify s doInitLNSRepair
             doInitLNSRepair("(because needConflictRepair==true)");
@@ -478,7 +482,8 @@ bool LNS::run()
             int r = rand() % 100;
             if (r < 100) { // číslo zde bude hyperparametr
                 SATchosen = true;
-                cout << "[DEBUG] Using SAT operator (destroy+repair SAT) with probability 20 %." << endl;
+                //cout << "[DEBUG] hodnota r je " << r << endl;
+                cout << "[DEBUG] Using SAT operator (destroy+repair SAT)." << endl;
                 const int MAX_SAT_ATTEMPTS = 10;
                 for (int attempt = 0; attempt < MAX_SAT_ATTEMPTS && !opSuccess; attempt++) {
                     if (!generateNeighborBySAT()) continue;
@@ -494,7 +499,7 @@ bool LNS::run()
                 }
             }
             else cout << "[DEBUG] Random chance did not select SAT operator (r=" << r << "), using default strategy." << endl;
-            //cout << "[DEBUG] hodnota opSuccess: " << opSuccess << endl;
+            cout << "[DEBUG] hodnota opSuccess: " << opSuccess << endl;
         }
 
         if (!opSuccess)
@@ -556,6 +561,16 @@ bool LNS::run()
         // ------------------------------------------------
         if (destroy_strategy == SAT && opSuccess && SATchosen)
         {
+            /* ---  synchronize global sum_of_costs *před* validací  ---
+               runSAT právě změnil cesty vybraných agentů a naplnil
+               neighbor.{old_,}sum_of_costs.  validateSolution() kontroluje
+               konzistenci proměnné sum_of_costs, takže ji musíme
+               přepočítat dřív, jinak o 1/2 kroky zaostává a hlásí
+               “sum of costs mismatch”.                                          */
+            sum_of_costs += neighbor.sum_of_costs - neighbor.old_sum_of_costs;
+            /* aby se o pár řádků níže delta nepřičetla znovu */
+            neighbor.old_sum_of_costs = neighbor.sum_of_costs;
+
             cout << "[DEBUG] Validate solution immediately after SAT success." << endl;
             try {
                 validateSolution();
@@ -563,6 +578,7 @@ bool LNS::run()
                 cout << "[WARNING] Conflict after SAT: " << e.what() << endl;
                 // unify
                 doInitLNSRepair("(because conflict after SAT)");
+                continue; // TODO: prověřit
             }
         }
 
@@ -1083,10 +1099,11 @@ pair<int, int> LNS::findMostDelayedAgent() {
         // přeskoč agenty, kteří už selhali
         // TODO: tohle není nejmoudřejší, protože je nechceme přeskakovat natrvalo, ale prozatím to nevadí
         // TODO: nikdy nevymazáváme ignored_agents.clear()
-        if (ignored_agents.find(agent.id) != ignored_agents.end())
-            continue;
+        auto [agent_max_delays, problematic_timestep] =
+                agent.getMostProblematicDelay(path_table, ignored_agents_with_timestep);
 
-        auto [agent_max_delays, problematic_timestep] = agent.getMostProblematicDelay(path_table);
+        if (ignored_agents_with_timestep.count({agent.id, problematic_timestep}))
+            continue;    // tuto (agent,timestep) dvojici už jsme zkoušeli
 
         if (agent_max_delays > max_delays) {
             max_delays = agent_max_delays;

@@ -207,8 +207,8 @@ bool LNS::runSAT()
     }
     // --------------------------------------------------------
     //  Dodatečná kontrola platnosti cest vrácených SAT solverem
-    //  – pokud agent provádí neplatný skok (např. diagonálu),
-    //    vrátíme mu původní cestu z neighbor.old_paths.
+    //  – pokud agent provádí neplatný skok (např. diagonálu),
+    //    vrátíme mu původní cestu z neighbor.old_paths.
     // --------------------------------------------------------
     for (size_t idx = 0; idx < agents_to_replan.size(); ++idx) {
         int ag = agents_to_replan[idx];
@@ -218,7 +218,7 @@ bool LNS::runSAT()
         for (size_t t = 1; t < agents[ag].path.size(); ++t) {
             int from = agents[ag].path[t - 1].location;
             int to   = agents[ag].path[t].location;
-            if (!instance.validMove(from, to)) {          // zahrnuje i překážky / diag. skoky
+            if (!instance.validMove(from, to)) { // zahrnuje i překážky / diag. skoky
                 invalid_move = true;
                 cout << "[ERROR] Agent " << ag
                      << " má neplatný přechod " << from << " -> " << to
@@ -228,17 +228,14 @@ bool LNS::runSAT()
             }
         }
 
-        if (invalid_move) {
-            // Obnovíme starou cestu, index v old_paths odpovídá pořadí agents_to_replan.
+        if (invalid_move) // Obnovíme starou cestu, index v old_paths odpovídá pořadí agents_to_replan.
             agents[ag].path = neighbor.old_paths[idx];
-        }
     }
 
     // úspěch – spočítáme novou sum_of_costs
     neighbor.sum_of_costs = 0;
-    for (int ag : agents_to_replan) {
+    for (int ag : agents_to_replan)
         neighbor.sum_of_costs += (int)agents[ag].path.size() - 1;
-    }
 
     if (neighbor.sum_of_costs <= neighbor.old_sum_of_costs) {
         // akceptujeme novou cestu

@@ -47,6 +47,7 @@ struct Agent
                 problematic_timestep = t;
             }
         }
+        cout << "[DEBUG] max_delays: " << max_delays << endl;
         return {max_delays, problematic_timestep};
     }
 };

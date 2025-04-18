@@ -94,4 +94,6 @@ private:
     bool generateNeighborBySAT(); // new destroy operator
     bool runSAT(); // new repair operator
     pair<vector<vector<int>>, vector<int>> getSubmapAndAgents(int agent_id, int submap_size, int agent_location, int timestep); // helper function for getting sub-map
+    int last_selected_agent = -1;   // udržuje, na kom jsme skončili
+
 };

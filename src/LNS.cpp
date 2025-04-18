@@ -424,8 +424,8 @@ bool LNS::run()
         if (fixed) {
             neighbor.sum_of_costs = init_lns->sum_of_costs; // přidáno
 
-            sum_of_costs = init_lns->sum_of_costs; // TODO: pořádně prověřit
-            //neighbor.old_sum_of_costs = init_lns->sum_of_costs; // TODO: pořádně prověřit
+            sum_of_costs = init_lns->sum_of_costs;
+            //neighbor.old_sum_of_costs = init_lns->sum_of_costs;
 
 
             cout << "[DEBUG] sum_of_costs po přiřazení init_lns->run: " << sum_of_costs << endl;
@@ -473,7 +473,6 @@ bool LNS::run()
         }
 
         if (ALNS) chooseDestroyHeuristicbyALNS();
-
 
         bool opSuccess = false;
         bool SATchosen = false;
@@ -578,7 +577,7 @@ bool LNS::run()
                 cout << "[WARNING] Conflict after SAT: " << e.what() << endl;
                 // unify
                 doInitLNSRepair("(because conflict after SAT)");
-                continue; // TODO: prověřit
+                continue;
             }
         }
 
@@ -1090,6 +1089,39 @@ bool LNS::generateNeighborByRandomWalk()
     return true;
 }
 
+pair<int,int> LNS::findMostDelayedAgent()
+{
+    const int N = static_cast<int>(agents.size());
+    if (N == 0) return {-1,-1};
+
+    /* Projdeme agenty cyklicky: (last+1) … (last+N) */
+    for (int step = 1; step <= N; ++step)
+    {
+        int idx = (last_selected_agent + step) % N;
+        const auto& ag = agents[idx];
+
+        // najdi NEJvíc zpožděný timestep tohoto agenta,
+        // který zatím není v ignored_agents_with_timestep
+
+        // TODO: občas je most_delayed_agentů více, stejně jako timestepů s největším zpožděním u agenta
+        // TODO: bylo by dobré to třeba pravděpodobnostně navážit
+        auto [delays, ts] =
+                ag.getMostProblematicDelay(path_table, ignored_agents_with_timestep);
+
+        if (ts < 0)           // už nemá nic nového
+            continue;
+
+        // máme kandidáta
+        last_selected_agent = idx;          // zapamatuj si ho pro příště
+        return {idx, ts};
+    }
+
+    // nikdo nemá další nepokrytý timestep
+    return {-1,-1};
+}
+
+
+/*
 pair<int, int> LNS::findMostDelayedAgent() {
     int max_delays = -1;
     int agent_with_max_delays = -1;
@@ -1099,7 +1131,7 @@ pair<int, int> LNS::findMostDelayedAgent() {
         // přeskoč agenty, kteří už selhali
         // TODO: tohle není nejmoudřejší, protože je nechceme přeskakovat natrvalo, ale prozatím to nevadí
         // TODO: nikdy nevymazáváme ignored_agents.clear()
-        auto [agent_max_delays, problematic_timestep] =
+        auto [agent_max_delays, problematic_timestep] = // TODO: zvolit ještě jiný způsob výběru
                 agent.getMostProblematicDelay(path_table, ignored_agents_with_timestep);
 
         if (ignored_agents_with_timestep.count({agent.id, problematic_timestep}))
@@ -1113,7 +1145,7 @@ pair<int, int> LNS::findMostDelayedAgent() {
     }
 
     return {agent_with_max_delays, most_problematic_timestep};
-}
+}*/
 
 int LNS::findRandomAgent() const
 {

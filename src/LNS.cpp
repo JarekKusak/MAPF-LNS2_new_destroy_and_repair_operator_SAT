@@ -11,7 +11,7 @@ LNS::LNS(const Instance& instance, double time_limit, const string & init_algo_n
          const string & init_destory_name, bool use_sipp, int screen, PIBTPPS_option pipp_option) :
          BasicLNS(instance, time_limit, neighbor_size, screen),
          init_algo_name(init_algo_name),  replan_algo_name(replan_algo_name),
-         num_of_iterations(num_of_iterations > 0 ? 0 : 28), // nastavuje se v argumentu
+         num_of_iterations(num_of_iterations > 0 ? 0 : 125), // nastavuje se v argumentu
          use_init_lns(use_init_lns),init_destory_name(init_destory_name),
          path_table(instance.map_size), pipp_option(pipp_option) {
     start_time = Time::now();
@@ -204,6 +204,34 @@ bool LNS::runSAT()
     if (!success) {
         cout << "[WARN] SAT solver failed to find a valid solution." << endl;
         return false;
+    }
+    // --------------------------------------------------------
+    //  Dodatečná kontrola platnosti cest vrácených SAT solverem
+    //  – pokud agent provádí neplatný skok (např. diagonálu),
+    //    vrátíme mu původní cestu z neighbor.old_paths.
+    // --------------------------------------------------------
+    for (size_t idx = 0; idx < agents_to_replan.size(); ++idx) {
+        int ag = agents_to_replan[idx];
+        bool invalid_move = false;
+
+        // Projdeme celou (již globální) cestu agenta a ověříme každý krok.
+        for (size_t t = 1; t < agents[ag].path.size(); ++t) {
+            int from = agents[ag].path[t - 1].location;
+            int to   = agents[ag].path[t].location;
+            if (!instance.validMove(from, to)) {          // zahrnuje i překážky / diag. skoky
+                invalid_move = true;
+                cout << "[ERROR] Agent " << ag
+                     << " má neplatný přechod " << from << " -> " << to
+                     << " mezi časy " << t - 1 << " a " << t
+                     << ". Vracíme původní cestu." << endl;
+                break;
+            }
+        }
+
+        if (invalid_move) {
+            // Obnovíme starou cestu, index v old_paths odpovídá pořadí agents_to_replan.
+            agents[ag].path = neighbor.old_paths[idx];
+        }
     }
 
     // úspěch – spočítáme novou sum_of_costs

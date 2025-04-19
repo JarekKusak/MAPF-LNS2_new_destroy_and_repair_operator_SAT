@@ -91,20 +91,21 @@ private:
     void randomWalk(int agent_id, int start_location, int start_timestep,
                     set<int>& neighbor, int neighbor_size, int upperbound);
 
-    bool generateNeighborBySAT(int current_iter); // new destroy operator
-    bool runSAT(int current_iter); // new repair operator
+    bool generateNeighborBySAT(); // new destroy operator
+    bool runSAT(); // new repair operator
     pair<vector<vector<int>>, vector<int>> getSubmapAndAgents(int agent_id, int submap_size, int agent_location, int timestep); // helper function for getting sub-map
     int last_selected_agent = -1;   // udržuje, na kom jsme skončili
     int countConflicts(const Agent& ag);
     int computeMaxDelay(const Agent& ag);
     double agentScore(const Agent& ag, double w_delay,
                       double w_conf, double w_stretch,
-                      double w_recency, int current_iter) const;
-    pair<int,int> findBestAgentAndTime(int current_iter);
+                      double w_recency) const;
+    pair<int,int> findBestAgentAndTime();
     const double W_DELAY   = 4.0;
     const double W_CONFL   = 2.0;
     const double W_STRETCH = 1.0;
     const double W_REC     = 0.5;
     void updateAllStats(int iter);
+    int current_iter;
 
 };

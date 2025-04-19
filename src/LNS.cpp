@@ -97,11 +97,11 @@ pair<vector<vector<int>>, vector<int>> LNS::getSubmapAndAgents(int agent_id, int
 // --------------------------------------------------------
 // DESTROY fáze: generateNeighborBySAT() – najde submapu, agenty, T_sync atd.
 // --------------------------------------------------------
-bool LNS::generateNeighborBySAT(int current_iter) {
+bool LNS::generateNeighborBySAT() {
     cout << "====================" << endl;
     cout << "SAT destroy operator called." << endl;
 
-    auto [key_agent_id, problematic_timestep] = findBestAgentAndTime(current_iter);//findMostDelayedAgent();
+    auto [key_agent_id, problematic_timestep] = findBestAgentAndTime();//findMostDelayedAgent();
     if (key_agent_id < 0) {
         cout << "No delayed agent found." << endl;
         return false;
@@ -211,7 +211,7 @@ int LNS::countConflicts(const Agent& ag) {
 
 double LNS::agentScore(const Agent& ag, double w_delay,
                        double w_conf, double w_stretch,
-                       double w_recency, int current_iter) const {
+                       double w_recency) const {
     const auto& st = ag.stats;
     return  w_delay   * st.delay_max +
             w_conf    * st.conflict_cnt +
@@ -219,13 +219,13 @@ double LNS::agentScore(const Agent& ag, double w_delay,
             w_recency * (current_iter - st.last_replanned);
 }
 
-pair<int,int> LNS::findBestAgentAndTime(int current_iter)
+pair<int,int> LNS::findBestAgentAndTime()
 {
     int best_id = -1;
     double best_score = -1;
 
     for (const auto& ag : agents) {
-        double s = agentScore(ag, W_DELAY, W_CONFL, W_STRETCH, W_REC, current_iter);
+        double s = agentScore(ag, W_DELAY, W_CONFL, W_STRETCH, W_REC);
         if (s < 1e-9) continue;      // (nebo ji úplně smaž)
 
         if (s > best_score) {
@@ -269,7 +269,7 @@ pair<int,int> LNS::findBestAgentAndTime(int current_iter)
     if (ts.empty())                    // všechny jeho dmax już ignorované
     {                                  // => povolíme nový průchod
         ignored_agents_with_timestep.clear();
-        return findBestAgentAndTime(current_iter);   // re‑entrantně
+        return findBestAgentAndTime();   // re‑entrantně
     }
 
     int chosen_t = ts[rand()%ts.size()];
@@ -295,7 +295,7 @@ void LNS::updateAllStats(int iter)
 // REPAIR fáze: runSAT() – zavolá findLocalPaths + solveWithSAT,
 //              a upraví cesty agentů + path_table
 // --------------------------------------------------------
-bool LNS::runSAT(int current_iter)
+bool LNS::runSAT()
 {
     cout << "[REPAIR] SAT destroy operator called." << endl;
     cout << "[REPAIR] SAT operator – spouštím subproblém NA OPTIMALIZACI." << endl;
@@ -494,22 +494,6 @@ bool LNS::run()
         cout << "[DEBUG] In LNS, we pass " << agents.size()
              << " agents to init_lns (skip=true). " << endl;
 
-        /*
-        // ------------------------------------------------------------------
-        // Výpis: cesty všech agentů ještě PŘED voláním init_lns->run(true)
-        // ------------------------------------------------------------------
-        cout << "[DEBUG] Aktuální cesty všech agentů (globální location IDs):" << endl;
-        for (size_t ag = 0; ag < agents.size(); ag++)
-        {
-            cout << "  Agent " << ag << " [id=" << agents[ag].id << "], path.size()=" << agents[ag].path.size() << ": ";
-            for (size_t t = 0; t < agents[ag].path.size(); t++)
-            {
-                cout << agents[ag].path[t].location << " ";
-            }
-            cout << endl;
-        }
-         */
-
         // ------------------------------------------------------------------
         // Výpis: path_table pro vybrané agenty (např. neighbor.agents)
         // ------------------------------------------------------------------
@@ -544,7 +528,6 @@ bool LNS::run()
             sum_of_costs = init_lns->sum_of_costs;
             //neighbor.old_sum_of_costs = init_lns->sum_of_costs;
 
-
             cout << "[DEBUG] sum_of_costs po přiřazení init_lns->run: " << sum_of_costs << endl;
             path_table.reset();
             for (const auto &agent : agents)
@@ -560,10 +543,11 @@ bool LNS::run()
     //updateAllStats(0);
     // optimalizace
     while (runtime < time_limit && iteration_stats.size() <= num_of_iterations) {
-        int current_iter = static_cast<int>(iteration_stats.size());
+        current_iter = static_cast<int>(iteration_stats.size());
         cout.flush();
         runtime = ((fsec)(Time::now() - start_time)).count();
 
+        /* TAHLE ČÁST JE ZBYTEČNÁ, STAČÍ KONTROLA NA KONCI
         // validace řešení – pokud dojde k chybě, chyť výjimku a spusť opravu
         try {
             if (destroy_strategy == SAT) // only needed while using SAT destroy&repair -> can cause conflicts
@@ -589,7 +573,7 @@ bool LNS::run()
             // Zde unify s doInitLNSRepair
             doInitLNSRepair("(because needConflictRepair==true)");
             continue;
-        }
+        } */
 
         if (ALNS) chooseDestroyHeuristicbyALNS();
 
@@ -604,7 +588,7 @@ bool LNS::run()
                 cout << "[DEBUG] Using SAT operator (destroy+repair SAT)." << endl;
                 const int MAX_SAT_ATTEMPTS = 10;
                 for (int attempt = 0; attempt < MAX_SAT_ATTEMPTS && !opSuccess; attempt++) {
-                    if (!generateNeighborBySAT(current_iter)) continue;
+                    if (!generateNeighborBySAT()) continue;
                     neighbor.old_paths.resize(neighbor.agents.size());
                     neighbor.old_sum_of_costs = 0;
                     for (int i = 0; i < (int)neighbor.agents.size(); i++) {
@@ -613,7 +597,7 @@ bool LNS::run()
                         path_table.deletePath(a, agents[a].path);
                         neighbor.old_sum_of_costs += (int)agents[a].path.size() - 1;
                     }
-                    opSuccess = runSAT(current_iter);
+                    opSuccess = runSAT();
                 }
             }
             else cout << "[DEBUG] Random chance did not select SAT operator (r=" << r << "), using default strategy." << endl;
@@ -674,6 +658,24 @@ bool LNS::run()
         if (!succ)
             continue;
 
+        // ALNS vyhodnocení
+        if (ALNS)
+        {
+            if (neighbor.old_sum_of_costs > neighbor.sum_of_costs)
+                destroy_weights[selected_neighbor] =
+                        reaction_factor * (neighbor.old_sum_of_costs - neighbor.sum_of_costs) / neighbor.agents.size()
+                        + (1 - reaction_factor) * destroy_weights[selected_neighbor];
+            else
+                destroy_weights[selected_neighbor] =
+                        (1 - decay_factor) * destroy_weights[selected_neighbor];
+        }
+
+        runtime = ((fsec)(Time::now() - start_time)).count();
+
+        cout << "[DEBUG] neighbor.sum_of_costs před opětovném přepočtu: " << neighbor.sum_of_costs << endl;
+        cout << "[DEBUG] neighbor.old_sum_of_costs před opětovném přepočtu: " << neighbor.old_sum_of_costs << endl;
+        cout << "[DEBUG] sum_of_costs před opětovném přepočtu: " << sum_of_costs << endl;
+
         // ------------------------------------------------
         // 2) Po SAT => validace a případný conflict repair
         // ------------------------------------------------
@@ -693,33 +695,13 @@ bool LNS::run()
             try {
                 validateSolution();
             } catch (const ValidationException& e) {
-                cout << "[WARNING] Conflict after SAT: " << e.what() << endl;
+                cout << "[WARNING] Problem after SAT: " << e.what() << endl;
                 // unify
-                doInitLNSRepair("(because conflict after SAT)");
+                doInitLNSRepair("because problem occured after SAT (should be applied only for conflicts...)");
                 continue;
             }
-        }
+        } else sum_of_costs += neighbor.sum_of_costs - neighbor.old_sum_of_costs;
 
-        // ALNS vyhodnocení
-        if (ALNS)
-        {
-            if (neighbor.old_sum_of_costs > neighbor.sum_of_costs)
-                destroy_weights[selected_neighbor] =
-                        reaction_factor * (neighbor.old_sum_of_costs - neighbor.sum_of_costs) / neighbor.agents.size()
-                        + (1 - reaction_factor) * destroy_weights[selected_neighbor];
-            else
-                destroy_weights[selected_neighbor] =
-                        (1 - decay_factor) * destroy_weights[selected_neighbor];
-        }
-
-        runtime = ((fsec)(Time::now() - start_time)).count();
-
-        cout << "[DEBUG] neighbor.sum_of_costs před opětovném přepočtu: " << neighbor.sum_of_costs << endl;
-        cout << "[DEBUG] neighbor.old_sum_of_costs před opětovném přepočtu: " << neighbor.old_sum_of_costs << endl;
-        cout << "[DEBUG] sum_of_costs před opětovném přepočtu: " << sum_of_costs << endl;
-        if (succ) {
-            sum_of_costs += neighbor.sum_of_costs - neighbor.old_sum_of_costs;
-        }
         cout << "[DEBUG] recomputing sum_of_cost by dividing neighbor.sum_of_costs and neighbor.old_sum_of_costs" << endl;
         cout << "[DEBUG] sum_of_costs po opětovném přepočtu: " << sum_of_costs << endl;
 
@@ -949,7 +931,7 @@ bool LNS::runPP()
     }
     if (remaining_agents == 0 && neighbor.sum_of_costs <= neighbor.old_sum_of_costs) // accept new paths
     {
-        //updateAllStats(current_iter); // PŘIDÁNO
+        updateAllStats(current_iter); // PŘIDÁNO
         return true;
     }
     else // stick to old paths

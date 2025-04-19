@@ -202,43 +202,8 @@ bool LNS::runSAT()
     bool success = SATUtils::solveWithSAT(map, local_paths, agents_to_replan, submap, T_sync, agents);
 
     if (!success) {
-        // TODO: VRÁTIT CESTY DO PATH_TABLE
-        cout << "[DEBUG] Tak jsme selhali, jak je na tom path_table?" << endl;
-
-        for (auto a : agents_to_replan) {
-            cout << "[DEBUG] Kontrola STARÉ path_table pro agenta " << a << ":\n";
-            for (int t = 0; t < (int) agents[a].path.size(); t++)
-            {
-                int loc = agents[a].path[t].location;
-                if (loc >= 0 && loc < (int) path_table.table.size())
-                {
-                    // zkontrolovat table[loc].size() > t
-                    if ((int) path_table.table[loc].size() > t)
-                        cout << "  time=" << t << ", loc=" << loc
-                             << ", table=" << path_table.table[loc][t] << endl;
-                    else
-                        cout << "  time=" << t << ", loc=" << loc << " => out of range\n";
-                }
-            }
-
+        for (auto a : agents_to_replan)
             path_table.insertPath(agents[a].id, agents[a].path); // return of old paths of agents
-
-            cout << "[DEBUG] Kontrola NOVÉ path_table pro agenta " << a << ":\n";
-            for (int t = 0; t < (int) agents[a].path.size(); t++)
-            {
-                int loc = agents[a].path[t].location;
-                if (loc >= 0 && loc < (int) path_table.table.size())
-                {
-                    if ((int) path_table.table[loc].size() > t)
-                        cout << "  time=" << t << ", loc=" << loc
-                             << ", table=" << path_table.table[loc][t] << endl;
-                    else
-                        cout << "  time=" << t << ", loc=" << loc << " => out of range\n";
-                }
-            }
-
-
-        }
         cout << "[WARN] SAT solver failed to find a valid solution." << endl;
         return false;
     }

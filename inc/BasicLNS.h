@@ -50,6 +50,27 @@ struct Agent
         cout << "[DEBUG] max_delays: " << max_delays << endl;
         return {max_delays, problematic_timestep};
     }
+
+    vector<int> getTopDelayedTimesteps(const PathTable& tab,
+                                       const set<pair<int,int>>& ignored) const {
+        int maxDel = 0;
+        vector<int> best;
+
+        for (int t = 0; t < path.size(); ++t) {
+            if (ignored.count({id,t})) continue;
+            int d = path_planner->getNumOfDelaysAtTimestep(tab, path,
+                                                           path[t].location, t);
+            if (d == 0) continue;
+            if (d > maxDel) { // nové maximum
+                maxDel = d;
+                best.clear();
+                best.push_back(t);
+            } else if (d == maxDel) {        // stejná špička
+                best.push_back(t);
+            }
+        }
+        return best; // prázdné = agent momentálně „bez problémů“
+    }
 };
 
 struct Neighbor

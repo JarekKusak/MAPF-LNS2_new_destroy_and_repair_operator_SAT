@@ -1102,9 +1102,6 @@ pair<int,int> LNS::findMostDelayedAgent()
 
         // najdi NEJvíc zpožděný timestep tohoto agenta,
         // který zatím není v ignored_agents_with_timestep
-
-        // TODO: občas je most_delayed_agentů více, stejně jako timestepů s největším zpožděním u agenta
-        // TODO: bylo by dobré to třeba pravděpodobnostně navážit
         auto [delays, ts] =
                 ag.getMostProblematicDelay(path_table, ignored_agents_with_timestep);
 
@@ -1114,6 +1111,14 @@ pair<int,int> LNS::findMostDelayedAgent()
         // máme kandidáta
         last_selected_agent = idx;          // zapamatuj si ho pro příště
         return {idx, ts};
+
+        /*
+        auto ts_vec = ag.getTopDelayedTimesteps(path_table, ignored_agents_with_timestep);
+        if (ts_vec.empty()) continue;
+
+        int ts = ts_vec[rand() % ts_vec.size()]; // náhodný z nejhorších
+        last_selected_agent = idx;
+        return {idx, ts};*/
     }
 
     // nikdo nemá další nepokrytý timestep

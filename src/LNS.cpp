@@ -516,15 +516,11 @@ bool LNS::run()
             }
         }
 
-        neighbor.old_sum_of_costs = sum_of_costs; // přidáno
-
         bool fixed = init_lns->run(true);
 
         cout << "[DEBUG] init_lns->sum_of_costs po doběhnutí init_lns->run: " << init_lns->sum_of_costs << endl;
 
         if (fixed) {
-            neighbor.sum_of_costs = init_lns->sum_of_costs; // přidáno
-
             sum_of_costs = init_lns->sum_of_costs;
             //neighbor.old_sum_of_costs = init_lns->sum_of_costs;
 
@@ -547,47 +543,19 @@ bool LNS::run()
         cout.flush();
         runtime = ((fsec)(Time::now() - start_time)).count();
 
-        /* TAHLE ČÁST JE ZBYTEČNÁ, STAČÍ KONTROLA NA KONCI
-        // validace řešení – pokud dojde k chybě, chyť výjimku a spusť opravu
-        try {
-            if (destroy_strategy == SAT) // only needed while using SAT destroy&repair -> can cause conflicts
-                validateSolution();
-            needConflictRepair = false;
-        } catch (const ValidationException& e) {
-            cout << "[WARNING] Conflict detected (ValidationException): " << e.what() << endl;
-            needConflictRepair = true;
-        } catch (const std::exception& e) {
-            cout << "[WARNING] Conflict detected (std::exception): " << e.what() << endl;
-            needConflictRepair = true;
-        } catch (...) {
-            cout << "[WARNING] Conflict detected: unknown error during validateSolution()." << endl;
-            needConflictRepair = true;
-        }
-
-        // ------------------------------------------------
-        // Oprava konfliktu pokud needConflictRepair==true
-        // ------------------------------------------------
-        if (needConflictRepair && destroy_strategy == SAT) {
-            cout << "sem by to spadnout nemělo ne?" << endl;
-            cout << "[DEBUG] Switching to conflict repair mode via init_lns." << endl;
-            // Zde unify s doInitLNSRepair
-            doInitLNSRepair("(because needConflictRepair==true)");
-            continue;
-        } */
-
         if (ALNS) chooseDestroyHeuristicbyALNS();
 
         bool opSuccess = false;
         bool SATchosen = false;
 
-        if (destroy_strategy == SAT) {
+        if (destroy_strategy == SAT) { // SAT is destroy operator merged with replan operator
             int r = rand() % 100;
             if (r < 100) { // číslo zde bude hyperparametr
                 SATchosen = true;
                 //cout << "[DEBUG] hodnota r je " << r << endl;
                 cout << "[DEBUG] Using SAT operator (destroy+repair SAT)." << endl;
-                const int MAX_SAT_ATTEMPTS = 10;
-                for (int attempt = 0; attempt < MAX_SAT_ATTEMPTS && !opSuccess; attempt++) {
+                //const int MAX_SAT_ATTEMPTS = 10;
+                while (!opSuccess) {
                     if (!generateNeighborBySAT()) continue;
                     neighbor.old_paths.resize(neighbor.agents.size());
                     neighbor.old_sum_of_costs = 0;
@@ -672,9 +640,9 @@ bool LNS::run()
 
         runtime = ((fsec)(Time::now() - start_time)).count();
 
-        cout << "[DEBUG] neighbor.sum_of_costs před opětovném přepočtu: " << neighbor.sum_of_costs << endl;
-        cout << "[DEBUG] neighbor.old_sum_of_costs před opětovném přepočtu: " << neighbor.old_sum_of_costs << endl;
-        cout << "[DEBUG] sum_of_costs před opětovném přepočtu: " << sum_of_costs << endl;
+        cout << "[DEBUG] neighbor.sum_of_costs před opětovným přepočtem: " << neighbor.sum_of_costs << endl;
+        cout << "[DEBUG] neighbor.old_sum_of_costs před opětovným přepočtem: " << neighbor.old_sum_of_costs << endl;
+        cout << "[DEBUG] sum_of_costs před opětovným přepočtem: " << sum_of_costs << endl;
 
         // ------------------------------------------------
         // 2) Po SAT => validace a případný conflict repair
@@ -1192,6 +1160,33 @@ bool LNS::generateNeighborByRandomWalk()
 
     return true;
 }
+
+/* PRO FUNGOVÁNÍ RandomWalk
+ * int LNS::findMostDelayedAgent()
+{
+    int a = -1;
+    int max_delays = -1;
+    for (int i = 0; i < agents.size(); i++)
+    {
+        if (tabu_list.find(i) != tabu_list.end())
+            continue;
+        int delays = agents[i].getNumOfDelays();
+        if (max_delays < delays)
+        {
+            a = i;
+            max_delays = delays;
+        }
+    }
+    if (max_delays == 0)
+    {
+        tabu_list.clear();
+        return -1;
+    }
+    tabu_list.insert(a);
+    if (tabu_list.size() == agents.size())
+        tabu_list.clear();
+    return a;
+}*/
 
 pair<int,int> LNS::findMostDelayedAgent()
 {

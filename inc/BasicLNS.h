@@ -71,6 +71,14 @@ struct Agent
         }
         return best; // prázdné = agent momentálně „bez problémů“
     }
+
+    struct AgentStats {
+        int   delay_max        = 0;
+        int   conflict_cnt     = 0;
+        double stretch_ratio   = 0.0;
+        int   last_replanned   = 0;   // iterace
+    };
+    mutable AgentStats stats;
 };
 
 struct Neighbor

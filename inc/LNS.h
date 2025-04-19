@@ -11,6 +11,8 @@
 #include "pps.h"
 #include "winpibt.h"
 
+#include <random>
+
 enum destroy_heuristic { RANDOMAGENTS, RANDOMWALK, INTERSECTION, DESTORY_COUNT, SAT };
 
 // TODO: adaptively change the neighbor size, that is,
@@ -112,6 +114,6 @@ private:
             W_STRETCH_init,
             W_REC_init
     };
-
-
+    mutable std::mt19937 metric_rng;
+    int selectMetricIndex() const;
 };

@@ -13,7 +13,7 @@ LNS::LNS(const Instance& instance, double time_limit, const string & init_algo_n
          init_algo_name(init_algo_name),  replan_algo_name(replan_algo_name),
          num_of_iterations(num_of_iterations), // nastavuje se v argumentu
          use_init_lns(use_init_lns),init_destory_name(init_destory_name),
-         path_table(instance.map_size), pipp_option(pipp_option) {
+         path_table(instance.map_size), pipp_option(pipp_option), metric_rng(std::random_device{}()) {
     start_time = Time::now();
     replan_time_limit = time_limit / 100;
     component_weights = {W_DELAY_init, W_CONFL_init, W_STRETCH_init, W_REC_init};
@@ -336,6 +336,15 @@ void LNS::updateComponentWeights(int metric_index, double delta) {
     }
 }
 
+int LNS::selectMetricIndex() const {
+    // Discrete distribution that picks i with probability component_weights[i].
+    std::discrete_distribution<int> dist(
+            component_weights.begin(),
+            component_weights.end()
+    );
+    return dist(metric_rng);
+}
+
 // --------------------------------------------------------
 // REPAIR fáze: runSAT() – zavolá findLocalPaths + solveWithSAT,
 //              a upraví cesty agentů + path_table
@@ -446,7 +455,9 @@ bool LNS::runSAT()
                            / double(neighbor.old_sum_of_costs);
             cout << "[DEBUG] hodnota delta :" << delta << endl;
             // multiplicative update: vybranému indexu (tady 0) se přidá bonus >1, ostatní se decayí
-            updateComponentWeights(0, delta);
+            int metric_index = selectMetricIndex();
+            cout << "[DEBUG] rewarding metric index = " << metric_index << endl;
+            updateComponentWeights(metric_index, delta);
             cout << "[DEBUG] component_weights = {"
                  << component_weights[0] << ", "
                  << component_weights[1] << ", "

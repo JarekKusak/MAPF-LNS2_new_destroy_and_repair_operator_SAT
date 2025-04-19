@@ -101,14 +101,14 @@ bool LNS::generateNeighborBySAT() {
     cout << "====================" << endl;
     cout << "SAT destroy operator called." << endl;
 
-    auto [key_agent_id, problematic_timestep] = findBestAgentAndTime();//findMostDelayedAgent();
+    auto [key_agent_id, problematic_timestep] = findBestAgentAndTime(); //findMostDelayedAgent();
     if (key_agent_id < 0) {
         cout << "No delayed agent found." << endl;
         return false;
     }
     cout << "[DEBUG] key_agent_id: " << key_agent_id << endl;
     cout << "[DEBUG] key_agent_id délka globální cesty: " << agents[key_agent_id].path.size() << endl;
-    //problematic_timestep += 10; // SCHVÁLNĚ DOČASNĚ POSUNUTÉ
+
     int agent_loc = agents[key_agent_id].path[problematic_timestep].location; // globalID of the cell in 1D matrix
     int submap_size = 25;
 

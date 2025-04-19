@@ -266,11 +266,29 @@ pair<int,int> LNS::findBestAgentAndTime(int current_iter)
           ignored_agents_with_timestep.clear();   // povol znovunavštívení agentů
       }
       */
-    if (ts.empty()) return {-1,-1}; // všechno již ignorované
+    if (ts.empty())                    // všechny jeho dmax już ignorované
+    {                                  // => povolíme nový průchod
+        ignored_agents_with_timestep.clear();
+        return findBestAgentAndTime(current_iter);   // re‑entrantně
+    }
+
     int chosen_t = ts[rand()%ts.size()];
 
     last_selected_agent = best_id;
     return {best_id, chosen_t};
+}
+
+void LNS::updateAllStats(int iter)
+{
+    for (auto& ag : agents)
+    {
+        auto& st = ag.stats;
+        st.delay_max     = computeMaxDelay(ag);
+        st.conflict_cnt  = countConflicts(ag);
+        st.stretch_ratio = double(ag.path.size() - 1) /
+                           ag.path_planner->my_heuristic[ag.path_planner->start_location];
+        st.last_replanned = iter;
+    }
 }
 
 // --------------------------------------------------------
@@ -295,9 +313,8 @@ bool LNS::runSAT(int current_iter)
     bool success = SATUtils::solveWithSAT(map, local_paths, agents_to_replan, submap, T_sync, agents);
 
     if (!success) {
-        for (auto a : agents_to_replan) {
-            path_table.insertPath(a)
-        }
+        for (auto a : agents_to_replan)
+            path_table.insertPath(agents[a].id, agents[a].path); // return of old paths of agents
 
         updateAllStats(current_iter);
         cout << "[WARN] SAT solver failed to find a valid solution." << endl;
@@ -408,19 +425,6 @@ bool LNS::runSAT(int current_iter)
         }
         neighbor.sum_of_costs = neighbor.old_sum_of_costs;
         return false;
-    }
-}
-
-void LNS::updateAllStats(int iter)
-{
-    for (auto& ag : agents)
-    {
-        auto& st = ag.stats;
-        st.delay_max     = computeMaxDelay(ag);
-        st.conflict_cnt  = countConflicts(ag);
-        st.stretch_ratio = double(ag.path.size() - 1) /
-                           ag.path_planner->my_heuristic[ag.path_planner->start_location];
-        st.last_replanned = iter;
     }
 }
 
@@ -713,8 +717,9 @@ bool LNS::run()
         cout << "[DEBUG] neighbor.sum_of_costs před opětovném přepočtu: " << neighbor.sum_of_costs << endl;
         cout << "[DEBUG] neighbor.old_sum_of_costs před opětovném přepočtu: " << neighbor.old_sum_of_costs << endl;
         cout << "[DEBUG] sum_of_costs před opětovném přepočtu: " << sum_of_costs << endl;
-        sum_of_costs += neighbor.sum_of_costs -
-                        neighbor.old_sum_of_costs;
+        if (succ) {
+            sum_of_costs += neighbor.sum_of_costs - neighbor.old_sum_of_costs;
+        }
         cout << "[DEBUG] recomputing sum_of_cost by dividing neighbor.sum_of_costs and neighbor.old_sum_of_costs" << endl;
         cout << "[DEBUG] sum_of_costs po opětovném přepočtu: " << sum_of_costs << endl;
 

@@ -296,7 +296,7 @@ bool LNS::runSAT(int current_iter)
 
     if (!success) {
         for (auto a : agents_to_replan) {
-            agents_to_replan[a].pa
+            path_table.insertPath(a)
         }
 
         updateAllStats(current_iter);

@@ -223,7 +223,6 @@ double LNS::agentScore(const Agent& ag) const {
             component_weights[3] * (current_iter - st.last_replanned);
 }
 
-
 /*
     1.	Najdi agenta s nejvyšším agentScore(ag).
     2.	U toho agenta vezmi jeho delay_max (maximální zpoždění) a najdi všechny časy t, kde skutečně tohle zpoždění nastalo.
@@ -598,7 +597,7 @@ bool LNS::run()
     // ============================================
 
     bool needConflictRepair = false;
-    //updateAllStats(0);
+
     // optimalizace
     while (runtime < time_limit && iteration_stats.size() <= num_of_iterations) {
         current_iter = static_cast<int>(iteration_stats.size());

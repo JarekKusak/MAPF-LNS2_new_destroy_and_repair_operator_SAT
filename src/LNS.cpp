@@ -30,8 +30,11 @@ LNS::LNS(const Instance& instance, double time_limit, const string & init_algo_n
         destroy_strategy = INTERSECTION;
     else if (destory_name == "Random")
         destroy_strategy = RANDOMAGENTS;
-    else if (destory_name == "SAT") // new operator
+    else if (destory_name == "SAT") { // new operator
         destroy_strategy = SAT;
+        reaction_factor = 0.01;
+        decay_factor    = 0.01;
+    }
     else
     {
         cerr << "Destroy heuristic " << destory_name << " does not exists. " << endl;
@@ -301,27 +304,19 @@ void LNS::updateAllStats(int iter)
 }
 
 void LNS::updateComponentWeights(int metric_index, double delta) {
-    // Update selected metric weight and decay others
+    // Update selected metric weight multiplicatively and decay others
     for (int i = 0; i < (int)component_weights.size(); ++i) {
         if (i == metric_index) {
-            // blend old weight with reaction to improvement delta
-            component_weights[i] = (1.0 - reaction_factor) * component_weights[i]
-                                   + reaction_factor * delta;
+            component_weights[i] *= (1.0 + reaction_factor * delta);
         } else {
-            // decay non-selected components
             component_weights[i] *= (1.0 - decay_factor);
         }
     }
-    // Prevent any weight from dropping below epsilon
-    constexpr double epsilon = 1e-6;
-    for (auto &w : component_weights) {
-        if (w < epsilon) w = epsilon;
-    }
-    // Renormalize so weights sum to 1
-    double sum_w = std::accumulate(component_weights.begin(),
-                                   component_weights.end(), 0.0);
-    for (auto &w : component_weights) {
-        w /= sum_w;
+    double sum_w = std::accumulate(component_weights.begin(), component_weights.end(), 0.0);
+    if (sum_w > 0) {
+        for (auto &w : component_weights) {
+            w /= sum_w;
+        }
     }
 }
 
@@ -432,17 +427,15 @@ bool LNS::runSAT()
             // compute delta based on the chosen metric
             double delta = double(neighbor.old_sum_of_costs - neighbor.sum_of_costs)
                            / double(neighbor.old_sum_of_costs);
+            cout << "[DEBUG] hodnota delta :" << delta << endl;
+            // multiplicative update: vybranému indexu (tady 0) se přidá bonus >1, ostatní se decayí
             updateComponentWeights(0, delta);
-            constexpr double epsilon = 1e-6;
-            for (auto &x : component_weights)
-                x = std::max(x, epsilon);
-            double S = component_weights[0]+component_weights[1]+component_weights[2]+component_weights[3];
-            if (S > 0) for (auto &x : component_weights) x /= S;
             cout << "[DEBUG] component_weights = {"
                  << component_weights[0] << ", "
                  << component_weights[1] << ", "
                  << component_weights[2] << ", "
                  << component_weights[3] << "}" << endl;
+
         }
 
         return true;

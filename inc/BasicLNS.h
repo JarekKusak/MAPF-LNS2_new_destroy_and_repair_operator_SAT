@@ -36,7 +36,7 @@ struct Agent
         int problematic_timestep = -1;
 
         for (int t = 0; t < path.size(); t++) {
-            if (ignored_ts.count({id, t}))         // nově: přeskoč už ignorované
+            if (ignored_ts.count({id, t}))  // nově: přeskoč už ignorované
                 continue;
 
             int delays = path_planner->getNumOfDelaysAtTimestep(

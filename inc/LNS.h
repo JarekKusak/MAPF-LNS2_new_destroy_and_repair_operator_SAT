@@ -97,15 +97,21 @@ private:
     int last_selected_agent = -1;   // udržuje, na kom jsme skončili
     int countConflicts(const Agent& ag);
     int computeMaxDelay(const Agent& ag);
-    double agentScore(const Agent& ag, double w_delay,
-                      double w_conf, double w_stretch,
-                      double w_recency) const;
+    double agentScore(const Agent& ag) const;
     pair<int,int> findBestAgentAndTime();
-    const double W_DELAY   = 4.0;
-    const double W_CONFL   = 2.0;
-    const double W_STRETCH = 1.0;
-    const double W_REC     = 0.5;
+    const double W_DELAY_init   = 0.25;//4.0;
+    const double W_CONFL_init   = 0.25;//2.0;
+    const double W_STRETCH_init = 0.25;//1.0;
+    const double W_REC_init     = 0.25;//0.5;
     void updateAllStats(int iter);
     int current_iter;
+    void updateComponentWeights(int metric_index, double delta);
+    std::vector<double> component_weights = {
+            W_DELAY_init,
+            W_CONFL_init,
+            W_STRETCH_init,
+            W_REC_init
+    };
+
 
 };

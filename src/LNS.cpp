@@ -16,6 +16,7 @@ LNS::LNS(const Instance& instance, double time_limit, const string & init_algo_n
          path_table(instance.map_size), pipp_option(pipp_option) {
     start_time = Time::now();
     replan_time_limit = time_limit / 100;
+    component_weights = {W_DELAY_init, W_CONFL_init, W_STRETCH_init, W_REC_init};
     if (destory_name == "Adaptive")
     {
         ALNS = true;
@@ -200,7 +201,7 @@ int LNS::countConflicts(const Agent& ag) {
     return c;
 }
 /*
- int LNS::countConflicts(const Agent& ag)
+int LNS::countConflicts(const Agent& ag)
 {
     int c = 0;
     for (int t = 0; t < (int)ag.path.size(); ++t)
@@ -209,14 +210,12 @@ int LNS::countConflicts(const Agent& ag) {
     return c;
 }*/
 
-double LNS::agentScore(const Agent& ag, double w_delay,
-                       double w_conf, double w_stretch,
-                       double w_recency) const {
+double LNS::agentScore(const Agent& ag) const {
     const auto& st = ag.stats;
-    return  w_delay   * st.delay_max +
-            w_conf    * st.conflict_cnt +
-            w_stretch * st.stretch_ratio +
-            w_recency * (current_iter - st.last_replanned);
+    return  component_weights[0] * st.delay_max +
+            component_weights[1] * st.conflict_cnt +
+            component_weights[2] * st.stretch_ratio +
+            component_weights[3] * (current_iter - st.last_replanned);
 }
 
 pair<int,int> LNS::findBestAgentAndTime()
@@ -225,30 +224,21 @@ pair<int,int> LNS::findBestAgentAndTime()
     double best_score = -1;
 
     for (const auto& ag : agents) {
-        double s = agentScore(ag, W_DELAY, W_CONFL, W_STRETCH, W_REC);
-        if (s < 1e-9) continue;      // (nebo ji úplně smaž)
+        double s = agentScore(ag);
+        if (s < 0) continue;  // (could be deleted)
 
         if (s > best_score) {
             best_score = s;
-            best_id    = ag.id;
+            best_id = ag.id;
         }
     }
     if (best_id == -1) return {-1,-1};
 
     /* ‑‑ vyber timestep z největších delayů ‑‑ */
-    /*vector<int> ts;
-    const auto& path = agents[best_id].path;
-    int h = agents[best_id].path_planner->my_heuristic[
-            agents[best_id].path_planner->start_location];
-    int dmax = agents[best_id].stats.delay_max;
-
-    for (int t = 0; t < path.size(); ++t)
-        if (t - h == dmax &&
-            !ignored_agents_with_timestep.count({best_id,t}))
-            ts.push_back(t);*/
     vector<int> ts;
     int dmax = agents[best_id].stats.delay_max;
 
+    /* Najdeme všechny časové kroky t, kde je zpoždění rovno dmax, a které ještě nejsou v setu ignored_agents_with_timestep. */
     for (int t = 0; t < (int)agents[best_id].path.size(); ++t)
     {
         int d = agents[best_id].path_planner->getNumOfDelaysAtTimestep(
@@ -261,15 +251,34 @@ pair<int,int> LNS::findBestAgentAndTime()
     }
 
     /*
-      if (ts.empty() && current_iter == 300)   // po úplném průchodu všech agentů
-      {
-          ignored_agents_with_timestep.clear();   // povol znovunavštívení agentů
-      }
-      */
-    if (ts.empty())                    // všechny jeho dmax już ignorované
-    {                                  // => povolíme nový průchod
+      Pokud první průchod nevygeneroval žádný t, znamená to, že jsme všechny jeho nejhorší časy už jednou „ignorovali“.
+      Vyčistíme celý ignored_agents_with_timestep (ale jen jednou!) a jednou zopakujeme výběr.
+      Pokud ani potom nenajdeme žádný t, vrátíme {-1,-1}, tedy žádná akce.
+     */
+    if (ts.empty()) {
+        // all candidate timesteps were ignored; clear set and retry once
         ignored_agents_with_timestep.clear();
-        return findBestAgentAndTime();   // re‑entrantně
+        // recompute timesteps for best_id
+        ts.clear();
+        for (int t = 0; t < (int)agents[best_id].path.size(); ++t) {
+            int d = agents[best_id].path_planner->getNumOfDelaysAtTimestep(
+                    path_table,
+                    agents[best_id].path,
+                    agents[best_id].path[t].location,
+                    t);
+            if (d == dmax && !ignored_agents_with_timestep.count({best_id, t}))
+                ts.push_back(t);
+        }
+    }
+    /* I called it recursively before
+    if (ts.empty()) { // all of dmax are in the ignored list
+        ignored_agents_with_timestep.clear(); // => allow new sequential pass
+        return findBestAgentAndTime();   // recursion
+    }*/
+
+    if (ts.empty()) {
+        // still no valid timestep
+        return {-1, -1};
     }
 
     int chosen_t = ts[rand()%ts.size()];
@@ -288,6 +297,31 @@ void LNS::updateAllStats(int iter)
         st.stretch_ratio = double(ag.path.size() - 1) /
                            ag.path_planner->my_heuristic[ag.path_planner->start_location];
         st.last_replanned = iter;
+    }
+}
+
+void LNS::updateComponentWeights(int metric_index, double delta) {
+    // Update selected metric weight and decay others
+    for (int i = 0; i < (int)component_weights.size(); ++i) {
+        if (i == metric_index) {
+            // blend old weight with reaction to improvement delta
+            component_weights[i] = (1.0 - reaction_factor) * component_weights[i]
+                                   + reaction_factor * delta;
+        } else {
+            // decay non-selected components
+            component_weights[i] *= (1.0 - decay_factor);
+        }
+    }
+    // Prevent any weight from dropping below epsilon
+    constexpr double epsilon = 1e-6;
+    for (auto &w : component_weights) {
+        if (w < epsilon) w = epsilon;
+    }
+    // Renormalize so weights sum to 1
+    double sum_w = std::accumulate(component_weights.begin(),
+                                   component_weights.end(), 0.0);
+    for (auto &w : component_weights) {
+        w /= sum_w;
     }
 }
 
@@ -316,7 +350,7 @@ bool LNS::runSAT()
         for (auto a : agents_to_replan)
             path_table.insertPath(agents[a].id, agents[a].path); // return of old paths of agents
 
-        updateAllStats(current_iter);
+        updateAllStats(current_iter); // TODO: zkontrolovat
         cout << "[WARN] SAT solver failed to find a valid solution." << endl;
         return false;
     }
@@ -354,7 +388,6 @@ bool LNS::runSAT()
 
     if (neighbor.sum_of_costs <= neighbor.old_sum_of_costs) {
         // akceptujeme novou cestu
-        updateAllStats(current_iter);
         for (int a : agents_to_replan) {
             /*
             cout << "[DEBUG] Kontrola STARÉ path_table pro agenta " << a << ":\n";
@@ -393,7 +426,25 @@ bool LNS::runSAT()
                 }
             }*/
         }
-        //ignored_agents.clear();
+
+        updateAllStats(current_iter);
+        if (neighbor.sum_of_costs < neighbor.old_sum_of_costs) {
+            // compute delta based on the chosen metric
+            double delta = double(neighbor.old_sum_of_costs - neighbor.sum_of_costs)
+                           / double(neighbor.old_sum_of_costs);
+            updateComponentWeights(0, delta);
+            constexpr double epsilon = 1e-6;
+            for (auto &x : component_weights)
+                x = std::max(x, epsilon);
+            double S = component_weights[0]+component_weights[1]+component_weights[2]+component_weights[3];
+            if (S > 0) for (auto &x : component_weights) x /= S;
+            cout << "[DEBUG] component_weights = {"
+                 << component_weights[0] << ", "
+                 << component_weights[1] << ", "
+                 << component_weights[2] << ", "
+                 << component_weights[3] << "}" << endl;
+        }
+
         return true;
     } else {
         // revert
@@ -565,6 +616,9 @@ bool LNS::run()
                         path_table.deletePath(a, agents[a].path);
                         neighbor.old_sum_of_costs += (int)agents[a].path.size() - 1;
                     }
+
+                    // Removed stats and component weights updates from run() to be handled in runSAT().
+
                     opSuccess = runSAT();
                 }
             }
@@ -662,6 +716,7 @@ bool LNS::run()
             cout << "[DEBUG] Validate solution immediately after SAT success." << endl;
             try {
                 validateSolution();
+                cout << "[DEBUG] No problems after SAT replan." << endl;
             } catch (const ValidationException& e) {
                 cout << "[WARNING] Problem after SAT: " << e.what() << endl;
                 // unify

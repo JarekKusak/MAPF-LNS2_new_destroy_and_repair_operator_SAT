@@ -213,6 +213,8 @@ int LNS::countConflicts(const Agent& ag)
     return c;
 }*/
 
+
+// Čím větší skóre, tím „zajímavější“ je agent pro další destrukci/replan.
 double LNS::agentScore(const Agent& ag) const {
     const auto& st = ag.stats;
     return  component_weights[0] * st.delay_max +
@@ -221,6 +223,14 @@ double LNS::agentScore(const Agent& ag) const {
             component_weights[3] * (current_iter - st.last_replanned);
 }
 
+
+/*
+    1.	Najdi agenta s nejvyšším agentScore(ag).
+    2.	U toho agenta vezmi jeho delay_max (maximální zpoždění) a najdi všechny časy t, kde skutečně tohle zpoždění nastalo.
+    3.	Ze všech těchto časových kroků náhodně vyber jeden, který jsi ještě neignoroval(a) (sledovat se to musí přes ignored_agents_with_timestep set).
+    4.	Pokud už jsou všechny zignorované, vyčisti set a opakuj hledání; pak pokud stále nic, vrátíš {-1,-1} → už nic nedělej.
+    Výsledkem je pár (key_agent_id, problematic_timestep).
+ */
 pair<int,int> LNS::findBestAgentAndTime()
 {
     int best_id = -1;
@@ -290,19 +300,26 @@ pair<int,int> LNS::findBestAgentAndTime()
     return {best_id, chosen_t};
 }
 
-void LNS::updateAllStats(int iter)
-{
-    for (auto& ag : agents)
-    {
+void LNS::updateAllStats(int iter) {
+    for (auto& ag : agents) {
         auto& st = ag.stats;
+        // 1) maximální zpoždění na jakémkoliv kroku cesty
         st.delay_max     = computeMaxDelay(ag);
+        // 2) počet neplatných kroků (edge/vertex konfliktů)
         st.conflict_cnt  = countConflicts(ag);
+        // 3) relativní prodloužení cesty vůči heuristickému dolnímu odhadu
         st.stretch_ratio = double(ag.path.size() - 1) /
-                           ag.path_planner->my_heuristic[ag.path_planner->start_location];
+                           ag.path_planner->my_heuristic[ ag.path_planner->start_location ];
+        // 4) poslední iterace, kdy byl daný agent přeplánován
         st.last_replanned = iter;
     }
 }
 
+/*
+   Chceme, aby metrika, která vedla k úspěchu (tady index 0 = delay_max), rostla, ostatní se slabě decay‑ovaly:
+   reaction_factor (např. 0.01) určuje, jak silně se váha „odmění“ za dané δ.
+   decay_factor (např. 0.01) určuje, jak rychle se ostatní váhy vrací k větší všestrannosti, když nejsou vybírány.
+*/
 void LNS::updateComponentWeights(int metric_index, double delta) {
     // Update selected metric weight multiplicatively and decay others
     for (int i = 0; i < (int)component_weights.size(); ++i) {
@@ -425,6 +442,7 @@ bool LNS::runSAT()
         updateAllStats(current_iter);
         if (neighbor.sum_of_costs < neighbor.old_sum_of_costs) {
             // compute delta based on the chosen metric
+            // relativní zlepšení (např. delta = 0.18 = 18% úspora
             double delta = double(neighbor.old_sum_of_costs - neighbor.sum_of_costs)
                            / double(neighbor.old_sum_of_costs);
             cout << "[DEBUG] hodnota delta :" << delta << endl;

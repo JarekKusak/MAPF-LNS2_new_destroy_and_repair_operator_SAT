@@ -105,7 +105,7 @@ bool LNS::generateNeighborBySAT() {
     cout << "====================" << endl;
     cout << "SAT destroy operator called." << endl;
 
-    auto [key_agent_id, problematic_timestep] = findBestAgentAndTime(); //findMostDelayedAgent();
+    auto [key_agent_id, problematic_timestep] = findBestAgentAndTime();//findMostDelayedAgent();// //
     if (key_agent_id < 0) {
         cout << "No delayed agent found." << endl;
         return false;
@@ -187,8 +187,7 @@ bool LNS::generateNeighborBySAT() {
 int LNS::computeMaxDelay(const Agent& ag)
 {
     int best = 0;
-    for (int t = 0; t < (int)ag.path.size(); ++t)
-    {
+    for (int t = 0; t < (int)ag.path.size(); ++t) {
         int d = ag.path_planner->getNumOfDelaysAtTimestep(
                 path_table, ag.path, ag.path[t].location, t);
         best = std::max(best, d);
@@ -689,8 +688,7 @@ bool LNS::run()
                 neighbor.old_sum_of_costs += (int)agents[a].path.size() - 1;
             }
 
-            // NATVRDO replan
-            std::string DEFAULT_REPLAN_ALGO = "PP"; // NATVRDO
+            std::string DEFAULT_REPLAN_ALGO = "PP"; // fixně
             if      (DEFAULT_REPLAN_ALGO == "PP")   succ = runPP();
             else if (DEFAULT_REPLAN_ALGO == "CBS")  succ = runCBS();
             else if (DEFAULT_REPLAN_ALGO == "EECBS")succ = runEECBS();
@@ -1369,7 +1367,6 @@ void LNS::randomWalk(int agent_id, int start_location, int start_timestep,
             break;
     }
 }
-
 
 void LNS::validateSolution() const
 {

@@ -114,6 +114,9 @@ private:
             W_STRETCH_init,
             W_REC_init
     };
+
     mutable std::mt19937 metric_rng;
     int selectMetricIndex() const;
+    double adaptive_heuristics_reaction_factor = 1;
+    double adaptive_heuristics_decay_factor = 0.05;
 };

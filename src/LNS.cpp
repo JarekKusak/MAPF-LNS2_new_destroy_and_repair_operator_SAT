@@ -32,8 +32,8 @@ LNS::LNS(const Instance& instance, double time_limit, const string & init_algo_n
         destroy_strategy = RANDOMAGENTS;
     else if (destory_name == "SAT") { // new operator
         destroy_strategy = SAT;
-        reaction_factor = 0.01;
-        decay_factor    = 0.01;
+        //adaptive_heuristics_reaction_factor = 100;
+        //adaptive_heuristics_decay_factor = 0.01;
     }
     else
     {
@@ -105,7 +105,7 @@ bool LNS::generateNeighborBySAT() {
     cout << "====================" << endl;
     cout << "SAT destroy operator called." << endl;
 
-    auto [key_agent_id, problematic_timestep] = findBestAgentAndTime();//findMostDelayedAgent();// //
+    auto [key_agent_id, problematic_timestep] = findBestAgentAndTime();//findMostDelayedAgent();//
     if (key_agent_id < 0) {
         cout << "No delayed agent found." << endl;
         return false;
@@ -321,18 +321,14 @@ void LNS::updateAllStats(int iter) {
 void LNS::updateComponentWeights(int metric_index, double delta) {
     // Update selected metric weight multiplicatively and decay others
     for (int i = 0; i < (int)component_weights.size(); ++i) {
-        if (i == metric_index) {
-            component_weights[i] *= (1.0 + reaction_factor * delta);
-        } else {
-            component_weights[i] *= (1.0 - decay_factor);
-        }
+        if (i == metric_index)
+            component_weights[i] *= (1.0 + adaptive_heuristics_reaction_factor * delta);
+        else component_weights[i] *= (1.0 - adaptive_heuristics_decay_factor);
     }
     double sum_w = std::accumulate(component_weights.begin(), component_weights.end(), 0.0);
-    if (sum_w > 0) {
-        for (auto &w : component_weights) {
+    if (sum_w > 0)
+        for (auto &w : component_weights)
             w /= sum_w;
-        }
-    }
 }
 
 int LNS::selectMetricIndex() const {
@@ -596,7 +592,7 @@ bool LNS::run()
             //neighbor.old_sum_of_costs = init_lns->sum_of_costs;
 
             cout << "[DEBUG] sum_of_costs po přiřazení init_lns->run: " << sum_of_costs << endl;
-            path_table.reset();
+            //path_table.reset(); // TODO: ověřit
             for (const auto &agent : agents)
                 path_table.insertPath(agent.id, agent.path);
 

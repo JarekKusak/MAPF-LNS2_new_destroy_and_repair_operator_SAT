@@ -11,6 +11,8 @@
 #include "pps.h"
 #include "winpibt.h"
 
+#include <random>
+
 enum destroy_heuristic { RANDOMAGENTS, RANDOMWALK, INTERSECTION, DESTORY_COUNT, SAT };
 
 // TODO: adaptively change the neighbor size, that is,
@@ -95,5 +97,23 @@ private:
     bool runSAT(); // new repair operator
     pair<vector<vector<int>>, vector<int>> getSubmapAndAgents(int agent_id, int submap_size, int agent_location, int timestep); // helper function for getting sub-map
     int last_selected_agent = -1;   // udržuje, na kom jsme skončili
-
+    int countConflicts(const Agent& ag);
+    int computeMaxDelay(const Agent& ag);
+    double agentScore(const Agent& ag) const;
+    pair<int,int> findBestAgentAndTime();
+    const double W_DELAY_init   = 0.25;//4.0;
+    const double W_CONFL_init   = 0.25;//2.0;
+    const double W_STRETCH_init = 0.25;//1.0;
+    const double W_REC_init     = 0.25;//0.5;
+    void updateAllStats(int iter);
+    int current_iter;
+    void updateComponentWeights(int metric_index, double delta);
+    std::vector<double> component_weights = {
+            W_DELAY_init,
+            W_CONFL_init,
+            W_STRETCH_init,
+            W_REC_init
+    };
+    mutable std::mt19937 metric_rng;
+    int selectMetricIndex() const;
 };

@@ -13,9 +13,10 @@ LNS::LNS(const Instance& instance, double time_limit, const string & init_algo_n
          init_algo_name(init_algo_name),  replan_algo_name(replan_algo_name),
          num_of_iterations(num_of_iterations), // nastavuje se v argumentu
          use_init_lns(use_init_lns),init_destory_name(init_destory_name),
-         path_table(instance.map_size), pipp_option(pipp_option) {
+         path_table(instance.map_size), pipp_option(pipp_option), metric_rng(std::random_device{}()) {
     start_time = Time::now();
     replan_time_limit = time_limit / 100;
+    component_weights = {W_DELAY_init, W_CONFL_init, W_STRETCH_init, W_REC_init};
     if (destory_name == "Adaptive")
     {
         ALNS = true;
@@ -29,8 +30,11 @@ LNS::LNS(const Instance& instance, double time_limit, const string & init_algo_n
         destroy_strategy = INTERSECTION;
     else if (destory_name == "Random")
         destroy_strategy = RANDOMAGENTS;
-    else if (destory_name == "SAT") // new operator
+    else if (destory_name == "SAT") { // new operator
         destroy_strategy = SAT;
+        reaction_factor = 0.01;
+        decay_factor    = 0.01;
+    }
     else
     {
         cerr << "Destroy heuristic " << destory_name << " does not exists. " << endl;
@@ -101,14 +105,14 @@ bool LNS::generateNeighborBySAT() {
     cout << "====================" << endl;
     cout << "SAT destroy operator called." << endl;
 
-    auto [key_agent_id, problematic_timestep] = findMostDelayedAgent();
+    auto [key_agent_id, problematic_timestep] = findBestAgentAndTime();//findMostDelayedAgent();// //
     if (key_agent_id < 0) {
         cout << "No delayed agent found." << endl;
         return false;
     }
     cout << "[DEBUG] key_agent_id: " << key_agent_id << endl;
     cout << "[DEBUG] key_agent_id délka globální cesty: " << agents[key_agent_id].path.size() << endl;
-    //problematic_timestep += 10; // SCHVÁLNĚ DOČASNĚ POSUNUTÉ
+
     int agent_loc = agents[key_agent_id].path[problematic_timestep].location; // globalID of the cell in 1D matrix
     int submap_size = 25;
 
@@ -180,6 +184,166 @@ bool LNS::generateNeighborBySAT() {
     return true;
 }
 
+int LNS::computeMaxDelay(const Agent& ag)
+{
+    int best = 0;
+    for (int t = 0; t < (int)ag.path.size(); ++t) {
+        int d = ag.path_planner->getNumOfDelaysAtTimestep(
+                path_table, ag.path, ag.path[t].location, t);
+        best = std::max(best, d);
+    }
+    return best;
+}
+
+int LNS::countConflicts(const Agent& ag) {
+    int c = 0;
+    for (int t = 1; t < ag.path.size(); ++t)
+        if (!instance.validMove(ag.path[t-1].location, ag.path[t].location))
+            ++c;
+    return c;
+}
+/*
+int LNS::countConflicts(const Agent& ag)
+{
+    int c = 0;
+    for (int t = 0; t < (int)ag.path.size(); ++t)
+        if (path_table.hasConflict(ag.id, ag.path[t].location, t))
+            ++c;
+    return c;
+}*/
+
+
+// Čím větší skóre, tím „zajímavější“ je agent pro další destrukci/replan.
+double LNS::agentScore(const Agent& ag) const {
+    const auto& st = ag.stats;
+    return  component_weights[0] * st.delay_max +
+            component_weights[1] * st.conflict_cnt +
+            component_weights[2] * st.stretch_ratio +
+            component_weights[3] * (current_iter - st.last_replanned);
+}
+
+/*
+    1.	Najdi agenta s nejvyšším agentScore(ag).
+    2.	U toho agenta vezmi jeho delay_max (maximální zpoždění) a najdi všechny časy t, kde skutečně tohle zpoždění nastalo.
+    3.	Ze všech těchto časových kroků náhodně vyber jeden, který jsi ještě neignoroval(a) (sledovat se to musí přes ignored_agents_with_timestep set).
+    4.	Pokud už jsou všechny zignorované, vyčisti set a opakuj hledání; pak pokud stále nic, vrátíš {-1,-1} → už nic nedělej.
+    Výsledkem je pár (key_agent_id, problematic_timestep).
+ */
+pair<int,int> LNS::findBestAgentAndTime()
+{
+    int best_id = -1;
+    double best_score = -1;
+
+    for (const auto& ag : agents) {
+        double s = agentScore(ag);
+        if (s < 0) continue;  // (could be deleted)
+
+        if (s > best_score) {
+            best_score = s;
+            best_id = ag.id;
+        }
+    }
+    if (best_id == -1) return {-1,-1};
+
+    /* ‑‑ vyber timestep z největších delayů ‑‑ */
+    vector<int> ts;
+    int dmax = agents[best_id].stats.delay_max;
+
+    /* Najdeme všechny časové kroky t, kde je zpoždění rovno dmax, a které ještě nejsou v setu ignored_agents_with_timestep. */
+    for (int t = 0; t < (int)agents[best_id].path.size(); ++t)
+    {
+        int d = agents[best_id].path_planner->getNumOfDelaysAtTimestep(
+                path_table,
+                agents[best_id].path,
+                agents[best_id].path[t].location,
+                t);
+        if (d == dmax && !ignored_agents_with_timestep.count({best_id, t}))
+            ts.push_back(t);
+    }
+
+    /*
+      Pokud první průchod nevygeneroval žádný t, znamená to, že jsme všechny jeho nejhorší časy už jednou „ignorovali“.
+      Vyčistíme celý ignored_agents_with_timestep (ale jen jednou!) a jednou zopakujeme výběr.
+      Pokud ani potom nenajdeme žádný t, vrátíme {-1,-1}, tedy žádná akce.
+     */
+    if (ts.empty()) {
+        // all candidate timesteps were ignored; clear set and retry once
+        ignored_agents_with_timestep.clear();
+        // recompute timesteps for best_id
+        ts.clear();
+        for (int t = 0; t < (int)agents[best_id].path.size(); ++t) {
+            int d = agents[best_id].path_planner->getNumOfDelaysAtTimestep(
+                    path_table,
+                    agents[best_id].path,
+                    agents[best_id].path[t].location,
+                    t);
+            if (d == dmax && !ignored_agents_with_timestep.count({best_id, t}))
+                ts.push_back(t);
+        }
+    }
+    /* I called it recursively before
+    if (ts.empty()) { // all of dmax are in the ignored list
+        ignored_agents_with_timestep.clear(); // => allow new sequential pass
+        return findBestAgentAndTime();   // recursion
+    }*/
+
+    if (ts.empty()) {
+        // still no valid timestep
+        return {-1, -1};
+    }
+
+    int chosen_t = ts[rand()%ts.size()];
+
+    last_selected_agent = best_id;
+    return {best_id, chosen_t};
+}
+
+void LNS::updateAllStats(int iter) {
+    for (auto& ag : agents) {
+        auto& st = ag.stats;
+        // 1) maximální zpoždění na jakémkoliv kroku cesty
+        st.delay_max     = computeMaxDelay(ag);
+        // 2) počet neplatných kroků (edge/vertex konfliktů)
+        st.conflict_cnt  = countConflicts(ag);
+        // 3) relativní prodloužení cesty vůči heuristickému dolnímu odhadu
+        st.stretch_ratio = double(ag.path.size() - 1) /
+                           ag.path_planner->my_heuristic[ ag.path_planner->start_location ];
+        // 4) poslední iterace, kdy byl daný agent přeplánován
+        st.last_replanned = iter;
+    }
+}
+
+/*
+   Chceme, aby metrika, která vedla k úspěchu (tady index 0 = delay_max), rostla, ostatní se slabě decay‑ovaly:
+   reaction_factor (např. 0.01) určuje, jak silně se váha „odmění“ za dané δ.
+   decay_factor (např. 0.01) určuje, jak rychle se ostatní váhy vrací k větší všestrannosti, když nejsou vybírány.
+*/
+void LNS::updateComponentWeights(int metric_index, double delta) {
+    // Update selected metric weight multiplicatively and decay others
+    for (int i = 0; i < (int)component_weights.size(); ++i) {
+        if (i == metric_index) {
+            component_weights[i] *= (1.0 + reaction_factor * delta);
+        } else {
+            component_weights[i] *= (1.0 - decay_factor);
+        }
+    }
+    double sum_w = std::accumulate(component_weights.begin(), component_weights.end(), 0.0);
+    if (sum_w > 0) {
+        for (auto &w : component_weights) {
+            w /= sum_w;
+        }
+    }
+}
+
+int LNS::selectMetricIndex() const {
+    // Discrete distribution that picks i with probability component_weights[i].
+    std::discrete_distribution<int> dist(
+            component_weights.begin(),
+            component_weights.end()
+    );
+    return dist(metric_rng);
+}
+
 // --------------------------------------------------------
 // REPAIR fáze: runSAT() – zavolá findLocalPaths + solveWithSAT,
 //              a upraví cesty agentů + path_table
@@ -204,6 +368,8 @@ bool LNS::runSAT()
     if (!success) {
         for (auto a : agents_to_replan)
             path_table.insertPath(agents[a].id, agents[a].path); // return of old paths of agents
+
+        updateAllStats(current_iter); // TODO: zkontrolovat
         cout << "[WARN] SAT solver failed to find a valid solution." << endl;
         return false;
     }
@@ -279,7 +445,26 @@ bool LNS::runSAT()
                 }
             }*/
         }
-        //ignored_agents.clear();
+
+        updateAllStats(current_iter);
+        if (neighbor.sum_of_costs < neighbor.old_sum_of_costs) {
+            // compute delta based on the chosen metric
+            // relativní zlepšení (např. delta = 0.18 = 18% úspora
+            double delta = double(neighbor.old_sum_of_costs - neighbor.sum_of_costs)
+                           / double(neighbor.old_sum_of_costs);
+            cout << "[DEBUG] hodnota delta :" << delta << endl;
+            // multiplicative update: vybranému indexu (tady 0) se přidá bonus >1, ostatní se decayí
+            int metric_index = selectMetricIndex();
+            cout << "[DEBUG] rewarding metric index = " << metric_index << endl;
+            updateComponentWeights(metric_index, delta);
+            cout << "[DEBUG] component_weights = {"
+                 << component_weights[0] << ", "
+                 << component_weights[1] << ", "
+                 << component_weights[2] << ", "
+                 << component_weights[3] << "}" << endl;
+
+        }
+
         return true;
     } else {
         // revert
@@ -345,6 +530,7 @@ bool LNS::run()
                 init_lns->clear();
                 initial_sum_of_costs = init_lns->sum_of_costs;
                 sum_of_costs = initial_sum_of_costs;
+                updateAllStats(0);
             }
             initial_solution_runtime = ((fsec)(Time::now() - start_time)).count();
         }
@@ -379,22 +565,6 @@ bool LNS::run()
         cout << "[DEBUG] In LNS, we pass " << agents.size()
              << " agents to init_lns (skip=true). " << endl;
 
-        /*
-        // ------------------------------------------------------------------
-        // Výpis: cesty všech agentů ještě PŘED voláním init_lns->run(true)
-        // ------------------------------------------------------------------
-        cout << "[DEBUG] Aktuální cesty všech agentů (globální location IDs):" << endl;
-        for (size_t ag = 0; ag < agents.size(); ag++)
-        {
-            cout << "  Agent " << ag << " [id=" << agents[ag].id << "], path.size()=" << agents[ag].path.size() << ": ";
-            for (size_t t = 0; t < agents[ag].path.size(); t++)
-            {
-                cout << agents[ag].path[t].location << " ";
-            }
-            cout << endl;
-        }
-         */
-
         // ------------------------------------------------------------------
         // Výpis: path_table pro vybrané agenty (např. neighbor.agents)
         // ------------------------------------------------------------------
@@ -417,18 +587,13 @@ bool LNS::run()
             }
         }
 
-        neighbor.old_sum_of_costs = sum_of_costs; // přidáno
-
         bool fixed = init_lns->run(true);
 
         cout << "[DEBUG] init_lns->sum_of_costs po doběhnutí init_lns->run: " << init_lns->sum_of_costs << endl;
 
         if (fixed) {
-            neighbor.sum_of_costs = init_lns->sum_of_costs; // přidáno
-
             sum_of_costs = init_lns->sum_of_costs;
             //neighbor.old_sum_of_costs = init_lns->sum_of_costs;
-
 
             cout << "[DEBUG] sum_of_costs po přiřazení init_lns->run: " << sum_of_costs << endl;
             path_table.reset();
@@ -442,51 +607,26 @@ bool LNS::run()
     // ============================================
 
     bool needConflictRepair = false;
+
     // optimalizace
     while (runtime < time_limit && iteration_stats.size() <= num_of_iterations) {
+        current_iter = static_cast<int>(iteration_stats.size());
         cout.flush();
         runtime = ((fsec)(Time::now() - start_time)).count();
-
-        // validace řešení – pokud dojde k chybě, chyť výjimku a spusť opravu
-        try {
-            if (destroy_strategy == SAT) // only needed while using SAT destroy&repair -> can cause conflicts
-                validateSolution();
-            needConflictRepair = false;
-        } catch (const ValidationException& e) {
-            cout << "[WARNING] Conflict detected (ValidationException): " << e.what() << endl;
-            needConflictRepair = true;
-        } catch (const std::exception& e) {
-            cout << "[WARNING] Conflict detected (std::exception): " << e.what() << endl;
-            needConflictRepair = true;
-        } catch (...) {
-            cout << "[WARNING] Conflict detected: unknown error during validateSolution()." << endl;
-            needConflictRepair = true;
-        }
-
-        // ------------------------------------------------
-        // Oprava konfliktu pokud needConflictRepair==true
-        // ------------------------------------------------
-        if (needConflictRepair && destroy_strategy == SAT) {
-            cout << "sem by to spadnout nemělo ne?" << endl;
-            cout << "[DEBUG] Switching to conflict repair mode via init_lns." << endl;
-            // Zde unify s doInitLNSRepair
-            doInitLNSRepair("(because needConflictRepair==true)");
-            continue;
-        }
 
         if (ALNS) chooseDestroyHeuristicbyALNS();
 
         bool opSuccess = false;
         bool SATchosen = false;
 
-        if (destroy_strategy == SAT) {
+        if (destroy_strategy == SAT) { // SAT is destroy operator merged with replan operator
             int r = rand() % 100;
             if (r < 100) { // číslo zde bude hyperparametr
                 SATchosen = true;
                 //cout << "[DEBUG] hodnota r je " << r << endl;
                 cout << "[DEBUG] Using SAT operator (destroy+repair SAT)." << endl;
-                const int MAX_SAT_ATTEMPTS = 10;
-                for (int attempt = 0; attempt < MAX_SAT_ATTEMPTS && !opSuccess; attempt++) {
+                //const int MAX_SAT_ATTEMPTS = 10;
+                while (!opSuccess) {
                     if (!generateNeighborBySAT()) continue;
                     neighbor.old_paths.resize(neighbor.agents.size());
                     neighbor.old_sum_of_costs = 0;
@@ -496,6 +636,9 @@ bool LNS::run()
                         path_table.deletePath(a, agents[a].path);
                         neighbor.old_sum_of_costs += (int)agents[a].path.size() - 1;
                     }
+
+                    // Removed stats and component weights updates from run() to be handled in runSAT().
+
                     opSuccess = runSAT();
                 }
             }
@@ -545,8 +688,7 @@ bool LNS::run()
                 neighbor.old_sum_of_costs += (int)agents[a].path.size() - 1;
             }
 
-            // NATVRDO replan
-            std::string DEFAULT_REPLAN_ALGO = "PP"; // NATVRDO
+            std::string DEFAULT_REPLAN_ALGO = "PP"; // fixně
             if      (DEFAULT_REPLAN_ALGO == "PP")   succ = runPP();
             else if (DEFAULT_REPLAN_ALGO == "CBS")  succ = runCBS();
             else if (DEFAULT_REPLAN_ALGO == "EECBS")succ = runEECBS();
@@ -556,6 +698,24 @@ bool LNS::run()
 
         if (!succ)
             continue;
+
+        // ALNS vyhodnocení
+        if (ALNS)
+        {
+            if (neighbor.old_sum_of_costs > neighbor.sum_of_costs)
+                destroy_weights[selected_neighbor] =
+                        reaction_factor * (neighbor.old_sum_of_costs - neighbor.sum_of_costs) / neighbor.agents.size()
+                        + (1 - reaction_factor) * destroy_weights[selected_neighbor];
+            else
+                destroy_weights[selected_neighbor] =
+                        (1 - decay_factor) * destroy_weights[selected_neighbor];
+        }
+
+        runtime = ((fsec)(Time::now() - start_time)).count();
+
+        cout << "[DEBUG] neighbor.sum_of_costs před opětovným přepočtem: " << neighbor.sum_of_costs << endl;
+        cout << "[DEBUG] neighbor.old_sum_of_costs před opětovným přepočtem: " << neighbor.old_sum_of_costs << endl;
+        cout << "[DEBUG] sum_of_costs před opětovným přepočtem: " << sum_of_costs << endl;
 
         // ------------------------------------------------
         // 2) Po SAT => validace a případný conflict repair
@@ -575,33 +735,15 @@ bool LNS::run()
             cout << "[DEBUG] Validate solution immediately after SAT success." << endl;
             try {
                 validateSolution();
+                cout << "[DEBUG] No problems after SAT replan." << endl;
             } catch (const ValidationException& e) {
-                cout << "[WARNING] Conflict after SAT: " << e.what() << endl;
+                cout << "[WARNING] Problem after SAT: " << e.what() << endl;
                 // unify
-                doInitLNSRepair("(because conflict after SAT)");
+                doInitLNSRepair("because problem occured after SAT (should be applied only for conflicts...)");
                 continue;
             }
-        }
+        } else sum_of_costs += neighbor.sum_of_costs - neighbor.old_sum_of_costs;
 
-        // ALNS vyhodnocení
-        if (ALNS)
-        {
-            if (neighbor.old_sum_of_costs > neighbor.sum_of_costs)
-                destroy_weights[selected_neighbor] =
-                        reaction_factor * (neighbor.old_sum_of_costs - neighbor.sum_of_costs) / neighbor.agents.size()
-                        + (1 - reaction_factor) * destroy_weights[selected_neighbor];
-            else
-                destroy_weights[selected_neighbor] =
-                        (1 - decay_factor) * destroy_weights[selected_neighbor];
-        }
-
-        runtime = ((fsec)(Time::now() - start_time)).count();
-
-        cout << "[DEBUG] neighbor.sum_of_costs před opětovném přepočtu: " << neighbor.sum_of_costs << endl;
-        cout << "[DEBUG] neighbor.old_sum_of_costs před opětovném přepočtu: " << neighbor.old_sum_of_costs << endl;
-        cout << "[DEBUG] sum_of_costs před opětovném přepočtu: " << sum_of_costs << endl;
-        sum_of_costs += neighbor.sum_of_costs -
-                        neighbor.old_sum_of_costs;
         cout << "[DEBUG] recomputing sum_of_cost by dividing neighbor.sum_of_costs and neighbor.old_sum_of_costs" << endl;
         cout << "[DEBUG] sum_of_costs po opětovném přepočtu: " << sum_of_costs << endl;
 
@@ -656,7 +798,8 @@ bool LNS::getInitialSolution()
     else if (init_algo_name == "CBS")
         succ = runCBS();
     else if (init_algo_name == "SAT") // TODO: popravdě nevím, jestli máme upravovat - možná není nutné
-        succ = runSAT();
+        runPP();
+        //succ = runSAT();
     else
     {
         cerr <<  "Initial MAPF solver " << init_algo_name << " does not exist!" << endl;
@@ -830,6 +973,7 @@ bool LNS::runPP()
     }
     if (remaining_agents == 0 && neighbor.sum_of_costs <= neighbor.old_sum_of_costs) // accept new paths
     {
+        updateAllStats(current_iter); // PŘIDÁNO
         return true;
     }
     else // stick to old paths
@@ -1091,6 +1235,33 @@ bool LNS::generateNeighborByRandomWalk()
     return true;
 }
 
+/* PRO FUNGOVÁNÍ RandomWalk
+ * int LNS::findMostDelayedAgent()
+{
+    int a = -1;
+    int max_delays = -1;
+    for (int i = 0; i < agents.size(); i++)
+    {
+        if (tabu_list.find(i) != tabu_list.end())
+            continue;
+        int delays = agents[i].getNumOfDelays();
+        if (max_delays < delays)
+        {
+            a = i;
+            max_delays = delays;
+        }
+    }
+    if (max_delays == 0)
+    {
+        tabu_list.clear();
+        return -1;
+    }
+    tabu_list.insert(a);
+    if (tabu_list.size() == agents.size())
+        tabu_list.clear();
+    return a;
+}*/
+
 pair<int,int> LNS::findMostDelayedAgent()
 {
     const int N = static_cast<int>(agents.size());
@@ -1196,7 +1367,6 @@ void LNS::randomWalk(int agent_id, int start_location, int start_timestep,
             break;
     }
 }
-
 
 void LNS::validateSolution() const
 {

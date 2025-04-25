@@ -108,6 +108,7 @@ bool LNS::generateNeighborBySAT() {
     auto [key_agent_id, problematic_timestep] = findBestAgentAndTime();//findMostDelayedAgent();//
     if (key_agent_id < 0) {
         cout << "No delayed agent found." << endl;
+        ignored_agents_with_timestep.clear();
         return false;
     }
     cout << "[DEBUG] key_agent_id: " << key_agent_id << endl;

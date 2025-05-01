@@ -88,7 +88,7 @@ private:
     bool generateNeighborByRandomWalk();
     bool generateNeighborByIntersection();
 
-    pair<int, int> findMostDelayedAgent(); // the function is now returning the most problematic agent and his most problematic time step
+    int findMostDelayedAgent(); // the function is now returning the most problematic agent and his most problematic time step
     int findRandomAgent() const;
     void randomWalk(int agent_id, int start_location, int start_timestep,
                     set<int>& neighbor, int neighbor_size, int upperbound);
@@ -119,4 +119,7 @@ private:
     int selectMetricIndex() const;
     double adaptive_heuristics_reaction_factor = 1;
     double adaptive_heuristics_decay_factor = 0.05;
+
+    pair<int,int> roundRobin();
+    pair<int, int> findMostDelayedAgentAndTime();
 };

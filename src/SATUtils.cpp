@@ -293,7 +293,7 @@ namespace SATUtils {
         inst->SetAgents((int)start_positions.size());
         log->NewInstance((int)start_positions.size());
 
-        int result = solver->Solve((int)start_positions.size(), 0, true);
+        int result = solver->Solve((int)start_positions.size(), 0, true, true);
         std::cout << "Solver returned: " << result << std::endl;
 
         if (result != 0) {

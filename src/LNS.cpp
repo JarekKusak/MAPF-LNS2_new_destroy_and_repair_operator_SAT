@@ -105,7 +105,7 @@ bool LNS::generateNeighborBySAT() {
     cout << "====================" << endl;
     cout << "SAT destroy operator called." << endl;
 
-    auto [key_agent_id, problematic_timestep] = findBestAgentAndTime();//findMostDelayedAgent();//
+    auto [key_agent_id, problematic_timestep] = findMostDelayedAgentAndTime();//findBestAgentAndTime();////
     if (key_agent_id < 0) {
         cout << "No delayed agent found." << endl;
         ignored_agents_with_timestep.clear();
@@ -203,15 +203,6 @@ int LNS::countConflicts(const Agent& ag) {
             ++c;
     return c;
 }
-/*
-int LNS::countConflicts(const Agent& ag)
-{
-    int c = 0;
-    for (int t = 0; t < (int)ag.path.size(); ++t)
-        if (path_table.hasConflict(ag.id, ag.path[t].location, t))
-            ++c;
-    return c;
-}*/
 
 
 // Čím větší skóre, tím „zajímavější“ je agent pro další destrukci/replan.
@@ -1192,9 +1183,7 @@ bool LNS::generateNeighborByRandomWalk()
         return true;
     }
 
-    std::pair<int, int> result = findMostDelayedAgent();
-    int a = result.first;
-    int time_step = result.second;
+    int a = findMostDelayedAgent();
 
     if (a < 0)
         return false;
@@ -1232,8 +1221,7 @@ bool LNS::generateNeighborByRandomWalk()
     return true;
 }
 
-/* PRO FUNGOVÁNÍ RandomWalk
- * int LNS::findMostDelayedAgent()
+int LNS::findMostDelayedAgent()
 {
     int a = -1;
     int max_delays = -1;
@@ -1257,14 +1245,15 @@ bool LNS::generateNeighborByRandomWalk()
     if (tabu_list.size() == agents.size())
         tabu_list.clear();
     return a;
-}*/
+}
 
-pair<int,int> LNS::findMostDelayedAgent()
+
+pair<int,int> LNS::roundRobin()
 {
     const int N = static_cast<int>(agents.size());
     if (N == 0) return {-1,-1};
 
-    /* Projdeme agenty cyklicky: (last+1) … (last+N) */
+    // Projdeme agenty cyklicky: (last+1) … (last+N)
     for (int step = 1; step <= N; ++step)
     {
         int idx = (last_selected_agent + step) % N;
@@ -1275,7 +1264,7 @@ pair<int,int> LNS::findMostDelayedAgent()
         auto [delays, ts] =
                 ag.getMostProblematicDelay(path_table, ignored_agents_with_timestep);
 
-        if (ts < 0)           // už nemá nic nového
+        if (ts < 0) // už nemá nic nového
             continue;
 
         // máme kandidáta
@@ -1295,9 +1284,7 @@ pair<int,int> LNS::findMostDelayedAgent()
     return {-1,-1};
 }
 
-
-/*
-pair<int, int> LNS::findMostDelayedAgent() {
+pair<int, int> LNS::findMostDelayedAgentAndTime() {
     int max_delays = -1;
     int agent_with_max_delays = -1;
     int most_problematic_timestep = -1;
@@ -1320,7 +1307,7 @@ pair<int, int> LNS::findMostDelayedAgent() {
     }
 
     return {agent_with_max_delays, most_problematic_timestep};
-}*/
+}
 
 int LNS::findRandomAgent() const
 {

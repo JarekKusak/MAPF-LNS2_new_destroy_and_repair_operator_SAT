@@ -105,7 +105,7 @@ bool LNS::generateNeighborBySAT() {
     cout << "====================" << endl;
     cout << "SAT destroy operator called." << endl;
 
-    auto [key_agent_id, problematic_timestep] = findMostDelayedAgentAndTime();//findBestAgentAndTime();////
+    auto [key_agent_id, problematic_timestep] = findBestAgentAndTime();//roundRobin();findMostDelayedAgentAndTime();//
     if (key_agent_id < 0) {
         cout << "No delayed agent found." << endl;
         ignored_agents_with_timestep.clear();
@@ -518,7 +518,6 @@ bool LNS::run()
                 init_lns->clear();
                 initial_sum_of_costs = init_lns->sum_of_costs;
                 sum_of_costs = initial_sum_of_costs;
-                updateAllStats(0);
             }
             initial_solution_runtime = ((fsec)(Time::now() - start_time)).count();
         }
@@ -615,6 +614,7 @@ bool LNS::run()
                 cout << "[DEBUG] Using SAT operator (destroy+repair SAT)." << endl;
                 //const int MAX_SAT_ATTEMPTS = 10;
                 while (!opSuccess) {
+                    updateAllStats(current_iter);
                     if (!generateNeighborBySAT()) continue;
                     neighbor.old_paths.resize(neighbor.agents.size());
                     neighbor.old_sum_of_costs = 0;

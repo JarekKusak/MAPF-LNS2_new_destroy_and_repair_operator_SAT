@@ -435,12 +435,12 @@ bool LNS::runSAT()
         }
 
         //updateAllStats(current_iter);
-        if (neighbor.sum_of_costs < neighbor.old_sum_of_costs) {
+        if (neighbor.sum_of_costs <= neighbor.old_sum_of_costs) {
             // compute delta based on the chosen metric
             // relativní zlepšení (např. delta = 0.18 = 18% úspora
             double delta = double(neighbor.old_sum_of_costs - neighbor.sum_of_costs)
                            / double(neighbor.old_sum_of_costs);
-            cout << "[DEBUG] hodnota delta :" << delta << endl;
+            cout << "[DEBUG] hodnota delta: " << delta << endl;
             // multiplicative update: vybranému indexu (tady 0) se přidá bonus >1, ostatní se decayí
             int metric_index = selectMetricIndex();
             cout << "[DEBUG] rewarding metric index = " << metric_index << endl;

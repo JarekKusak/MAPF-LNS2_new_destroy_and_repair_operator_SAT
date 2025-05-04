@@ -18,8 +18,8 @@ import matplotlib.pyplot as plt
 # konfigurace
 MAPS            = ["ost003d.map"]#, "random-32-32-20.map"]        # soubory s mapou
 INSTANCES_PER_MAP = 5                                             # kolik scén / mapu
-AGENT_COUNTS    = [100, 300, 500] #, 700, 900]                    # -k hodnoty
-MAX_ITERS       = 15                                              # --maxIterations
+AGENT_COUNTS    = [100, 300]# 500, 700, 900]                    # -k hodnoty
+MAX_ITERS       = 50                                              # --maxIterations
 LNS_BIN         = "./lns"                                         # cesta k binárce
 RESULTS_ROOT    = Path("results")                                 # kam ukládat
 
@@ -75,7 +75,6 @@ def parse_log(log_path: Path):
     """
     Vrátí slovník se všemi metrikami, včetně seznamu SOC po iteracích.
     """
-
     soc_curve      = []
     sat_improv     = []   # relativní zlepšení, pokud byl SAT použít
     sat_conflicts  = []   # True/False – vznikl konflikt?
@@ -86,10 +85,10 @@ def parse_log(log_path: Path):
 
     with open(log_path, encoding="utf-8") as f:
         for line in f:
-            # průběh SOC
-            m = RE_SOC_POST.search(line)
-            if m:
-                soc_curve.append(int(m.group(1)))
+            # průběh SOC – ukládáme *pouze* hodnotu po úplném přepočtu
+            m_post = RE_SOC_POST.search(line)
+            if m_post:
+                soc_curve.append(int(m_post.group(1)))
 
             # SAT session začala – dostali jsme old / new cost
             m_old = RE_NEIGH_OLD.search(line)
@@ -129,7 +128,6 @@ def parse_log(log_path: Path):
         "sat_improv_mean" : sum(sat_improv) / len(sat_improv) if sat_improv else 0.0,
         "sat_conflict_pct": 100 * sum(sat_conflicts) / len(sat_conflicts) if sat_conflicts else 0.0,
     }
-
 
 def save_curve(curve, out_png: Path, title: str):
     plt.figure()
@@ -177,7 +175,6 @@ def main():
     csv_path = RESULTS_ROOT / "results.csv"
     df.to_csv(csv_path, index=False)
     print(f"[OK] Výsledky zapsány do {csv_path}")
-
 
 if __name__ == "__main__":
     main()

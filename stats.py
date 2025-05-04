@@ -15,22 +15,18 @@ from itertools import product
 import pandas as pd
 import matplotlib.pyplot as plt
 
-# --------------------------------------------------------------------------- #
-# Konfigurace (můžeš nahradit čtením z YAML/JSON)
-# --------------------------------------------------------------------------- #
-MAPS            = ["ost003d.map"]#, "random-32-32-20.map"]          # soubory s mapou
+# konfigurace
+MAPS            = ["ost003d.map"]#, "random-32-32-20.map"]        # soubory s mapou
 INSTANCES_PER_MAP = 5                                             # kolik scén / mapu
 AGENT_COUNTS    = [100, 300, 500] #, 700, 900]                    # -k hodnoty
 MAX_ITERS       = 15                                              # --maxIterations
 LNS_BIN         = "./lns"                                         # cesta k binárce
 RESULTS_ROOT    = Path("results")                                 # kam ukládat
 
-# pokud máš různé heuristiky v kódu přepínané #define nebo flagem, přidej sem:
-HEURISTIC_TAG   = "adaptive"                                      # čistě do názvu
+# různé heuristiky
+HEURISTIC_TAG   = "adaptive" # čistě do názvu
 
-# --------------------------------------------------------------------------- #
-# Regexy pro parsování logu
-# --------------------------------------------------------------------------- #
+# regexy pro parsování logu
 RE_SOC_POST   = re.compile(r"\[DEBUG\] sum_of_costs po opětovném přepočtu: (\d+)")
 RE_SOC_PRE    = re.compile(r"\[DEBUG\] sum_of_costs před opětovným přepočtem: (\d+)")
 RE_NEIGH_OLD  = re.compile(r"\[DEBUG\] neighbor\.old_sum_of_costs .*: (\d+)")
@@ -145,8 +141,6 @@ def save_curve(curve, out_png: Path, title: str):
     plt.savefig(out_png)
     plt.close()
 
-
-# --------------------------------------------------------------------------- #
 def main():
     RESULTS_ROOT.mkdir(exist_ok=True)
 

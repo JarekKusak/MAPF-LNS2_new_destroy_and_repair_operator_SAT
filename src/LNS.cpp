@@ -357,7 +357,7 @@ bool LNS::runSAT()
         for (auto a : agents_to_replan)
             path_table.insertPath(agents[a].id, agents[a].path); // return of old paths of agents
 
-        updateAllStats(current_iter); // TODO: zkontrolovat
+        //updateAllStats(current_iter);
         cout << "[WARN] SAT solver failed to find a valid solution." << endl;
         return false;
     }
@@ -434,7 +434,7 @@ bool LNS::runSAT()
             }*/
         }
 
-        updateAllStats(current_iter);
+        //updateAllStats(current_iter);
         if (neighbor.sum_of_costs < neighbor.old_sum_of_costs) {
             // compute delta based on the chosen metric
             // relativní zlepšení (např. delta = 0.18 = 18% úspora
@@ -490,9 +490,9 @@ bool LNS::runSAT()
 bool LNS::run()
 {
     // Otevřeme soubor pro zápis
-    std::ofstream out("log.txt");
-    std::streambuf* coutbuf = std::cout.rdbuf();
-    std::cout.rdbuf(out.rdbuf());
+    //std::ofstream out("log.txt");
+    //std::streambuf* coutbuf = std::cout.rdbuf();
+    //std::cout.rdbuf(out.rdbuf());
 
     sum_of_distances = 0;
     for (const auto & agent : agents)
@@ -583,7 +583,6 @@ bool LNS::run()
             //neighbor.old_sum_of_costs = init_lns->sum_of_costs;
 
             cout << "[DEBUG] sum_of_costs po přiřazení init_lns->run: " << sum_of_costs << endl;
-            //path_table.reset(); // TODO: ověřit
             for (const auto &agent : agents)
                 path_table.insertPath(agent.id, agent.path);
 
@@ -606,6 +605,8 @@ bool LNS::run()
         bool opSuccess = false;
         bool SATchosen = false;
 
+        updateAllStats(current_iter);
+
         if (destroy_strategy == SAT) { // SAT is destroy operator merged with replan operator
             int r = rand() % 100;
             if (r < 100) { // číslo zde bude hyperparametr
@@ -614,7 +615,6 @@ bool LNS::run()
                 cout << "[DEBUG] Using SAT operator (destroy+repair SAT)." << endl;
                 //const int MAX_SAT_ATTEMPTS = 10;
                 while (!opSuccess) {
-                    updateAllStats(current_iter);
                     if (!generateNeighborBySAT()) continue;
                     neighbor.old_paths.resize(neighbor.agents.size());
                     neighbor.old_sum_of_costs = 0;
@@ -961,7 +961,6 @@ bool LNS::runPP()
     }
     if (remaining_agents == 0 && neighbor.sum_of_costs <= neighbor.old_sum_of_costs) // accept new paths
     {
-        updateAllStats(current_iter); // PŘIDÁNO
         return true;
     }
     else // stick to old paths
@@ -1291,9 +1290,7 @@ pair<int, int> LNS::findMostDelayedAgentAndTime() {
 
     for (const auto& agent : agents) {
         // přeskoč agenty, kteří už selhali
-        // TODO: tohle není nejmoudřejší, protože je nechceme přeskakovat natrvalo, ale prozatím to nevadí
-        // TODO: nikdy nevymazáváme ignored_agents.clear()
-        auto [agent_max_delays, problematic_timestep] = // TODO: zvolit ještě jiný způsob výběru
+        auto [agent_max_delays, problematic_timestep] =
                 agent.getMostProblematicDelay(path_table, ignored_agents_with_timestep);
 
         if (ignored_agents_with_timestep.count({agent.id, problematic_timestep}))

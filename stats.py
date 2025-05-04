@@ -25,6 +25,8 @@ RESULTS_ROOT    = Path("results")                                 # kam ukládat
 
 # různé heuristiky
 HEURISTIC_TAG   = "adaptive" # čistě do názvu
+# HEURISTIC_TAG   = "roundRobin"
+# HEURISTIC_TAG   = "mostDelayedAgent"
 
 # regexy pro parsování logu
 RE_SOC_POST   = re.compile(r"\[DEBUG\] sum_of_costs po opětovném přepočtu: (\d+)")

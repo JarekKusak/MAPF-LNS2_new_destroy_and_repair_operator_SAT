@@ -17,7 +17,7 @@ import matplotlib.pyplot as plt
 
 # konfigurace
 MAPS            = ["ost003d.map"]#, "random-32-32-20.map"]# soubory s mapou
-INSTANCES_PER_MAP = 5 # kolik scén / mapu
+INSTANCES_PER_MAP = 1 # kolik scén / mapu
 AGENT_COUNTS    = [100, 300]# 500, 700, 900] # -k hodnoty
 MAX_ITERS       = 2 # --maxIterations
 LNS_BIN         = "./lns" # cesta k binárce
@@ -72,9 +72,9 @@ def run_single(map_file: str, scen_file: str, agent_num: int, run_id: str):
     return log_path
 
 
-def parse_log(log_path: Path):
+def parse_log(log_path: Path, external_init_soc: int | None = None):
     """
-    Vrátí slovník se všemi metrikami, včetně seznamu SOC po iteracích.
+    Vrátí slovník se všemi metrikami …  external_init_soc může přepsat počáteční SOC.
     """
     soc_curve      = []
     sat_improv     = []   # relativní zlepšení, pokud byl SAT použít
@@ -85,6 +85,10 @@ def parse_log(log_path: Path):
     conflict_pending = False  # for warnings that appear after session is closed
 
     final_stats = {}
+    # --- první výskyt hodnot pro výpočet počátečního SOC -----------------
+    soc_pre_first: int | None   = None   # [DEBUG] sum_of_costs před opětovným přepočtem
+    neigh_new_first: int | None = None   # [DEBUG] neighbor.sum_of_costs před opětovným přepočtem
+    neigh_old_first: int | None = None   # [DEBUG] neighbor.old_sum_of_costs před opětovným přepočtem
 
     with open(log_path, encoding="utf-8") as f:
         for line in f:
@@ -92,6 +96,24 @@ def parse_log(log_path: Path):
             m_post = RE_SOC_POST.search(line)
             if m_post:
                 soc_curve.append(int(m_post.group(1)))
+
+            # -------------------------------------------------------------
+            # Zachyť první výskyt hodnot před opětovným přepočtem
+            # -------------------------------------------------------------
+            if soc_pre_first is None:
+                m_pre = RE_SOC_PRE.search(line)
+                if m_pre:
+                    soc_pre_first = int(m_pre.group(1))
+
+            if neigh_new_first is None:
+                m_nn = RE_NEIGH_NEW.search(line)
+                if m_nn:
+                    neigh_new_first = int(m_nn.group(1))
+
+            if neigh_old_first is None:
+                m_no = RE_NEIGH_OLD.search(line)
+                if m_no:
+                    neigh_old_first = int(m_no.group(1))
 
             # --- SAT destroy/repair session ---------------------------------
             # 1) Logger tiskne nejdřív "neighbor.sum_of_costs ..."  (NEW)
@@ -142,6 +164,12 @@ def parse_log(log_path: Path):
                     "failed_iterations": int(m_fin.group(5)),
                 }
 
+    # --- initial solution cost ------------------------------------------
+    # Přednostně vezmeme hodnotu ze souboru out‑LNS.csv (sloupec
+    # „initial solution cost“), pokud je k dispozici.
+    if external_init_soc is not None:
+        final_stats["initial_soc"] = external_init_soc
+
     # do křivky přidáme počáteční náklady, aby se počítalo zlepšení i v 1. iteraci
     if final_stats and "initial_soc" in final_stats:
         full_curve = [final_stats["initial_soc"]] + soc_curve
@@ -189,7 +217,20 @@ def main():
             for k in AGENT_COUNTS:
                 run_tag = f"{map_stem}-i{inst_idx}-k{k}-it{MAX_ITERS}-{HEURISTIC_TAG}"
                 log_path = run_single(map_file, scen, k, run_tag)
-                stats = parse_log(log_path)
+
+                out_dir = log_path.parent
+                # zjisti "initial solution cost" z výstupu solveru (out-LNS.csv), pokud existuje
+                lns_csv_path = out_dir / "out-LNS.csv"
+                external_init_soc = None
+                if lns_csv_path.exists():
+                    try:
+                        lns_df = pd.read_csv(lns_csv_path)
+                        if not lns_df.empty and "initial solution cost" in lns_df.columns:
+                            external_init_soc = int(lns_df["initial solution cost"].iloc[0])
+                    except Exception as e:
+                        print(f"[WARN] Nelze načíst {lns_csv_path}: {e}", file=sys.stderr)
+
+                stats = parse_log(log_path, external_init_soc=external_init_soc)
 
                 # ulož průběhový graf
                 save_curve(

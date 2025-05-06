@@ -1,6 +1,0 @@
-runtime,solution cost,initial solution cost,lower bound,sum of distance,iterations,group size,runtime of initial solution,restart times,area under curve,LL expanded nodes,LL generated,LL reopened,LL runs,preprocessing runtime,solver name,instance name
-0.291828,13515,14153,13309,13309,16,1.4,0.0473132,0,1.48327e+06,56588,175268,1978,188,0.319872,LNS(PP;PP),ost003d-instances/ost003d-random-4.scen
-0.270713,13515,14153,13309,13309,16,1.4,0.0466628,0,1.48326e+06,56588,175268,1978,188,0.310875,LNS(PP;PP),ost003d-instances/ost003d-random-4.scen
-0.287181,13515,14153,13309,13309,16,1.4,0.0467211,0,1.48327e+06,56588,175268,1978,188,0.316036,LNS(PP;PP),ost003d-instances/ost003d-random-4.scen
-0.27049,13515,14153,13309,13309,16,1.4,0.0462737,0,1.48326e+06,56588,175268,1978,188,0.318485,LNS(PP;PP),ost003d-instances/ost003d-random-4.scen
-0.274802,13515,14153,13309,13309,16,1.4,0.0465557,0,1.48326e+06,56588,175268,1978,188,0.308711,LNS(PP;PP),ost003d-instances/ost003d-random-4.scen

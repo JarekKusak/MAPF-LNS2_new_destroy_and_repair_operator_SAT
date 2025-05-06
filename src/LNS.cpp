@@ -728,7 +728,7 @@ bool LNS::run()
                 cout << "[WARNING] Problem after SAT: " << e.what() << endl;
                 // unify
                 doInitLNSRepair("because problem occured after SAT (should be applied only for conflicts...)");
-                continue;
+               // continue;
             }
         } else sum_of_costs += neighbor.sum_of_costs - neighbor.old_sum_of_costs;
 

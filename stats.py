@@ -16,12 +16,12 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 # konfigurace
-MAPS            = ["ost003d.map"]#, "random-32-32-20.map"]        # soubory s mapou
-INSTANCES_PER_MAP = 5                                             # kolik scén / mapu
-AGENT_COUNTS    = [100, 300]# 500, 700, 900]                    # -k hodnoty
-MAX_ITERS       = 50                                              # --maxIterations
-LNS_BIN         = "./lns"                                         # cesta k binárce
-RESULTS_ROOT    = Path("results")                                 # kam ukládat
+MAPS            = ["ost003d.map"]#, "random-32-32-20.map"]# soubory s mapou
+INSTANCES_PER_MAP = 5 # kolik scén / mapu
+AGENT_COUNTS    = [100, 300]# 500, 700, 900] # -k hodnoty
+MAX_ITERS       = 2 # --maxIterations
+LNS_BIN         = "./lns" # cesta k binárce
+RESULTS_ROOT    = Path("results") # kam ukládat
 
 # různé heuristiky
 HEURISTIC_TAG   = "adaptive" # čistě do názvu
@@ -39,7 +39,6 @@ RE_FINAL      = re.compile(
     r"solution cost = (\d+), initial solution cost = (\d+), failed iterations = (\d+)"
 )
 
-# --------------------------------------------------------------------------- #
 def run_single(map_file: str, scen_file: str, agent_num: int, run_id: str):
     """
     Spustí ./lns s danou mapou, instancí a počtem agentů.
@@ -81,7 +80,8 @@ def parse_log(log_path: Path):
     sat_improv     = []   # relativní zlepšení, pokud byl SAT použít
     sat_conflicts  = []   # True/False – vznikl konflikt?
     sat_in_action  = False
-    old_cost_tmp   = None
+    # pomocná proměnná pro SAT session: new_cost_tmp
+    new_cost_tmp   = None
 
     final_stats = {}
 
@@ -92,26 +92,33 @@ def parse_log(log_path: Path):
             if m_post:
                 soc_curve.append(int(m_post.group(1)))
 
-            # SAT session začala – dostali jsme old / new cost
-            m_old = RE_NEIGH_OLD.search(line)
-            if m_old:
-                old_cost_tmp = int(m_old.group(1))
+            # --- SAT destroy/repair session ---------------------------------
+            # 1) Logger tiskne nejdřív "neighbor.sum_of_costs ..." ( = NEW ),
+            #    hned poté "neighbor.old_sum_of_costs ..." ( = OLD ).
+            # 2) Zlepšení počítáme teprve, když máme obě čísla
+            # 3) Pokud by NEW >= OLD (nemělo by nastat), dvojici ignorujeme
+            # -----------------------------------------------------------------
+            m_new = RE_NEIGH_NEW.search(line)
+            if m_new:
+                new_cost_tmp = int(m_new.group(1))
                 sat_in_action = True
                 conflict_flag = False
                 continue
 
-            m_new = RE_NEIGH_NEW.search(line)
-            if m_new and sat_in_action:
-                new_cost = int(m_new.group(1))
-                if old_cost_tmp and old_cost_tmp > 0:
-                    sat_improv.append((old_cost_tmp - new_cost) / old_cost_tmp)
-                old_cost_tmp = None
-                sat_conflicts.append(conflict_flag)
-                sat_in_action = False
-                continue
-
             if sat_in_action and RE_CONFLICT.search(line):
                 conflict_flag = True
+
+            m_old = RE_NEIGH_OLD.search(line)
+            if m_old and sat_in_action:
+                old_cost = int(m_old.group(1))
+                if old_cost > 0 and new_cost_tmp is not None and new_cost_tmp <= old_cost:
+                    sat_improv.append((old_cost - new_cost_tmp) / old_cost)
+                # evidence o tom, zda při seanci vznikl konflikt
+                sat_conflicts.append(conflict_flag)
+                # reset pro další seanci
+                new_cost_tmp = None
+                sat_in_action = False
+                continue
 
             # poslední souhrnný řádek
             m_fin = RE_FINAL.search(line)
@@ -124,11 +131,23 @@ def parse_log(log_path: Path):
                     "failed_iterations": int(m_fin.group(5)),
                 }
 
+    # průměrné relativní zlepšení mezi po sobě jdoucími iteracemi
+    if len(soc_curve) >= 2:
+        iter_improv = [
+            (soc_curve[i - 1] - soc_curve[i]) / soc_curve[i - 1]
+            for i in range(1, len(soc_curve))
+            if soc_curve[i - 1] > 0
+        ]
+        iter_improv_mean = sum(iter_improv) / len(iter_improv) if iter_improv else 0.0
+    else:
+        iter_improv_mean = 0.0
+
     return {
         **final_stats,
         "soc_curve"       : soc_curve,
         "sat_improv_mean" : sum(sat_improv) / len(sat_improv) if sat_improv else 0.0,
         "sat_conflict_pct": 100 * sum(sat_conflicts) / len(sat_conflicts) if sat_conflicts else 0.0,
+        "iter_improv_mean": iter_improv_mean,
     }
 
 def save_curve(curve, out_png: Path, title: str):
@@ -172,7 +191,6 @@ def main():
                 }
                 all_records.append(record)
 
-    # přehledný CSV soubor
     df = pd.DataFrame(all_records)
     csv_path = RESULTS_ROOT / "results.csv"
     df.to_csv(csv_path, index=False)

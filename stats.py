@@ -82,6 +82,7 @@ def parse_log(log_path: Path):
     sat_in_action  = False
     # pomocná proměnná pro SAT session: new_cost_tmp
     new_cost_tmp   = None
+    conflict_pending = False  # for warnings that appear after session is closed
 
     final_stats = {}
 
@@ -93,30 +94,40 @@ def parse_log(log_path: Path):
                 soc_curve.append(int(m_post.group(1)))
 
             # --- SAT destroy/repair session ---------------------------------
-            # 1) Logger tiskne nejdřív "neighbor.sum_of_costs ..." ( = NEW ),
-            #    hned poté "neighbor.old_sum_of_costs ..." ( = OLD ).
-            # 2) Zlepšení počítáme teprve, když máme obě čísla
-            # 3) Pokud by NEW >= OLD (nemělo by nastat), dvojici ignorujeme
+            # 1) Logger tiskne nejdřív "neighbor.sum_of_costs ..."  (NEW)
+            #    => začátek seance (sat_in_action = True)
+            # 2) Pak "neighbor.old_sum_of_costs ..."                (OLD)
+            #    => konec seance (sat_in_action = False, výsledek uložíme)
+            # 3) Upozornění "[WARNING] Problem after SAT:" může přijít
+            #    až *po* řádku OLD – musíme tedy případně zpětně přepsat
+            #    poslední položku v sat_conflicts.
             # -----------------------------------------------------------------
             m_new = RE_NEIGH_NEW.search(line)
             if m_new:
-                new_cost_tmp = int(m_new.group(1))
-                sat_in_action = True
-                conflict_flag = False
+                new_cost_tmp   = int(m_new.group(1))
+                sat_in_action  = True
+                conflict_flag  = False       # reset pro aktuální seanci
                 continue
 
-            if sat_in_action and RE_CONFLICT.search(line):
-                conflict_flag = True
+            # Zachytíme případný konflikt
+            if RE_CONFLICT.search(line):
+                if sat_in_action:
+                    conflict_flag = True     # ještě jsme ve stejné seanci
+                else:
+                    # seance už skončila – přepiš poslední zaznamenaný záznam
+                    if sat_conflicts:
+                        sat_conflicts[-1] = True
+                # pokračujeme – warning neobsahuje jiné užitečné regexy
+                continue
 
             m_old = RE_NEIGH_OLD.search(line)
             if m_old and sat_in_action:
                 old_cost = int(m_old.group(1))
                 if old_cost > 0 and new_cost_tmp is not None and new_cost_tmp <= old_cost:
                     sat_improv.append((old_cost - new_cost_tmp) / old_cost)
-                # evidence o tom, zda při seanci vznikl konflikt
                 sat_conflicts.append(conflict_flag)
-                # reset pro další seanci
-                new_cost_tmp = None
+                # reset
+                new_cost_tmp  = None
                 sat_in_action = False
                 continue
 
@@ -131,12 +142,17 @@ def parse_log(log_path: Path):
                     "failed_iterations": int(m_fin.group(5)),
                 }
 
-    # průměrné relativní zlepšení mezi po sobě jdoucími iteracemi
-    if len(soc_curve) >= 2:
+    # do křivky přidáme počáteční náklady, aby se počítalo zlepšení i v 1. iteraci
+    if final_stats and "initial_soc" in final_stats:
+        full_curve = [final_stats["initial_soc"]] + soc_curve
+    else:
+        full_curve = soc_curve[:]
+
+    if len(full_curve) >= 2:
         iter_improv = [
-            (soc_curve[i - 1] - soc_curve[i]) / soc_curve[i - 1]
-            for i in range(1, len(soc_curve))
-            if soc_curve[i - 1] > 0
+            (full_curve[i - 1] - full_curve[i]) / full_curve[i - 1]
+            for i in range(1, len(full_curve))
+            if full_curve[i - 1] > 0
         ]
         iter_improv_mean = sum(iter_improv) / len(iter_improv) if iter_improv else 0.0
     else:
@@ -146,8 +162,8 @@ def parse_log(log_path: Path):
         **final_stats,
         "soc_curve"       : soc_curve,
         "sat_improv_mean" : sum(sat_improv) / len(sat_improv) if sat_improv else 0.0,
-        "sat_conflict_pct": 100 * sum(sat_conflicts) / len(sat_conflicts) if sat_conflicts else 0.0,
         "iter_improv_mean": iter_improv_mean,
+        "sat_conflict_pct": 100 * sum(sat_conflicts) / len(sat_conflicts) if sat_conflicts else 0.0,
     }
 
 def save_curve(curve, out_png: Path, title: str):

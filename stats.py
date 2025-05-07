@@ -16,10 +16,10 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 # konfigurace
-MAPS            = ["ost003d.map"]#, "random-32-32-20.map"]# soubory s mapou
-INSTANCES_PER_MAP = 1 # kolik scén / mapu
+MAPS            = ["ost003d.map", "random-32-32-20.map"]# soubory s mapou
+INSTANCES_PER_MAP = 3 # kolik scén / mapu
 AGENT_COUNTS    = [100, 300]# 500, 700, 900] # -k hodnoty
-MAX_ITERS       = 2 # --maxIterations
+MAX_ITERS       = 20 # --maxIterations
 LNS_BIN         = "./lns" # cesta k binárce
 RESULTS_ROOT    = Path("results") # kam ukládat
 

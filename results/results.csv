@@ -1,3 +1,0 @@
-run_id,map,instance,agents,runtime,iterations,final_soc,initial_soc,failed_iterations,sat_improv_mean,iter_improv_mean,sat_conflict_pct
-ost003d-i1-k100-it2-adaptive,ost003d,1,100,0.0968644,3,17772,18287,0,0.33516483516483514,0.014174336079253363,100.0
-ost003d-i1-k300-it2-adaptive,ost003d,1,300,0.48863,3,55739,56167,0,0.008356545961002786,0.00381006640910143,50.0

@@ -13,15 +13,27 @@ endif()
 include_directories(
         "inc" "inc/CBS" "inc/PIBT" "include"
         "include/libs/monosat" "include/libs/monosat/utils" "include/libs/monosat/graph"
-        /opt/homebrew/Cellar/gmp/6.3.0/include
-        /opt/homebrew/Cellar/zlib/1.3.1/include
 )
+
+# OS specific settings
+if(APPLE)
+    message(STATUS "Detected macOS - using Homebrew paths for GMP and Zlib.")
+    include_directories(/opt/homebrew/Cellar/gmp/6.3.0/include)
+    include_directories(/opt/homebrew/Cellar/zlib/1.3.1/include)
+    set(GMP_LIBRARIES /opt/homebrew/Cellar/gmp/6.3.0/lib/libgmp.a /opt/homebrew/Cellar/gmp/6.3.0/lib/libgmpxx.a)
+    set(ZLIB_LIBRARIES /opt/homebrew/Cellar/zlib/1.3.1/lib/libz.a)
+elseif(UNIX)
+    message(STATUS "Detected Linux - using system libraries for GMP and Zlib.")
+    find_package(GMP REQUIRED)
+    find_package(ZLIB REQUIRED)
+    include_directories(${GMP_INCLUDE_DIR})
+    set(GMP_LIBRARIES ${GMP_LIBRARIES})
+    set(ZLIB_LIBRARIES ${ZLIB_LIBRARIES})
+endif()
 
 # Add source files
 file(GLOB SOURCES "src/*.cpp" "src/CBS/*.cpp" "src/PIBT/*.cpp")
-add_executable(lns ${SOURCES} src/LNS.cpp
-        src/SATUtils.cpp
-        inc/SATUtils.h)
+add_executable(lns ${SOURCES} src/LNS.cpp src/SATUtils.cpp inc/SATUtils.h)
 
 # Add path to libraries
 link_directories(${CMAKE_SOURCE_DIR}/include/libs)
@@ -40,10 +52,8 @@ find_package(Boost REQUIRED COMPONENTS program_options system filesystem)
 # Find Eigen3 for PIBT
 find_package(Eigen3 3.3 REQUIRED NO_MODULE)
 
-# Add linker flags for GMP and Zlib
-set(GMP_LIBRARIES /opt/homebrew/Cellar/gmp/6.3.0/lib/libgmp.a /opt/homebrew/Cellar/gmp/6.3.0/lib/libgmpxx.a)
-set(ZLIB_LIBRARIES /opt/homebrew/Cellar/zlib/1.3.1/lib/libz.a)
-set(CMAKE_CXX_FLAGS "-w") # později vymazat
+# Optional: suppress warnings (pozdeji vymazat nebo přidat jen pro macOS pokud chceš)
+set(CMAKE_CXX_FLAGS "-w")
 
 # Link all libraries
 target_link_libraries(lns ${Boost_LIBRARIES} Eigen3::Eigen ${GMP_LIBRARIES} ${ZLIB_LIBRARIES} ${MAPF_LIBRARIES})

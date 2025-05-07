@@ -1,0 +1,2 @@
+runtime,num of collisions,solution cost,initial collisions,initial solution cost,sum of distances,iterations,group size,runtime of initial solution,area under curve,LL expanded nodes,LL generated,LL reopened,LL runs,preprocessing runtime,solver name,instance name
+0.0724112,0,55059,1,55143,47968,4,8,0.00981033,0.0626009,247320,720637,29957,466,0.930413,InitLNS(PP),ost003d-instances/ost003d-random-2.scen

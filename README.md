@@ -35,7 +35,7 @@ make
 
 Then, you are able to run the code:
 ```
-./lns -m random-32-32-20.map -a random-32-32-20-random-1.scen -o test -k 400 -t 300 --outputPaths=paths.txt 
+./lns -m random-32-32-20.map -a random-32-32-20-random-1.scen -o test -k 150   --outputPaths=paths.txt --destoryStrategy=SAT --maxIterations 20 
 ```
 
 - m: the map file from the MAPF benchmark

@@ -11,29 +11,29 @@ More details can be found in our paper at AAAI 2022 [1].
 This software is an advanced version and a superset of MAPF-LNS (https://github.com/Jiaoyang-Li/MAPF-LNS); that is, it also contains Anytime Multi-Agent Path Finding via Large Neighborhood Search [2]. 
 
 ## Usage
-The code requires the external libraries 
-BOOST (https://www.boost.org/) and Eigen (https://eigen.tuxfamily.org/). 
-Here is an easy way of installing the required libraries on Ubuntu:    
-```shell script
-sudo apt update
-```
-- Install the Eigen library (used for linear algebra computing)
-    ```shell script
-    sudo apt install libeigen3-dev
-    ```
-- Install the boost library 
-    ```shell script
-    sudo apt install libboost-all-dev
-    ```
-    
-After you installed both libraries and downloaded the source code, 
-go into the directory of the source code and compile it with CMake: 
-```shell script
-cmake -DCMAKE_BUILD_TYPE=RELEASE .
-make
-```
+The code requires the external libraries  
+**Boost** (https://www.boost.org/) and **Eigen** (https://eigen.tuxfamily.org/).  
+Below is the recommended Ubuntu (Linux) setup and build workflow.
 
+```bash
+# --- install prerequisites --------------------------------------------------
+sudo apt update
+sudo apt install -y build-essential cmake ninja-build \
+                   libeigen3-dev libboost-all-dev \
+                   libgmp-dev zlib1g-dev
+
+# --- configure & compile (out‑of‑source build with Ninja) -------------------
+mkdir -p build-linux
+cmake -S . -B build-linux -G Ninja -DCMAKE_BUILD_TYPE=Release
+cmake --build build-linux -j"$(nproc)" # same as: ninja -C build-linux
+
+# --- run --------------------------------------------------------------------
+./build-linux/lns -m random-32-32-20.map -a random-32-32-20-random-1.scen \
+                  -o test -k 150 --outputPaths=paths.txt \
+                  --destoryStrategy=SAT --maxIterations 20
+```
 Then, you are able to run the code:
+
 ```
 ./lns -m random-32-32-20.map -a random-32-32-20-random-1.scen -o test -k 150   --outputPaths=paths.txt --destoryStrategy=SAT --maxIterations 20 
 ```

@@ -55,7 +55,7 @@ elseif(UNIX)
     include_directories(${GMP_INCLUDE_DIR})
     set(GMP_LIBRARIES  ${GMP_LIB}  ${GMPXX_LIB})
     set(ZLIB_LIBRARIES ${ZLIB_LIB})
-endif()git switch -c linux-build
+endif()
 
 # Statické knihovny z MAPF‑encodings
 foreach(lib IN ITEMS mapf pb kissat monosat)

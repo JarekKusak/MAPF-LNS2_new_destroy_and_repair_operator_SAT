@@ -39,11 +39,23 @@ if(APPLE)
     find_library(GMPXX_LIB NAMES gmpxx PATHS /opt/homebrew/Cellar/gmp/*/lib)
     find_library(ZLIB_LIB  NAMES z     PATHS /opt/homebrew/Cellar/zlib/*/lib)
     target_link_libraries(lns PRIVATE ${GMP_LIB} ${GMPXX_LIB} ${ZLIB_LIB})
-else()
-    find_package(GMP   REQUIRED)   # GMP::GMP  GMP::GMPXX
-    find_package(ZLIB  REQUIRED)   # ZLIB::ZLIB
-    target_link_libraries(lns PRIVATE GMP::GMP GMP::GMPXX ZLIB::ZLIB)
-endif()
+elseif(UNIX)
+    message(STATUS "Detected Linux – using system libraries for GMP and Zlib")
+
+    # ====== najdeme hlavičky a statické/ sdílené knihovny přímo ======
+    find_path(GMP_INCLUDE_DIR  gmp.h)
+    find_library(GMP_LIB       NAMES gmp)
+    find_library(GMPXX_LIB     NAMES gmpxx)
+    find_library(ZLIB_LIB      NAMES z)
+
+    if(NOT GMP_INCLUDE_DIR OR NOT GMP_LIB OR NOT GMPXX_LIB OR NOT ZLIB_LIB)
+        message(FATAL_ERROR "GMP / Zlib development files nejsou nainstalovány")
+    endif()
+
+    include_directories(${GMP_INCLUDE_DIR})
+    set(GMP_LIBRARIES  ${GMP_LIB}  ${GMPXX_LIB})
+    set(ZLIB_LIBRARIES ${ZLIB_LIB})
+endif()git switch -c linux-build
 
 # Statické knihovny z MAPF‑encodings
 foreach(lib IN ITEMS mapf pb kissat monosat)

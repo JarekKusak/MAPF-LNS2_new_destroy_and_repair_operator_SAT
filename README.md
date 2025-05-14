@@ -16,18 +16,18 @@ The code requires the external libraries
 Below is the recommended Ubuntu (Linux) setup and build workflow.
 
 ```bash
-# --- install prerequisites --------------------------------------------------
+# install prerequisites
 sudo apt update
 sudo apt install -y build-essential cmake ninja-build \
                    libeigen3-dev libboost-all-dev \
                    libgmp-dev zlib1g-dev
 
-# --- configure & compile (out‑of‑source build with Ninja) -------------------
+# configure & compile (out‑of‑source build with Ninja)
 mkdir -p build-linux
 cmake -S . -B build-linux -G Ninja -DCMAKE_BUILD_TYPE=Release
 cmake --build build-linux -j"$(nproc)" # same as: ninja -C build-linux
 
-# --- run --------------------------------------------------------------------
+# run
 ./build-linux/lns -m random-32-32-20.map -a random-32-32-20-random-1.scen \
                   -o test -k 150 --outputPaths=paths.txt \
                   --destoryStrategy=SAT --maxIterations 20

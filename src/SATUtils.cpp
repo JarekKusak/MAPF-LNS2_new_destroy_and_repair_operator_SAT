@@ -283,13 +283,13 @@ namespace SATUtils {
             cout << "(" << s.first << ", " << s.second << "), ";
         cout << endl;
 
-        auto inst = std::make_unique<_MAPFSAT_Instance>(map, start_positions, goal_positions);
-        auto solver = std::make_unique<_MAPFSAT_DisappearAtGoal>();
-        auto log = std::make_unique<_MAPFSAT_Logger>(inst.get(), "disappear_at_goal", 2);
+        auto* inst = new _MAPFSAT_Instance(map, start_positions, goal_positions);
+        auto* solver = new _MAPFSAT_DisappearAtGoal();
+        auto* log = new _MAPFSAT_Logger(inst, "disappear_at_goal", 2);
 
         std::cout << "SAT instance and solver created.\n";
 
-        solver->SetData(inst.get(), log.get(), 300, "", false, true);
+        solver->SetData(inst, log, 300, "", false, true);
         inst->SetAgents((int)start_positions.size());
         log->NewInstance((int)start_positions.size());
 
@@ -478,6 +478,9 @@ namespace SATUtils {
         }
 
         std::cout << "Paths successfully updated.\n";
+        delete solver;
+        delete log;
+        delete inst;
         return true;
     }
 }

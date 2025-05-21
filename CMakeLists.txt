@@ -3,67 +3,60 @@ project(lns CXX)
 
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-# Optional: suppress warnings (pozdeji vymazat)
-set(CMAKE_CXX_FLAGS "-w")
+set(CMAKE_CXX_FLAGS "-w")  # optional, suppress warnings
 
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type" FORCE)
 endif()
 
-# Zdroje a hlavičky
+# Soubory projektu
 file(GLOB_RECURSE SRC
-        src/*.cpp
-        src/CBS/*.cpp
-        src/PIBT/*.cpp)
+    src/*.cpp
+    src/CBS/*.cpp
+    src/PIBT/*.cpp)
 
 add_executable(lns ${SRC})
 
+# Hlavičky
 target_include_directories(lns PUBLIC
-        inc inc/CBS inc/PIBT
-        include
-        include/libs/monosat
-        include/libs/monosat/utils
-        include/libs/monosat/graph)
+    inc inc/CBS inc/PIBT
+    include
+    include/libs/monosat
+    include/libs/monosat/utils
+    include/libs/monosat/graph)
 
-#  Third‑party balíčky
+# Boost
 find_package(Boost 1.70 REQUIRED COMPONENTS program_options system filesystem)
-target_link_libraries(lns PRIVATE
-        Boost::program_options Boost::system Boost::filesystem)
+target_link_libraries(lns PRIVATE Boost::program_options Boost::system Boost::filesystem)
 
+# Eigen
 find_package(Eigen3 3.3 REQUIRED NO_MODULE)
 target_link_libraries(lns PRIVATE Eigen3::Eigen)
 
+# GMP a Zlib – Linux
 if(APPLE)
-    # Homebrew fallback, když by find_package selhal
-    find_library(GMP_LIB   NAMES gmp   PATHS /opt/homebrew/Cellar/gmp/*/lib)
-    find_library(GMPXX_LIB NAMES gmpxx PATHS /opt/homebrew/Cellar/gmp/*/lib)
-    find_library(ZLIB_LIB  NAMES z     PATHS /opt/homebrew/Cellar/zlib/*/lib)
-    target_link_libraries(lns PRIVATE ${GMP_LIB} ${GMPXX_LIB} ${ZLIB_LIB})
-elseif(UNIX)
-    message(STATUS "Detected Linux – using system libraries for GMP and Zlib")
-
-    # ====== najdeme hlavičky a statické/ sdílené knihovny přímo ======
-    find_path(GMP_INCLUDE_DIR  gmp.h)
-    find_library(GMP_LIB       NAMES gmp)
-    find_library(GMPXX_LIB     NAMES gmpxx)
-    find_library(ZLIB_LIB      NAMES z)
-
-    if(NOT GMP_INCLUDE_DIR OR NOT GMP_LIB OR NOT GMPXX_LIB OR NOT ZLIB_LIB)
-        message(FATAL_ERROR "GMP / Zlib development files nejsou nainstalovány")
-    endif()
-
-    include_directories(${GMP_INCLUDE_DIR})
-    set(GMP_LIBRARIES  ${GMP_LIB}  ${GMPXX_LIB})
-    set(ZLIB_LIBRARIES ${ZLIB_LIB})
+    # macOS specifická cesta (Homebrew)
+    find_library(GMP_LIB     NAMES gmp   PATHS /opt/homebrew/Cellar/gmp/*/lib REQUIRED)
+    find_library(GMPXX_LIB   NAMES gmpxx PATHS /opt/homebrew/Cellar/gmp/*/lib REQUIRED)
+    find_library(ZLIB_LIB    NAMES z     PATHS /opt/homebrew/Cellar/zlib/*/lib REQUIRED)
+    find_path  (GMP_INCLUDE  NAMES gmp.h PATHS /opt/homebrew/Cellar/gmp/*/include REQUIRED)
+else()
+    find_library(GMP_LIB     NAMES gmp   REQUIRED)
+    find_library(GMPXX_LIB   NAMES gmpxx REQUIRED)
+    find_path  (GMP_INCLUDE  NAMES gmp.h REQUIRED)
+    find_package(ZLIB REQUIRED)
 endif()
 
-# Statické knihovny z MAPF‑encodings
+target_include_directories(lns PRIVATE ${GMP_INCLUDE})
+
+# Statické knihovny z MAPF-encodings
 foreach(lib IN ITEMS mapf pb kissat monosat)
-    add_library(${lib}_lib STATIC IMPORTED)
-    set_target_properties(${lib}_lib
-            PROPERTIES IMPORTED_LOCATION ${CMAKE_SOURCE_DIR}/libs/lib${lib}.a)
+    if(NOT TARGET ${lib}_lib)
+        add_library(${lib}_lib STATIC IMPORTED)
+        set_target_properties(${lib}_lib PROPERTIES IMPORTED_LOCATION ${CMAKE_SOURCE_DIR}/libs/lib${lib}.a)
+        target_link_libraries(lns PRIVATE ${lib}_lib)
+    endif()
 endforeach()
 
-# Link‑order: nejdřív knihovna, která symboly _potřebuje_ (mapf),
-# až pak její závislosti.
-target_link_libraries(lns PRIVATE mapf_lib pb_lib kissat_lib monosat_lib)
+# Linknutí systémových knihoven až PO statických
+target_link_libraries(lns PRIVATE ${GMP_LIB} ${GMPXX_LIB} ZLIB::ZLIB)

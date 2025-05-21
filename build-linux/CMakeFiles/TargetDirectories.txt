@@ -1,0 +1,3 @@
+/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/build-linux/CMakeFiles/lns.dir
+/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/build-linux/CMakeFiles/edit_cache.dir
+/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/build-linux/CMakeFiles/rebuild_cache.dir

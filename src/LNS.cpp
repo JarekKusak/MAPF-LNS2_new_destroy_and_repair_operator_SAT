@@ -490,9 +490,9 @@ bool LNS::runSAT()
 bool LNS::run()
 {
     // Otevřeme soubor pro zápis
-    //std::ofstream out("log.txt");
-    //std::streambuf* coutbuf = std::cout.rdbuf();
-    //std::cout.rdbuf(out.rdbuf());
+    std::ofstream out("log.txt");
+    std::streambuf* coutbuf = std::cout.rdbuf();
+    std::cout.rdbuf(out.rdbuf());
 
     sum_of_distances = 0;
     for (const auto & agent : agents)

@@ -3,10 +3,16 @@ project(lns CXX)
 
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_FLAGS "-w")  # optional, suppress warnings
 
+# Výchozí build type
 if(NOT CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type" FORCE)
+    set(CMAKE_BUILD_TYPE RelWithDebInfo CACHE STRING "Build type" FORCE)
+endif()
+
+if (CMAKE_BUILD_TYPE STREQUAL "Debug" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
+    message(STATUS "Build type: ${CMAKE_BUILD_TYPE} – enabling AddressSanitizer")
+    add_compile_options(-fsanitize=address -fno-omit-frame-pointer)
+    add_link_options(-fsanitize=address -fno-omit-frame-pointer)
 endif()
 
 # Soubory projektu
@@ -33,9 +39,8 @@ target_link_libraries(lns PRIVATE Boost::program_options Boost::system Boost::fi
 find_package(Eigen3 3.3 REQUIRED NO_MODULE)
 target_link_libraries(lns PRIVATE Eigen3::Eigen)
 
-# GMP a Zlib – Linux
+# GMP a Zlib – Linux vs macOS
 if(APPLE)
-    # macOS specifická cesta (Homebrew)
     find_library(GMP_LIB     NAMES gmp   PATHS /opt/homebrew/Cellar/gmp/*/lib REQUIRED)
     find_library(GMPXX_LIB   NAMES gmpxx PATHS /opt/homebrew/Cellar/gmp/*/lib REQUIRED)
     find_library(ZLIB_LIB    NAMES z     PATHS /opt/homebrew/Cellar/zlib/*/lib REQUIRED)

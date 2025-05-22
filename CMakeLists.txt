@@ -9,8 +9,10 @@ if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE RelWithDebInfo CACHE STRING "Build type" FORCE)
 endif()
 
-if (CMAKE_BUILD_TYPE STREQUAL "Debug" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
-    message(STATUS "Build type: ${CMAKE_BUILD_TYPE} – enabling AddressSanitizer")
+# Volitelně zapnout AddressSanitizer
+option(ENABLE_ASAN "Enable AddressSanitizer" OFF)
+if (ENABLE_ASAN)
+    message(STATUS "AddressSanitizer enabled")
     add_compile_options(-fsanitize=address -fno-omit-frame-pointer)
     add_link_options(-fsanitize=address -fno-omit-frame-pointer)
 endif()

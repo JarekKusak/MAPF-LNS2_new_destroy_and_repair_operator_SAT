@@ -52,7 +52,7 @@ build cmake_object_order_depends_target_lns: phony || CMakeFiles/lns.dir
 build CMakeFiles/lns.dir/src/AnytimeBCBS.cpp.o: CXX_COMPILER__lns_RelWithDebInfo /home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/src/AnytimeBCBS.cpp || cmake_object_order_depends_target_lns
   DEFINES = -DBOOST_ALL_NO_LIB -DBOOST_FILESYSTEM_DYN_LINK -DBOOST_PROGRAM_OPTIONS_DYN_LINK -DBOOST_SYSTEM_DYN_LINK
   DEP_FILE = CMakeFiles/lns.dir/src/AnytimeBCBS.cpp.o.d
-  FLAGS = -O2 -g -DNDEBUG -fsanitize=address -fno-omit-frame-pointer -std=gnu++14
+  FLAGS = -O2 -g -DNDEBUG -std=gnu++14
   INCLUDES = -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/inc -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/inc/CBS -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/inc/PIBT -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include/libs/monosat -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include/libs/monosat/utils -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include/libs/monosat/graph -isystem /usr/include/eigen3
   OBJECT_DIR = CMakeFiles/lns.dir
   OBJECT_FILE_DIR = CMakeFiles/lns.dir/src
@@ -62,7 +62,7 @@ build CMakeFiles/lns.dir/src/AnytimeBCBS.cpp.o: CXX_COMPILER__lns_RelWithDebInfo
 build CMakeFiles/lns.dir/src/AnytimeEECBS.cpp.o: CXX_COMPILER__lns_RelWithDebInfo /home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/src/AnytimeEECBS.cpp || cmake_object_order_depends_target_lns
   DEFINES = -DBOOST_ALL_NO_LIB -DBOOST_FILESYSTEM_DYN_LINK -DBOOST_PROGRAM_OPTIONS_DYN_LINK -DBOOST_SYSTEM_DYN_LINK
   DEP_FILE = CMakeFiles/lns.dir/src/AnytimeEECBS.cpp.o.d
-  FLAGS = -O2 -g -DNDEBUG -fsanitize=address -fno-omit-frame-pointer -std=gnu++14
+  FLAGS = -O2 -g -DNDEBUG -std=gnu++14
   INCLUDES = -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/inc -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/inc/CBS -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/inc/PIBT -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include/libs/monosat -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include/libs/monosat/utils -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include/libs/monosat/graph -isystem /usr/include/eigen3
   OBJECT_DIR = CMakeFiles/lns.dir
   OBJECT_FILE_DIR = CMakeFiles/lns.dir/src
@@ -72,7 +72,7 @@ build CMakeFiles/lns.dir/src/AnytimeEECBS.cpp.o: CXX_COMPILER__lns_RelWithDebInf
 build CMakeFiles/lns.dir/src/BasicLNS.cpp.o: CXX_COMPILER__lns_RelWithDebInfo /home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/src/BasicLNS.cpp || cmake_object_order_depends_target_lns
   DEFINES = -DBOOST_ALL_NO_LIB -DBOOST_FILESYSTEM_DYN_LINK -DBOOST_PROGRAM_OPTIONS_DYN_LINK -DBOOST_SYSTEM_DYN_LINK
   DEP_FILE = CMakeFiles/lns.dir/src/BasicLNS.cpp.o.d
-  FLAGS = -O2 -g -DNDEBUG -fsanitize=address -fno-omit-frame-pointer -std=gnu++14
+  FLAGS = -O2 -g -DNDEBUG -std=gnu++14
   INCLUDES = -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/inc -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/inc/CBS -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/inc/PIBT -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include/libs/monosat -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include/libs/monosat/utils -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include/libs/monosat/graph -isystem /usr/include/eigen3
   OBJECT_DIR = CMakeFiles/lns.dir
   OBJECT_FILE_DIR = CMakeFiles/lns.dir/src
@@ -82,7 +82,7 @@ build CMakeFiles/lns.dir/src/BasicLNS.cpp.o: CXX_COMPILER__lns_RelWithDebInfo /h
 build CMakeFiles/lns.dir/src/CBS/CBS.cpp.o: CXX_COMPILER__lns_RelWithDebInfo /home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/src/CBS/CBS.cpp || cmake_object_order_depends_target_lns
   DEFINES = -DBOOST_ALL_NO_LIB -DBOOST_FILESYSTEM_DYN_LINK -DBOOST_PROGRAM_OPTIONS_DYN_LINK -DBOOST_SYSTEM_DYN_LINK
   DEP_FILE = CMakeFiles/lns.dir/src/CBS/CBS.cpp.o.d
-  FLAGS = -O2 -g -DNDEBUG -fsanitize=address -fno-omit-frame-pointer -std=gnu++14
+  FLAGS = -O2 -g -DNDEBUG -std=gnu++14
   INCLUDES = -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/inc -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/inc/CBS -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/inc/PIBT -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include/libs/monosat -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include/libs/monosat/utils -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include/libs/monosat/graph -isystem /usr/include/eigen3
   OBJECT_DIR = CMakeFiles/lns.dir
   OBJECT_FILE_DIR = CMakeFiles/lns.dir/src/CBS
@@ -92,7 +92,7 @@ build CMakeFiles/lns.dir/src/CBS/CBS.cpp.o: CXX_COMPILER__lns_RelWithDebInfo /ho
 build CMakeFiles/lns.dir/src/CBS/CBSHeuristic.cpp.o: CXX_COMPILER__lns_RelWithDebInfo /home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/src/CBS/CBSHeuristic.cpp || cmake_object_order_depends_target_lns
   DEFINES = -DBOOST_ALL_NO_LIB -DBOOST_FILESYSTEM_DYN_LINK -DBOOST_PROGRAM_OPTIONS_DYN_LINK -DBOOST_SYSTEM_DYN_LINK
   DEP_FILE = CMakeFiles/lns.dir/src/CBS/CBSHeuristic.cpp.o.d
-  FLAGS = -O2 -g -DNDEBUG -fsanitize=address -fno-omit-frame-pointer -std=gnu++14
+  FLAGS = -O2 -g -DNDEBUG -std=gnu++14
   INCLUDES = -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/inc -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/inc/CBS -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/inc/PIBT -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include/libs/monosat -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include/libs/monosat/utils -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include/libs/monosat/graph -isystem /usr/include/eigen3
   OBJECT_DIR = CMakeFiles/lns.dir
   OBJECT_FILE_DIR = CMakeFiles/lns.dir/src/CBS
@@ -102,7 +102,7 @@ build CMakeFiles/lns.dir/src/CBS/CBSHeuristic.cpp.o: CXX_COMPILER__lns_RelWithDe
 build CMakeFiles/lns.dir/src/CBS/CBSNode.cpp.o: CXX_COMPILER__lns_RelWithDebInfo /home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/src/CBS/CBSNode.cpp || cmake_object_order_depends_target_lns
   DEFINES = -DBOOST_ALL_NO_LIB -DBOOST_FILESYSTEM_DYN_LINK -DBOOST_PROGRAM_OPTIONS_DYN_LINK -DBOOST_SYSTEM_DYN_LINK
   DEP_FILE = CMakeFiles/lns.dir/src/CBS/CBSNode.cpp.o.d
-  FLAGS = -O2 -g -DNDEBUG -fsanitize=address -fno-omit-frame-pointer -std=gnu++14
+  FLAGS = -O2 -g -DNDEBUG -std=gnu++14
   INCLUDES = -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/inc -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/inc/CBS -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/inc/PIBT -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include/libs/monosat -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include/libs/monosat/utils -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include/libs/monosat/graph -isystem /usr/include/eigen3
   OBJECT_DIR = CMakeFiles/lns.dir
   OBJECT_FILE_DIR = CMakeFiles/lns.dir/src/CBS
@@ -112,7 +112,7 @@ build CMakeFiles/lns.dir/src/CBS/CBSNode.cpp.o: CXX_COMPILER__lns_RelWithDebInfo
 build CMakeFiles/lns.dir/src/CBS/Conflict.cpp.o: CXX_COMPILER__lns_RelWithDebInfo /home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/src/CBS/Conflict.cpp || cmake_object_order_depends_target_lns
   DEFINES = -DBOOST_ALL_NO_LIB -DBOOST_FILESYSTEM_DYN_LINK -DBOOST_PROGRAM_OPTIONS_DYN_LINK -DBOOST_SYSTEM_DYN_LINK
   DEP_FILE = CMakeFiles/lns.dir/src/CBS/Conflict.cpp.o.d
-  FLAGS = -O2 -g -DNDEBUG -fsanitize=address -fno-omit-frame-pointer -std=gnu++14
+  FLAGS = -O2 -g -DNDEBUG -std=gnu++14
   INCLUDES = -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/inc -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/inc/CBS -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/inc/PIBT -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include/libs/monosat -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include/libs/monosat/utils -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include/libs/monosat/graph -isystem /usr/include/eigen3
   OBJECT_DIR = CMakeFiles/lns.dir
   OBJECT_FILE_DIR = CMakeFiles/lns.dir/src/CBS
@@ -122,7 +122,7 @@ build CMakeFiles/lns.dir/src/CBS/Conflict.cpp.o: CXX_COMPILER__lns_RelWithDebInf
 build CMakeFiles/lns.dir/src/CBS/ConstraintPropagation.cpp.o: CXX_COMPILER__lns_RelWithDebInfo /home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/src/CBS/ConstraintPropagation.cpp || cmake_object_order_depends_target_lns
   DEFINES = -DBOOST_ALL_NO_LIB -DBOOST_FILESYSTEM_DYN_LINK -DBOOST_PROGRAM_OPTIONS_DYN_LINK -DBOOST_SYSTEM_DYN_LINK
   DEP_FILE = CMakeFiles/lns.dir/src/CBS/ConstraintPropagation.cpp.o.d
-  FLAGS = -O2 -g -DNDEBUG -fsanitize=address -fno-omit-frame-pointer -std=gnu++14
+  FLAGS = -O2 -g -DNDEBUG -std=gnu++14
   INCLUDES = -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/inc -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/inc/CBS -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/inc/PIBT -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include/libs/monosat -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include/libs/monosat/utils -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include/libs/monosat/graph -isystem /usr/include/eigen3
   OBJECT_DIR = CMakeFiles/lns.dir
   OBJECT_FILE_DIR = CMakeFiles/lns.dir/src/CBS
@@ -132,7 +132,7 @@ build CMakeFiles/lns.dir/src/CBS/ConstraintPropagation.cpp.o: CXX_COMPILER__lns_
 build CMakeFiles/lns.dir/src/CBS/CorridorReasoning.cpp.o: CXX_COMPILER__lns_RelWithDebInfo /home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/src/CBS/CorridorReasoning.cpp || cmake_object_order_depends_target_lns
   DEFINES = -DBOOST_ALL_NO_LIB -DBOOST_FILESYSTEM_DYN_LINK -DBOOST_PROGRAM_OPTIONS_DYN_LINK -DBOOST_SYSTEM_DYN_LINK
   DEP_FILE = CMakeFiles/lns.dir/src/CBS/CorridorReasoning.cpp.o.d
-  FLAGS = -O2 -g -DNDEBUG -fsanitize=address -fno-omit-frame-pointer -std=gnu++14
+  FLAGS = -O2 -g -DNDEBUG -std=gnu++14
   INCLUDES = -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/inc -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/inc/CBS -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/inc/PIBT -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include/libs/monosat -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include/libs/monosat/utils -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include/libs/monosat/graph -isystem /usr/include/eigen3
   OBJECT_DIR = CMakeFiles/lns.dir
   OBJECT_FILE_DIR = CMakeFiles/lns.dir/src/CBS
@@ -142,7 +142,7 @@ build CMakeFiles/lns.dir/src/CBS/CorridorReasoning.cpp.o: CXX_COMPILER__lns_RelW
 build CMakeFiles/lns.dir/src/CBS/ECBS.cpp.o: CXX_COMPILER__lns_RelWithDebInfo /home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/src/CBS/ECBS.cpp || cmake_object_order_depends_target_lns
   DEFINES = -DBOOST_ALL_NO_LIB -DBOOST_FILESYSTEM_DYN_LINK -DBOOST_PROGRAM_OPTIONS_DYN_LINK -DBOOST_SYSTEM_DYN_LINK
   DEP_FILE = CMakeFiles/lns.dir/src/CBS/ECBS.cpp.o.d
-  FLAGS = -O2 -g -DNDEBUG -fsanitize=address -fno-omit-frame-pointer -std=gnu++14
+  FLAGS = -O2 -g -DNDEBUG -std=gnu++14
   INCLUDES = -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/inc -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/inc/CBS -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/inc/PIBT -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include/libs/monosat -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include/libs/monosat/utils -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include/libs/monosat/graph -isystem /usr/include/eigen3
   OBJECT_DIR = CMakeFiles/lns.dir
   OBJECT_FILE_DIR = CMakeFiles/lns.dir/src/CBS
@@ -152,7 +152,7 @@ build CMakeFiles/lns.dir/src/CBS/ECBS.cpp.o: CXX_COMPILER__lns_RelWithDebInfo /h
 build CMakeFiles/lns.dir/src/CBS/GCBS.cpp.o: CXX_COMPILER__lns_RelWithDebInfo /home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/src/CBS/GCBS.cpp || cmake_object_order_depends_target_lns
   DEFINES = -DBOOST_ALL_NO_LIB -DBOOST_FILESYSTEM_DYN_LINK -DBOOST_PROGRAM_OPTIONS_DYN_LINK -DBOOST_SYSTEM_DYN_LINK
   DEP_FILE = CMakeFiles/lns.dir/src/CBS/GCBS.cpp.o.d
-  FLAGS = -O2 -g -DNDEBUG -fsanitize=address -fno-omit-frame-pointer -std=gnu++14
+  FLAGS = -O2 -g -DNDEBUG -std=gnu++14
   INCLUDES = -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/inc -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/inc/CBS -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/inc/PIBT -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include/libs/monosat -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include/libs/monosat/utils -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include/libs/monosat/graph -isystem /usr/include/eigen3
   OBJECT_DIR = CMakeFiles/lns.dir
   OBJECT_FILE_DIR = CMakeFiles/lns.dir/src/CBS
@@ -162,7 +162,7 @@ build CMakeFiles/lns.dir/src/CBS/GCBS.cpp.o: CXX_COMPILER__lns_RelWithDebInfo /h
 build CMakeFiles/lns.dir/src/CBS/IncrementalPairwiseMutexPropagation.cpp.o: CXX_COMPILER__lns_RelWithDebInfo /home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/src/CBS/IncrementalPairwiseMutexPropagation.cpp || cmake_object_order_depends_target_lns
   DEFINES = -DBOOST_ALL_NO_LIB -DBOOST_FILESYSTEM_DYN_LINK -DBOOST_PROGRAM_OPTIONS_DYN_LINK -DBOOST_SYSTEM_DYN_LINK
   DEP_FILE = CMakeFiles/lns.dir/src/CBS/IncrementalPairwiseMutexPropagation.cpp.o.d
-  FLAGS = -O2 -g -DNDEBUG -fsanitize=address -fno-omit-frame-pointer -std=gnu++14
+  FLAGS = -O2 -g -DNDEBUG -std=gnu++14
   INCLUDES = -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/inc -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/inc/CBS -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/inc/PIBT -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include/libs/monosat -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include/libs/monosat/utils -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include/libs/monosat/graph -isystem /usr/include/eigen3
   OBJECT_DIR = CMakeFiles/lns.dir
   OBJECT_FILE_DIR = CMakeFiles/lns.dir/src/CBS
@@ -172,7 +172,7 @@ build CMakeFiles/lns.dir/src/CBS/IncrementalPairwiseMutexPropagation.cpp.o: CXX_
 build CMakeFiles/lns.dir/src/CBS/MDD.cpp.o: CXX_COMPILER__lns_RelWithDebInfo /home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/src/CBS/MDD.cpp || cmake_object_order_depends_target_lns
   DEFINES = -DBOOST_ALL_NO_LIB -DBOOST_FILESYSTEM_DYN_LINK -DBOOST_PROGRAM_OPTIONS_DYN_LINK -DBOOST_SYSTEM_DYN_LINK
   DEP_FILE = CMakeFiles/lns.dir/src/CBS/MDD.cpp.o.d
-  FLAGS = -O2 -g -DNDEBUG -fsanitize=address -fno-omit-frame-pointer -std=gnu++14
+  FLAGS = -O2 -g -DNDEBUG -std=gnu++14
   INCLUDES = -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/inc -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/inc/CBS -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/inc/PIBT -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include/libs/monosat -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include/libs/monosat/utils -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include/libs/monosat/graph -isystem /usr/include/eigen3
   OBJECT_DIR = CMakeFiles/lns.dir
   OBJECT_FILE_DIR = CMakeFiles/lns.dir/src/CBS
@@ -182,7 +182,7 @@ build CMakeFiles/lns.dir/src/CBS/MDD.cpp.o: CXX_COMPILER__lns_RelWithDebInfo /ho
 build CMakeFiles/lns.dir/src/CBS/MutexReasoning.cpp.o: CXX_COMPILER__lns_RelWithDebInfo /home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/src/CBS/MutexReasoning.cpp || cmake_object_order_depends_target_lns
   DEFINES = -DBOOST_ALL_NO_LIB -DBOOST_FILESYSTEM_DYN_LINK -DBOOST_PROGRAM_OPTIONS_DYN_LINK -DBOOST_SYSTEM_DYN_LINK
   DEP_FILE = CMakeFiles/lns.dir/src/CBS/MutexReasoning.cpp.o.d
-  FLAGS = -O2 -g -DNDEBUG -fsanitize=address -fno-omit-frame-pointer -std=gnu++14
+  FLAGS = -O2 -g -DNDEBUG -std=gnu++14
   INCLUDES = -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/inc -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/inc/CBS -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/inc/PIBT -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include/libs/monosat -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include/libs/monosat/utils -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include/libs/monosat/graph -isystem /usr/include/eigen3
   OBJECT_DIR = CMakeFiles/lns.dir
   OBJECT_FILE_DIR = CMakeFiles/lns.dir/src/CBS
@@ -192,7 +192,7 @@ build CMakeFiles/lns.dir/src/CBS/MutexReasoning.cpp.o: CXX_COMPILER__lns_RelWith
 build CMakeFiles/lns.dir/src/CBS/PBS.cpp.o: CXX_COMPILER__lns_RelWithDebInfo /home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/src/CBS/PBS.cpp || cmake_object_order_depends_target_lns
   DEFINES = -DBOOST_ALL_NO_LIB -DBOOST_FILESYSTEM_DYN_LINK -DBOOST_PROGRAM_OPTIONS_DYN_LINK -DBOOST_SYSTEM_DYN_LINK
   DEP_FILE = CMakeFiles/lns.dir/src/CBS/PBS.cpp.o.d
-  FLAGS = -O2 -g -DNDEBUG -fsanitize=address -fno-omit-frame-pointer -std=gnu++14
+  FLAGS = -O2 -g -DNDEBUG -std=gnu++14
   INCLUDES = -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/inc -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/inc/CBS -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/inc/PIBT -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include/libs/monosat -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include/libs/monosat/utils -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include/libs/monosat/graph -isystem /usr/include/eigen3
   OBJECT_DIR = CMakeFiles/lns.dir
   OBJECT_FILE_DIR = CMakeFiles/lns.dir/src/CBS
@@ -202,7 +202,7 @@ build CMakeFiles/lns.dir/src/CBS/PBS.cpp.o: CXX_COMPILER__lns_RelWithDebInfo /ho
 build CMakeFiles/lns.dir/src/CBS/RectangleReasoning.cpp.o: CXX_COMPILER__lns_RelWithDebInfo /home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/src/CBS/RectangleReasoning.cpp || cmake_object_order_depends_target_lns
   DEFINES = -DBOOST_ALL_NO_LIB -DBOOST_FILESYSTEM_DYN_LINK -DBOOST_PROGRAM_OPTIONS_DYN_LINK -DBOOST_SYSTEM_DYN_LINK
   DEP_FILE = CMakeFiles/lns.dir/src/CBS/RectangleReasoning.cpp.o.d
-  FLAGS = -O2 -g -DNDEBUG -fsanitize=address -fno-omit-frame-pointer -std=gnu++14
+  FLAGS = -O2 -g -DNDEBUG -std=gnu++14
   INCLUDES = -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/inc -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/inc/CBS -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/inc/PIBT -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include/libs/monosat -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include/libs/monosat/utils -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include/libs/monosat/graph -isystem /usr/include/eigen3
   OBJECT_DIR = CMakeFiles/lns.dir
   OBJECT_FILE_DIR = CMakeFiles/lns.dir/src/CBS
@@ -212,7 +212,7 @@ build CMakeFiles/lns.dir/src/CBS/RectangleReasoning.cpp.o: CXX_COMPILER__lns_Rel
 build CMakeFiles/lns.dir/src/ConstraintTable.cpp.o: CXX_COMPILER__lns_RelWithDebInfo /home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/src/ConstraintTable.cpp || cmake_object_order_depends_target_lns
   DEFINES = -DBOOST_ALL_NO_LIB -DBOOST_FILESYSTEM_DYN_LINK -DBOOST_PROGRAM_OPTIONS_DYN_LINK -DBOOST_SYSTEM_DYN_LINK
   DEP_FILE = CMakeFiles/lns.dir/src/ConstraintTable.cpp.o.d
-  FLAGS = -O2 -g -DNDEBUG -fsanitize=address -fno-omit-frame-pointer -std=gnu++14
+  FLAGS = -O2 -g -DNDEBUG -std=gnu++14
   INCLUDES = -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/inc -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/inc/CBS -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/inc/PIBT -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include/libs/monosat -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include/libs/monosat/utils -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include/libs/monosat/graph -isystem /usr/include/eigen3
   OBJECT_DIR = CMakeFiles/lns.dir
   OBJECT_FILE_DIR = CMakeFiles/lns.dir/src
@@ -222,7 +222,7 @@ build CMakeFiles/lns.dir/src/ConstraintTable.cpp.o: CXX_COMPILER__lns_RelWithDeb
 build CMakeFiles/lns.dir/src/InitLNS.cpp.o: CXX_COMPILER__lns_RelWithDebInfo /home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/src/InitLNS.cpp || cmake_object_order_depends_target_lns
   DEFINES = -DBOOST_ALL_NO_LIB -DBOOST_FILESYSTEM_DYN_LINK -DBOOST_PROGRAM_OPTIONS_DYN_LINK -DBOOST_SYSTEM_DYN_LINK
   DEP_FILE = CMakeFiles/lns.dir/src/InitLNS.cpp.o.d
-  FLAGS = -O2 -g -DNDEBUG -fsanitize=address -fno-omit-frame-pointer -std=gnu++14
+  FLAGS = -O2 -g -DNDEBUG -std=gnu++14
   INCLUDES = -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/inc -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/inc/CBS -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/inc/PIBT -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include/libs/monosat -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include/libs/monosat/utils -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include/libs/monosat/graph -isystem /usr/include/eigen3
   OBJECT_DIR = CMakeFiles/lns.dir
   OBJECT_FILE_DIR = CMakeFiles/lns.dir/src
@@ -232,7 +232,7 @@ build CMakeFiles/lns.dir/src/InitLNS.cpp.o: CXX_COMPILER__lns_RelWithDebInfo /ho
 build CMakeFiles/lns.dir/src/Instance.cpp.o: CXX_COMPILER__lns_RelWithDebInfo /home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/src/Instance.cpp || cmake_object_order_depends_target_lns
   DEFINES = -DBOOST_ALL_NO_LIB -DBOOST_FILESYSTEM_DYN_LINK -DBOOST_PROGRAM_OPTIONS_DYN_LINK -DBOOST_SYSTEM_DYN_LINK
   DEP_FILE = CMakeFiles/lns.dir/src/Instance.cpp.o.d
-  FLAGS = -O2 -g -DNDEBUG -fsanitize=address -fno-omit-frame-pointer -std=gnu++14
+  FLAGS = -O2 -g -DNDEBUG -std=gnu++14
   INCLUDES = -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/inc -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/inc/CBS -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/inc/PIBT -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include/libs/monosat -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include/libs/monosat/utils -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include/libs/monosat/graph -isystem /usr/include/eigen3
   OBJECT_DIR = CMakeFiles/lns.dir
   OBJECT_FILE_DIR = CMakeFiles/lns.dir/src
@@ -242,7 +242,7 @@ build CMakeFiles/lns.dir/src/Instance.cpp.o: CXX_COMPILER__lns_RelWithDebInfo /h
 build CMakeFiles/lns.dir/src/LNS.cpp.o: CXX_COMPILER__lns_RelWithDebInfo /home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/src/LNS.cpp || cmake_object_order_depends_target_lns
   DEFINES = -DBOOST_ALL_NO_LIB -DBOOST_FILESYSTEM_DYN_LINK -DBOOST_PROGRAM_OPTIONS_DYN_LINK -DBOOST_SYSTEM_DYN_LINK
   DEP_FILE = CMakeFiles/lns.dir/src/LNS.cpp.o.d
-  FLAGS = -O2 -g -DNDEBUG -fsanitize=address -fno-omit-frame-pointer -std=gnu++14
+  FLAGS = -O2 -g -DNDEBUG -std=gnu++14
   INCLUDES = -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/inc -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/inc/CBS -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/inc/PIBT -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include/libs/monosat -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include/libs/monosat/utils -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include/libs/monosat/graph -isystem /usr/include/eigen3
   OBJECT_DIR = CMakeFiles/lns.dir
   OBJECT_FILE_DIR = CMakeFiles/lns.dir/src
@@ -252,7 +252,7 @@ build CMakeFiles/lns.dir/src/LNS.cpp.o: CXX_COMPILER__lns_RelWithDebInfo /home/j
 build CMakeFiles/lns.dir/src/PIBT/graph.cpp.o: CXX_COMPILER__lns_RelWithDebInfo /home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/src/PIBT/graph.cpp || cmake_object_order_depends_target_lns
   DEFINES = -DBOOST_ALL_NO_LIB -DBOOST_FILESYSTEM_DYN_LINK -DBOOST_PROGRAM_OPTIONS_DYN_LINK -DBOOST_SYSTEM_DYN_LINK
   DEP_FILE = CMakeFiles/lns.dir/src/PIBT/graph.cpp.o.d
-  FLAGS = -O2 -g -DNDEBUG -fsanitize=address -fno-omit-frame-pointer -std=gnu++14
+  FLAGS = -O2 -g -DNDEBUG -std=gnu++14
   INCLUDES = -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/inc -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/inc/CBS -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/inc/PIBT -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include/libs/monosat -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include/libs/monosat/utils -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include/libs/monosat/graph -isystem /usr/include/eigen3
   OBJECT_DIR = CMakeFiles/lns.dir
   OBJECT_FILE_DIR = CMakeFiles/lns.dir/src/PIBT
@@ -262,7 +262,7 @@ build CMakeFiles/lns.dir/src/PIBT/graph.cpp.o: CXX_COMPILER__lns_RelWithDebInfo 
 build CMakeFiles/lns.dir/src/PIBT/grid.cpp.o: CXX_COMPILER__lns_RelWithDebInfo /home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/src/PIBT/grid.cpp || cmake_object_order_depends_target_lns
   DEFINES = -DBOOST_ALL_NO_LIB -DBOOST_FILESYSTEM_DYN_LINK -DBOOST_PROGRAM_OPTIONS_DYN_LINK -DBOOST_SYSTEM_DYN_LINK
   DEP_FILE = CMakeFiles/lns.dir/src/PIBT/grid.cpp.o.d
-  FLAGS = -O2 -g -DNDEBUG -fsanitize=address -fno-omit-frame-pointer -std=gnu++14
+  FLAGS = -O2 -g -DNDEBUG -std=gnu++14
   INCLUDES = -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/inc -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/inc/CBS -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/inc/PIBT -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include/libs/monosat -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include/libs/monosat/utils -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include/libs/monosat/graph -isystem /usr/include/eigen3
   OBJECT_DIR = CMakeFiles/lns.dir
   OBJECT_FILE_DIR = CMakeFiles/lns.dir/src/PIBT
@@ -272,7 +272,7 @@ build CMakeFiles/lns.dir/src/PIBT/grid.cpp.o: CXX_COMPILER__lns_RelWithDebInfo /
 build CMakeFiles/lns.dir/src/PIBT/mapf.cpp.o: CXX_COMPILER__lns_RelWithDebInfo /home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/src/PIBT/mapf.cpp || cmake_object_order_depends_target_lns
   DEFINES = -DBOOST_ALL_NO_LIB -DBOOST_FILESYSTEM_DYN_LINK -DBOOST_PROGRAM_OPTIONS_DYN_LINK -DBOOST_SYSTEM_DYN_LINK
   DEP_FILE = CMakeFiles/lns.dir/src/PIBT/mapf.cpp.o.d
-  FLAGS = -O2 -g -DNDEBUG -fsanitize=address -fno-omit-frame-pointer -std=gnu++14
+  FLAGS = -O2 -g -DNDEBUG -std=gnu++14
   INCLUDES = -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/inc -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/inc/CBS -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/inc/PIBT -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include/libs/monosat -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include/libs/monosat/utils -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include/libs/monosat/graph -isystem /usr/include/eigen3
   OBJECT_DIR = CMakeFiles/lns.dir
   OBJECT_FILE_DIR = CMakeFiles/lns.dir/src/PIBT
@@ -282,7 +282,7 @@ build CMakeFiles/lns.dir/src/PIBT/mapf.cpp.o: CXX_COMPILER__lns_RelWithDebInfo /
 build CMakeFiles/lns.dir/src/PIBT/node.cpp.o: CXX_COMPILER__lns_RelWithDebInfo /home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/src/PIBT/node.cpp || cmake_object_order_depends_target_lns
   DEFINES = -DBOOST_ALL_NO_LIB -DBOOST_FILESYSTEM_DYN_LINK -DBOOST_PROGRAM_OPTIONS_DYN_LINK -DBOOST_SYSTEM_DYN_LINK
   DEP_FILE = CMakeFiles/lns.dir/src/PIBT/node.cpp.o.d
-  FLAGS = -O2 -g -DNDEBUG -fsanitize=address -fno-omit-frame-pointer -std=gnu++14
+  FLAGS = -O2 -g -DNDEBUG -std=gnu++14
   INCLUDES = -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/inc -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/inc/CBS -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/inc/PIBT -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include/libs/monosat -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include/libs/monosat/utils -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include/libs/monosat/graph -isystem /usr/include/eigen3
   OBJECT_DIR = CMakeFiles/lns.dir
   OBJECT_FILE_DIR = CMakeFiles/lns.dir/src/PIBT
@@ -292,7 +292,7 @@ build CMakeFiles/lns.dir/src/PIBT/node.cpp.o: CXX_COMPILER__lns_RelWithDebInfo /
 build CMakeFiles/lns.dir/src/PIBT/pibt.cpp.o: CXX_COMPILER__lns_RelWithDebInfo /home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/src/PIBT/pibt.cpp || cmake_object_order_depends_target_lns
   DEFINES = -DBOOST_ALL_NO_LIB -DBOOST_FILESYSTEM_DYN_LINK -DBOOST_PROGRAM_OPTIONS_DYN_LINK -DBOOST_SYSTEM_DYN_LINK
   DEP_FILE = CMakeFiles/lns.dir/src/PIBT/pibt.cpp.o.d
-  FLAGS = -O2 -g -DNDEBUG -fsanitize=address -fno-omit-frame-pointer -std=gnu++14
+  FLAGS = -O2 -g -DNDEBUG -std=gnu++14
   INCLUDES = -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/inc -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/inc/CBS -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/inc/PIBT -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include/libs/monosat -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include/libs/monosat/utils -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include/libs/monosat/graph -isystem /usr/include/eigen3
   OBJECT_DIR = CMakeFiles/lns.dir
   OBJECT_FILE_DIR = CMakeFiles/lns.dir/src/PIBT
@@ -302,7 +302,7 @@ build CMakeFiles/lns.dir/src/PIBT/pibt.cpp.o: CXX_COMPILER__lns_RelWithDebInfo /
 build CMakeFiles/lns.dir/src/PIBT/pibt_agent.cpp.o: CXX_COMPILER__lns_RelWithDebInfo /home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/src/PIBT/pibt_agent.cpp || cmake_object_order_depends_target_lns
   DEFINES = -DBOOST_ALL_NO_LIB -DBOOST_FILESYSTEM_DYN_LINK -DBOOST_PROGRAM_OPTIONS_DYN_LINK -DBOOST_SYSTEM_DYN_LINK
   DEP_FILE = CMakeFiles/lns.dir/src/PIBT/pibt_agent.cpp.o.d
-  FLAGS = -O2 -g -DNDEBUG -fsanitize=address -fno-omit-frame-pointer -std=gnu++14
+  FLAGS = -O2 -g -DNDEBUG -std=gnu++14
   INCLUDES = -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/inc -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/inc/CBS -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/inc/PIBT -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include/libs/monosat -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include/libs/monosat/utils -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include/libs/monosat/graph -isystem /usr/include/eigen3
   OBJECT_DIR = CMakeFiles/lns.dir
   OBJECT_FILE_DIR = CMakeFiles/lns.dir/src/PIBT
@@ -312,7 +312,7 @@ build CMakeFiles/lns.dir/src/PIBT/pibt_agent.cpp.o: CXX_COMPILER__lns_RelWithDeb
 build CMakeFiles/lns.dir/src/PIBT/pps.cpp.o: CXX_COMPILER__lns_RelWithDebInfo /home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/src/PIBT/pps.cpp || cmake_object_order_depends_target_lns
   DEFINES = -DBOOST_ALL_NO_LIB -DBOOST_FILESYSTEM_DYN_LINK -DBOOST_PROGRAM_OPTIONS_DYN_LINK -DBOOST_SYSTEM_DYN_LINK
   DEP_FILE = CMakeFiles/lns.dir/src/PIBT/pps.cpp.o.d
-  FLAGS = -O2 -g -DNDEBUG -fsanitize=address -fno-omit-frame-pointer -std=gnu++14
+  FLAGS = -O2 -g -DNDEBUG -std=gnu++14
   INCLUDES = -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/inc -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/inc/CBS -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/inc/PIBT -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include/libs/monosat -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include/libs/monosat/utils -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include/libs/monosat/graph -isystem /usr/include/eigen3
   OBJECT_DIR = CMakeFiles/lns.dir
   OBJECT_FILE_DIR = CMakeFiles/lns.dir/src/PIBT
@@ -322,7 +322,7 @@ build CMakeFiles/lns.dir/src/PIBT/pps.cpp.o: CXX_COMPILER__lns_RelWithDebInfo /h
 build CMakeFiles/lns.dir/src/PIBT/problem.cpp.o: CXX_COMPILER__lns_RelWithDebInfo /home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/src/PIBT/problem.cpp || cmake_object_order_depends_target_lns
   DEFINES = -DBOOST_ALL_NO_LIB -DBOOST_FILESYSTEM_DYN_LINK -DBOOST_PROGRAM_OPTIONS_DYN_LINK -DBOOST_SYSTEM_DYN_LINK
   DEP_FILE = CMakeFiles/lns.dir/src/PIBT/problem.cpp.o.d
-  FLAGS = -O2 -g -DNDEBUG -fsanitize=address -fno-omit-frame-pointer -std=gnu++14
+  FLAGS = -O2 -g -DNDEBUG -std=gnu++14
   INCLUDES = -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/inc -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/inc/CBS -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/inc/PIBT -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include/libs/monosat -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include/libs/monosat/utils -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include/libs/monosat/graph -isystem /usr/include/eigen3
   OBJECT_DIR = CMakeFiles/lns.dir
   OBJECT_FILE_DIR = CMakeFiles/lns.dir/src/PIBT
@@ -332,7 +332,7 @@ build CMakeFiles/lns.dir/src/PIBT/problem.cpp.o: CXX_COMPILER__lns_RelWithDebInf
 build CMakeFiles/lns.dir/src/PIBT/simplegrid.cpp.o: CXX_COMPILER__lns_RelWithDebInfo /home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/src/PIBT/simplegrid.cpp || cmake_object_order_depends_target_lns
   DEFINES = -DBOOST_ALL_NO_LIB -DBOOST_FILESYSTEM_DYN_LINK -DBOOST_PROGRAM_OPTIONS_DYN_LINK -DBOOST_SYSTEM_DYN_LINK
   DEP_FILE = CMakeFiles/lns.dir/src/PIBT/simplegrid.cpp.o.d
-  FLAGS = -O2 -g -DNDEBUG -fsanitize=address -fno-omit-frame-pointer -std=gnu++14
+  FLAGS = -O2 -g -DNDEBUG -std=gnu++14
   INCLUDES = -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/inc -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/inc/CBS -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/inc/PIBT -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include/libs/monosat -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include/libs/monosat/utils -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include/libs/monosat/graph -isystem /usr/include/eigen3
   OBJECT_DIR = CMakeFiles/lns.dir
   OBJECT_FILE_DIR = CMakeFiles/lns.dir/src/PIBT
@@ -342,7 +342,7 @@ build CMakeFiles/lns.dir/src/PIBT/simplegrid.cpp.o: CXX_COMPILER__lns_RelWithDeb
 build CMakeFiles/lns.dir/src/PIBT/solver.cpp.o: CXX_COMPILER__lns_RelWithDebInfo /home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/src/PIBT/solver.cpp || cmake_object_order_depends_target_lns
   DEFINES = -DBOOST_ALL_NO_LIB -DBOOST_FILESYSTEM_DYN_LINK -DBOOST_PROGRAM_OPTIONS_DYN_LINK -DBOOST_SYSTEM_DYN_LINK
   DEP_FILE = CMakeFiles/lns.dir/src/PIBT/solver.cpp.o.d
-  FLAGS = -O2 -g -DNDEBUG -fsanitize=address -fno-omit-frame-pointer -std=gnu++14
+  FLAGS = -O2 -g -DNDEBUG -std=gnu++14
   INCLUDES = -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/inc -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/inc/CBS -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/inc/PIBT -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include/libs/monosat -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include/libs/monosat/utils -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include/libs/monosat/graph -isystem /usr/include/eigen3
   OBJECT_DIR = CMakeFiles/lns.dir
   OBJECT_FILE_DIR = CMakeFiles/lns.dir/src/PIBT
@@ -352,7 +352,7 @@ build CMakeFiles/lns.dir/src/PIBT/solver.cpp.o: CXX_COMPILER__lns_RelWithDebInfo
 build CMakeFiles/lns.dir/src/PIBT/task.cpp.o: CXX_COMPILER__lns_RelWithDebInfo /home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/src/PIBT/task.cpp || cmake_object_order_depends_target_lns
   DEFINES = -DBOOST_ALL_NO_LIB -DBOOST_FILESYSTEM_DYN_LINK -DBOOST_PROGRAM_OPTIONS_DYN_LINK -DBOOST_SYSTEM_DYN_LINK
   DEP_FILE = CMakeFiles/lns.dir/src/PIBT/task.cpp.o.d
-  FLAGS = -O2 -g -DNDEBUG -fsanitize=address -fno-omit-frame-pointer -std=gnu++14
+  FLAGS = -O2 -g -DNDEBUG -std=gnu++14
   INCLUDES = -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/inc -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/inc/CBS -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/inc/PIBT -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include/libs/monosat -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include/libs/monosat/utils -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include/libs/monosat/graph -isystem /usr/include/eigen3
   OBJECT_DIR = CMakeFiles/lns.dir
   OBJECT_FILE_DIR = CMakeFiles/lns.dir/src/PIBT
@@ -362,7 +362,7 @@ build CMakeFiles/lns.dir/src/PIBT/task.cpp.o: CXX_COMPILER__lns_RelWithDebInfo /
 build CMakeFiles/lns.dir/src/PIBT/winpibt.cpp.o: CXX_COMPILER__lns_RelWithDebInfo /home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/src/PIBT/winpibt.cpp || cmake_object_order_depends_target_lns
   DEFINES = -DBOOST_ALL_NO_LIB -DBOOST_FILESYSTEM_DYN_LINK -DBOOST_PROGRAM_OPTIONS_DYN_LINK -DBOOST_SYSTEM_DYN_LINK
   DEP_FILE = CMakeFiles/lns.dir/src/PIBT/winpibt.cpp.o.d
-  FLAGS = -O2 -g -DNDEBUG -fsanitize=address -fno-omit-frame-pointer -std=gnu++14
+  FLAGS = -O2 -g -DNDEBUG -std=gnu++14
   INCLUDES = -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/inc -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/inc/CBS -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/inc/PIBT -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include/libs/monosat -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include/libs/monosat/utils -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include/libs/monosat/graph -isystem /usr/include/eigen3
   OBJECT_DIR = CMakeFiles/lns.dir
   OBJECT_FILE_DIR = CMakeFiles/lns.dir/src/PIBT
@@ -372,7 +372,7 @@ build CMakeFiles/lns.dir/src/PIBT/winpibt.cpp.o: CXX_COMPILER__lns_RelWithDebInf
 build CMakeFiles/lns.dir/src/PathTable.cpp.o: CXX_COMPILER__lns_RelWithDebInfo /home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/src/PathTable.cpp || cmake_object_order_depends_target_lns
   DEFINES = -DBOOST_ALL_NO_LIB -DBOOST_FILESYSTEM_DYN_LINK -DBOOST_PROGRAM_OPTIONS_DYN_LINK -DBOOST_SYSTEM_DYN_LINK
   DEP_FILE = CMakeFiles/lns.dir/src/PathTable.cpp.o.d
-  FLAGS = -O2 -g -DNDEBUG -fsanitize=address -fno-omit-frame-pointer -std=gnu++14
+  FLAGS = -O2 -g -DNDEBUG -std=gnu++14
   INCLUDES = -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/inc -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/inc/CBS -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/inc/PIBT -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include/libs/monosat -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include/libs/monosat/utils -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include/libs/monosat/graph -isystem /usr/include/eigen3
   OBJECT_DIR = CMakeFiles/lns.dir
   OBJECT_FILE_DIR = CMakeFiles/lns.dir/src
@@ -382,7 +382,7 @@ build CMakeFiles/lns.dir/src/PathTable.cpp.o: CXX_COMPILER__lns_RelWithDebInfo /
 build CMakeFiles/lns.dir/src/ReservationTable.cpp.o: CXX_COMPILER__lns_RelWithDebInfo /home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/src/ReservationTable.cpp || cmake_object_order_depends_target_lns
   DEFINES = -DBOOST_ALL_NO_LIB -DBOOST_FILESYSTEM_DYN_LINK -DBOOST_PROGRAM_OPTIONS_DYN_LINK -DBOOST_SYSTEM_DYN_LINK
   DEP_FILE = CMakeFiles/lns.dir/src/ReservationTable.cpp.o.d
-  FLAGS = -O2 -g -DNDEBUG -fsanitize=address -fno-omit-frame-pointer -std=gnu++14
+  FLAGS = -O2 -g -DNDEBUG -std=gnu++14
   INCLUDES = -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/inc -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/inc/CBS -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/inc/PIBT -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include/libs/monosat -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include/libs/monosat/utils -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include/libs/monosat/graph -isystem /usr/include/eigen3
   OBJECT_DIR = CMakeFiles/lns.dir
   OBJECT_FILE_DIR = CMakeFiles/lns.dir/src
@@ -392,7 +392,7 @@ build CMakeFiles/lns.dir/src/ReservationTable.cpp.o: CXX_COMPILER__lns_RelWithDe
 build CMakeFiles/lns.dir/src/SATUtils.cpp.o: CXX_COMPILER__lns_RelWithDebInfo /home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/src/SATUtils.cpp || cmake_object_order_depends_target_lns
   DEFINES = -DBOOST_ALL_NO_LIB -DBOOST_FILESYSTEM_DYN_LINK -DBOOST_PROGRAM_OPTIONS_DYN_LINK -DBOOST_SYSTEM_DYN_LINK
   DEP_FILE = CMakeFiles/lns.dir/src/SATUtils.cpp.o.d
-  FLAGS = -O2 -g -DNDEBUG -fsanitize=address -fno-omit-frame-pointer -std=gnu++14
+  FLAGS = -O2 -g -DNDEBUG -std=gnu++14
   INCLUDES = -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/inc -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/inc/CBS -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/inc/PIBT -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include/libs/monosat -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include/libs/monosat/utils -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include/libs/monosat/graph -isystem /usr/include/eigen3
   OBJECT_DIR = CMakeFiles/lns.dir
   OBJECT_FILE_DIR = CMakeFiles/lns.dir/src
@@ -402,7 +402,7 @@ build CMakeFiles/lns.dir/src/SATUtils.cpp.o: CXX_COMPILER__lns_RelWithDebInfo /h
 build CMakeFiles/lns.dir/src/SIPP.cpp.o: CXX_COMPILER__lns_RelWithDebInfo /home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/src/SIPP.cpp || cmake_object_order_depends_target_lns
   DEFINES = -DBOOST_ALL_NO_LIB -DBOOST_FILESYSTEM_DYN_LINK -DBOOST_PROGRAM_OPTIONS_DYN_LINK -DBOOST_SYSTEM_DYN_LINK
   DEP_FILE = CMakeFiles/lns.dir/src/SIPP.cpp.o.d
-  FLAGS = -O2 -g -DNDEBUG -fsanitize=address -fno-omit-frame-pointer -std=gnu++14
+  FLAGS = -O2 -g -DNDEBUG -std=gnu++14
   INCLUDES = -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/inc -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/inc/CBS -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/inc/PIBT -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include/libs/monosat -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include/libs/monosat/utils -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include/libs/monosat/graph -isystem /usr/include/eigen3
   OBJECT_DIR = CMakeFiles/lns.dir
   OBJECT_FILE_DIR = CMakeFiles/lns.dir/src
@@ -412,7 +412,7 @@ build CMakeFiles/lns.dir/src/SIPP.cpp.o: CXX_COMPILER__lns_RelWithDebInfo /home/
 build CMakeFiles/lns.dir/src/SingleAgentSolver.cpp.o: CXX_COMPILER__lns_RelWithDebInfo /home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/src/SingleAgentSolver.cpp || cmake_object_order_depends_target_lns
   DEFINES = -DBOOST_ALL_NO_LIB -DBOOST_FILESYSTEM_DYN_LINK -DBOOST_PROGRAM_OPTIONS_DYN_LINK -DBOOST_SYSTEM_DYN_LINK
   DEP_FILE = CMakeFiles/lns.dir/src/SingleAgentSolver.cpp.o.d
-  FLAGS = -O2 -g -DNDEBUG -fsanitize=address -fno-omit-frame-pointer -std=gnu++14
+  FLAGS = -O2 -g -DNDEBUG -std=gnu++14
   INCLUDES = -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/inc -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/inc/CBS -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/inc/PIBT -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include/libs/monosat -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include/libs/monosat/utils -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include/libs/monosat/graph -isystem /usr/include/eigen3
   OBJECT_DIR = CMakeFiles/lns.dir
   OBJECT_FILE_DIR = CMakeFiles/lns.dir/src
@@ -422,7 +422,7 @@ build CMakeFiles/lns.dir/src/SingleAgentSolver.cpp.o: CXX_COMPILER__lns_RelWithD
 build CMakeFiles/lns.dir/src/SpaceTimeAStar.cpp.o: CXX_COMPILER__lns_RelWithDebInfo /home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/src/SpaceTimeAStar.cpp || cmake_object_order_depends_target_lns
   DEFINES = -DBOOST_ALL_NO_LIB -DBOOST_FILESYSTEM_DYN_LINK -DBOOST_PROGRAM_OPTIONS_DYN_LINK -DBOOST_SYSTEM_DYN_LINK
   DEP_FILE = CMakeFiles/lns.dir/src/SpaceTimeAStar.cpp.o.d
-  FLAGS = -O2 -g -DNDEBUG -fsanitize=address -fno-omit-frame-pointer -std=gnu++14
+  FLAGS = -O2 -g -DNDEBUG -std=gnu++14
   INCLUDES = -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/inc -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/inc/CBS -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/inc/PIBT -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include/libs/monosat -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include/libs/monosat/utils -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include/libs/monosat/graph -isystem /usr/include/eigen3
   OBJECT_DIR = CMakeFiles/lns.dir
   OBJECT_FILE_DIR = CMakeFiles/lns.dir/src
@@ -432,7 +432,7 @@ build CMakeFiles/lns.dir/src/SpaceTimeAStar.cpp.o: CXX_COMPILER__lns_RelWithDebI
 build CMakeFiles/lns.dir/src/common.cpp.o: CXX_COMPILER__lns_RelWithDebInfo /home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/src/common.cpp || cmake_object_order_depends_target_lns
   DEFINES = -DBOOST_ALL_NO_LIB -DBOOST_FILESYSTEM_DYN_LINK -DBOOST_PROGRAM_OPTIONS_DYN_LINK -DBOOST_SYSTEM_DYN_LINK
   DEP_FILE = CMakeFiles/lns.dir/src/common.cpp.o.d
-  FLAGS = -O2 -g -DNDEBUG -fsanitize=address -fno-omit-frame-pointer -std=gnu++14
+  FLAGS = -O2 -g -DNDEBUG -std=gnu++14
   INCLUDES = -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/inc -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/inc/CBS -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/inc/PIBT -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include/libs/monosat -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include/libs/monosat/utils -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include/libs/monosat/graph -isystem /usr/include/eigen3
   OBJECT_DIR = CMakeFiles/lns.dir
   OBJECT_FILE_DIR = CMakeFiles/lns.dir/src
@@ -442,7 +442,7 @@ build CMakeFiles/lns.dir/src/common.cpp.o: CXX_COMPILER__lns_RelWithDebInfo /hom
 build CMakeFiles/lns.dir/src/driver.cpp.o: CXX_COMPILER__lns_RelWithDebInfo /home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/src/driver.cpp || cmake_object_order_depends_target_lns
   DEFINES = -DBOOST_ALL_NO_LIB -DBOOST_FILESYSTEM_DYN_LINK -DBOOST_PROGRAM_OPTIONS_DYN_LINK -DBOOST_SYSTEM_DYN_LINK
   DEP_FILE = CMakeFiles/lns.dir/src/driver.cpp.o.d
-  FLAGS = -O2 -g -DNDEBUG -fsanitize=address -fno-omit-frame-pointer -std=gnu++14
+  FLAGS = -O2 -g -DNDEBUG -std=gnu++14
   INCLUDES = -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/inc -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/inc/CBS -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/inc/PIBT -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include/libs/monosat -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include/libs/monosat/utils -I/home/jarekusak/Dokumenty/MAPF-LNS2_new_destroy_and_repair_operator_SAT/include/libs/monosat/graph -isystem /usr/include/eigen3
   OBJECT_DIR = CMakeFiles/lns.dir
   OBJECT_FILE_DIR = CMakeFiles/lns.dir/src
@@ -459,7 +459,6 @@ build CMakeFiles/lns.dir/src/driver.cpp.o: CXX_COMPILER__lns_RelWithDebInfo /hom
 
 build lns: CXX_EXECUTABLE_LINKER__lns_RelWithDebInfo CMakeFiles/lns.dir/src/AnytimeBCBS.cpp.o CMakeFiles/lns.dir/src/AnytimeEECBS.cpp.o CMakeFiles/lns.dir/src/BasicLNS.cpp.o CMakeFiles/lns.dir/src/CBS/CBS.cpp.o CMakeFiles/lns.dir/src/CBS/CBSHeuristic.cpp.o CMakeFiles/lns.dir/src/CBS/CBSNode.cpp.o CMakeFiles/lns.dir/src/CBS/Conflict.cpp.o CMakeFiles/lns.dir/src/CBS/ConstraintPropagation.cpp.o CMakeFiles/lns.dir/src/CBS/CorridorReasoning.cpp.o CMakeFiles/lns.dir/src/CBS/ECBS.cpp.o CMakeFiles/lns.dir/src/CBS/GCBS.cpp.o CMakeFiles/lns.dir/src/CBS/IncrementalPairwiseMutexPropagation.cpp.o CMakeFiles/lns.dir/src/CBS/MDD.cpp.o CMakeFiles/lns.dir/src/CBS/MutexReasoning.cpp.o CMakeFiles/lns.dir/src/CBS/PBS.cpp.o CMakeFiles/lns.dir/src/CBS/RectangleReasoning.cpp.o CMakeFiles/lns.dir/src/ConstraintTable.cpp.o CMakeFiles/lns.dir/src/InitLNS.cpp.o CMakeFiles/lns.dir/src/Instance.cpp.o CMakeFiles/lns.dir/src/LNS.cpp.o CMakeFiles/lns.dir/src/PIBT/graph.cpp.o CMakeFiles/lns.dir/src/PIBT/grid.cpp.o CMakeFiles/lns.dir/src/PIBT/mapf.cpp.o CMakeFiles/lns.dir/src/PIBT/node.cpp.o CMakeFiles/lns.dir/src/PIBT/pibt.cpp.o CMakeFiles/lns.dir/src/PIBT/pibt_agent.cpp.o CMakeFiles/lns.dir/src/PIBT/pps.cpp.o CMakeFiles/lns.dir/src/PIBT/problem.cpp.o CMakeFiles/lns.dir/src/PIBT/simplegrid.cpp.o CMakeFiles/lns.dir/src/PIBT/solver.cpp.o CMakeFiles/lns.dir/src/PIBT/task.cpp.o CMakeFiles/lns.dir/src/PIBT/winpibt.cpp.o CMakeFiles/lns.dir/src/PathTable.cpp.o CMakeFiles/lns.dir/src/ReservationTable.cpp.o CMakeFiles/lns.dir/src/SATUtils.cpp.o CMakeFiles/lns.dir/src/SIPP.cpp.o CMakeFiles/lns.dir/src/SingleAgentSolver.cpp.o CMakeFiles/lns.dir/src/SpaceTimeAStar.cpp.o CMakeFiles/lns.dir/src/common.cpp.o CMakeFiles/lns.dir/src/driver.cpp.o | /usr/lib/x86_64-linux-gnu/libboost_program_options.so.1.74.0 /usr/lib/x86_64-linux-gnu/libboost_system.so.1.74.0 /usr/lib/x86_64-linux-gnu/libboost_filesystem.so.1.74.0 ../libs/libmapf.a ../libs/libpb.a ../libs/libkissat.a ../libs/libmonosat.a /usr/lib/x86_64-linux-gnu/libgmp.so /usr/lib/x86_64-linux-gnu/libgmpxx.so /usr/lib/x86_64-linux-gnu/libz.so
   FLAGS = -O2 -g -DNDEBUG
-  LINK_FLAGS = -fsanitize=address -fno-omit-frame-pointer
   LINK_LIBRARIES = /usr/lib/x86_64-linux-gnu/libboost_program_options.so.1.74.0  /usr/lib/x86_64-linux-gnu/libboost_system.so.1.74.0  /usr/lib/x86_64-linux-gnu/libboost_filesystem.so.1.74.0  ../libs/libmapf.a  ../libs/libpb.a  ../libs/libkissat.a  ../libs/libmonosat.a  /usr/lib/x86_64-linux-gnu/libgmp.so  /usr/lib/x86_64-linux-gnu/libgmpxx.so  /usr/lib/x86_64-linux-gnu/libz.so
   OBJECT_DIR = CMakeFiles/lns.dir
   POST_BUILD = :

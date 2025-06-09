@@ -1,27 +1,28 @@
 #include "SATUtils.h"
-#include "Log.h"
 
 #include <iostream>
 #include <algorithm>
 
 namespace SATUtils {
+    // Decodes a local ID into (row, column) coordinates in the map for a free cell.
     std::pair<int, int> decodeLocalID(int local_id, const std::vector<std::vector<int>>& map) {
         int count = 0;
         int rows = map.size();
         int cols = map[0].size();
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < cols; j++) {
-                if (map[i][j] == 1) { // pokud je volná
+                if (map[i][j] == 1) { // if the cell is free
                     if (count == local_id)
                         return {i, j};
                     count++;
                 }
             }
         }
-        // Pokud se index nepodaří nalézt, vrátíme chybový výsledek
+        // If the index could not be found, return an error pair
         return {-1, -1};
     }
 
+    // Initializes sub-map data structures for quick lookup and coordinate mapping.
     void initializeSubmapData(const std::vector<std::vector<int>>& submap,
                               std::unordered_set<int>& submap_set,
                               std::unordered_map<int, std::pair<int, int>>& global_to_local) {
@@ -39,6 +40,7 @@ namespace SATUtils {
         }
     }
 
+    // Generates a map representation with agents and obstacles for the SAT solver.
     std::vector<std::vector<int>> generateMapRepresentation(
             const std::vector<std::vector<int>>& submap,
             const std::vector<int>& agents_in_submap,
@@ -60,7 +62,7 @@ namespace SATUtils {
                 else {
                     bool is_agent = false;
                     for (int agent : agents_in_submap) {
-                        // Pozn.: agenti mohou být v submapě v různých časech, zde je použita hodnota problematic_timestep
+                        // Note: agents can occupy the sub‑map at different timesteps; we reference problematic_timestep here
                         if (agents[agent].path[problematic_timestep].location == global_pos) {
                             std::cout << "A ";
                             is_agent = true;
@@ -86,6 +88,7 @@ namespace SATUtils {
         return map;
     }
 
+    // Finds agents that need to be replanned based on their presence in the sub-map at T_sync.
     std::vector<int> getAgentsToReplan(
             const std::vector<int>& agents_in_submap,
             const std::unordered_set<int>& submap_set,
@@ -102,16 +105,16 @@ namespace SATUtils {
             int n = (int) path.size();
             std::vector<std::pair<int,int>> intervals;
             int i = 0;
-            // Najdeme všechny souvislé intervaly, kdy je agent v submapě.
+            // Find all contiguous intervals when the agent stays inside the sub‑map.
             while (i < n) {
-                // Přeskočíme časy, kdy agent není v submapě.
+                // Skip timesteps when the agent is outside the sub‑map.
                 while (i < n && submap_set.find(path[i].location) == submap_set.end()) {
                     i++;
                 }
                 if (i >= n)
                     break;
                 int t_min = i;
-                // Dokud je agent v submapě, posunujeme i.
+                // Advance while the agent remains inside the sub‑map.
                 while (i < n && submap_set.find(path[i].location) != submap_set.end()) {
                     i++;
                 }
@@ -119,14 +122,14 @@ namespace SATUtils {
                 intervals.push_back({t_min, t_max});
             }
 
-            // Debug: vypiš všechny nalezené intervaly pro daného agenta.
+            // Debug: print all intervals found for this agent:
             std::cout << "[DEBUG] Agent " << agent << " nalezené intervaly v submapě:";
             for (const auto& interval : intervals) {
                 std::cout << " [" << interval.first << ".." << interval.second << "]";
             }
             std::cout << std::endl;
 
-            // Vybereme interval, který obsahuje T_sync.
+            // Select the interval that contains T_sync.
             bool found_interval = false;
             for (const auto& interval : intervals) {
                 if (interval.first <= T_sync && T_sync <= interval.second) {
@@ -152,6 +155,7 @@ namespace SATUtils {
         return agents_to_replan;
     }
 
+    // For every agent build a sequence (sx, sy) of local coordinates. Skip agents not present in the sub‑map at T_sync; stop once the agent leaves the sub‑map.
     std::unordered_map<int, std::vector<std::pair<int,int>>> findLocalPaths(
             const std::vector<int>& agents_to_replan,
             const std::vector<std::vector<int>>& submap,
@@ -160,24 +164,21 @@ namespace SATUtils {
             int T_sync,
             const std::vector<Agent>& agents) {
 
-        // pro každého agent vytvoříme sekvenci (sx, sy) lokálních souřadnic
-        // pokud agent není v submapě v čase T_sync, vynecháme ho
-        // jakmile agent submapu opustí, končíme
         std::unordered_map<int, std::vector<std::pair<int,int>>> local_paths;
         std::cout << "\n[INFO] Tvorba lokálních cest (sx, sy) v submapě pro T_sync = " << T_sync << std::endl;
         for (int agent : agents_to_replan) {
-            // 1) Zajistíme, že agent má definovanou pozici v T_sync
+            // Ensure the agent has a defined position at T_sync
             if ((size_t)T_sync >= agents[agent].path.size()) {
                 std::cout << "[WARN] Agent " << agent << " nemá definovanou pozici v čase T_sync=" << T_sync << ". Přeskakuji.\n";
                 continue;
             }
-            // 2) Ověříme, že je agent v submapě v T_sync
+            // Verify the agent is in the sub‑map at T_sync
             int loc_at_Tsync = agents[agent].path[T_sync].location;
             if (submap_set.find(loc_at_Tsync) == submap_set.end()) {
                 std::cout << "[WARN] Agent " << agent << " není v submapě v čase " << T_sync << ". Přeskakuji.\n";
                 continue;
             }
-            // 3) Najdeme poslední čas, dokdy agent v submapě zůstává
+            // Find the last timestep the agent remains in the sub‑map
             int last_time_in_submap = -1;
             for (int t = T_sync; t < (int)agents[agent].path.size(); t++) {
                 int glob_loc = agents[agent].path[t].location;
@@ -186,13 +187,12 @@ namespace SATUtils {
                 else break;
             }
             if (last_time_in_submap == -1) {
-                // Teoreticky by se to nemělo stát,
-                // protože loc_at_Tsync je v submapě
+                // Theoretically this should not happen because loc_at_Tsync is inside the sub‑map
                 std::cout << "[WARN] Agent " << agent << " v submapě vlastně není? (podivné)\n";
                 continue;
             }
-            // 4) Postavíme reálnou lokální cestu v (sx, sy)
-            //    od T_sync do last_time_in_submap
+            // Build the true local path in (sx, sy)
+            // from T_sync to last_time_in_submap
             std::vector<std::pair<int,int>> path_local;
             for (int t = T_sync; t <= last_time_in_submap; t++) {
                 int glob_loc = agents[agent].path[t].location;
@@ -202,12 +202,12 @@ namespace SATUtils {
                               << " je mimo submapu, ale last_time_in_submap=" << last_time_in_submap << std::endl;
                     break;
                 }
-                // (sx, sy) = lokální souřadnice v submapě
+                // (sx, sy) = local coordinates in the sub‑map
                 int sx = it->second.first;
                 int sy = it->second.second;
                 path_local.emplace_back(sx, sy);
             }
-            // 5) uložíme do mapy
+            // store into the resulting map
             local_paths[agent] = path_local;
             std::cout << "  Agent " << agent << " (globální cesty od T=" << T_sync << " do " << last_time_in_submap << ") má lokální dráhu: ";
             for (auto& p : path_local)
@@ -217,26 +217,26 @@ namespace SATUtils {
         return local_paths;
     }
 
-    // funkce pro vypsání cesty (jednoduchý textový výpis)
+    // Prints detailed information about an agent's path (prefix, local, and suffix segments).
     void printPathDetails(const std::vector<PathEntry>& path, int T_sync, int old_local_length, const std::vector<std::vector<int>>& submap, const std::vector<std::vector<int>>& map) {
         std::cout << "[DEBUG] Vykreslení PŮVODNÍ cesty:" << std::endl;
-        // Vypiš prefix (cesta před vstupem do submapy)
+        // Print prefix (path before entering the sub‑map)
         std::cout << "  Prefix (před submapou): ";
         for (int i = 0; i < T_sync && i < (int)path.size(); i++) {
             std::cout << path[i].location << " ";
         }
         std::cout << std::endl;
 
-        // Vypiš lokální část (v submapě)
+        // Print local segment (inside sub‑map)
         std::cout << "  Lokální cesta (v submapě): ";
         for (int i = T_sync; i < T_sync + old_local_length && i < (int)path.size(); i++) {
-            // Dekódujeme lokální pozici podle mapy
+            // Decode the local position using the map
             //auto coords = decodeLocalID(path[i].location, map);
             std::cout << path[i].location << " ";
         }
         std::cout << std::endl;
 
-        // Vypiš suffix (po opuštění submapy)
+        // Print suffix (after leaving sub‑map)
         std::cout << "  Suffix (po submapě): ";
         for (size_t i = T_sync + old_local_length; i < path.size(); i++) {
             std::cout << path[i].location << " ";
@@ -244,6 +244,7 @@ namespace SATUtils {
         std::cout << std::endl;
     }
 
+    // Solves the local MAPF problem in the sub-map using a SAT-based solver and updates agent paths.
     bool solveWithSAT(
             std::vector<std::vector<int>>& map,
             const std::unordered_map<int, std::vector<std::pair<int,int>>>& local_paths,
@@ -309,26 +310,24 @@ namespace SATUtils {
             auto& local_path = plan[a];
             if (local_path.empty()) continue;
 
-            /* Souřadnice cíle, který jsme solveru zadali
-               (uložené při konstrukci start_positions / goal_positions). */
+            /* Coordinates of the goal supplied to the solver
+               (recorded when start_positions / goal_positions were created). */
             const auto goal_coord = goal_positions[a];        // pair<int,int>
 
-            // 1) Najdi PRVNÍ výskyt cíle v cestě
-            size_t cut_pos = local_path.size();               // výchozí: nic nestříháme
-            for (size_t t = 0; t < local_path.size(); ++t)
-            {
-                if (decodeLocalID(local_path[t], map) == goal_coord)
-                {
-                    cut_pos = t + 1;                          // necháme vrchol cíle
+            // Find the FIRST occurrence of the goal in the path
+            size_t cut_pos = local_path.size();               // default: not cutting out anything
+            for (size_t t = 0; t < local_path.size(); ++t) {
+                if (decodeLocalID(local_path[t], map) == goal_coord) {
+                    cut_pos = t + 1;                          // we leave the final node
                     break;
                 }
             }
 
-            // 2) Odřízni vše za prvním dosažením cíle
+            // Remove everything after the first arrival at the goal
             if (cut_pos < local_path.size())
                 local_path.erase(local_path.begin() + cut_pos, local_path.end());
 
-            // 3) Smaž případná opakování cíle na úplném konci (… 6 6 6)
+            // Trim possible repetitions of the goal at the very end (e.g., 6 6 6)
             while (local_path.size() > 1 &&
                    local_path.back() == local_path[local_path.size() - 2])
             {
@@ -336,17 +335,7 @@ namespace SATUtils {
             }
         }
 
-        /* OD KONCE
-        int i = 0;
-        for (auto& path_for_agent : plan) {
-            if (path_for_agent.empty()) continue;
-            // Smaž opakované indexy na úplném konci (dokud se opakují v cíli):
-            while (path_for_agent.size() > 1 && path_for_agent.back() == path_for_agent[path_for_agent.size() - 2]) {
-                path_for_agent.pop_back();
-            }
-        }*/
-
-        // Debug: vypsat novou lokální cestu (v 1D indexech submapy).
+        // Debug: print new local path (in 1D submap indices).
         for (size_t a = 0; a < plan.size(); ++a) {
             cout << "[DEBUG] Agent (index) " << agents_to_replan[a]
                  << " | Nová lokální cesta (submap idx): ";
@@ -356,32 +345,32 @@ namespace SATUtils {
             cout << endl;
         }
 
-        // 5) Aktualizujeme updated_path pro každého agenta (prefix + nová lokální dráha + sufix)
+        // Update updated_path for each agent (prefix + new local path + suffix)
         for (size_t a = 0; a < plan.size(); ++a) {
             int agent_id = agents_to_replan[a];
 
-            // (A) Původní délka lokální části
+            // (A) Original local segment length
             int old_local_length = original_local_lengths[agent_id];
-            // (B) Nová délka lokální části
+            // (B) New local segment length
             int new_local_length = (int) plan[a].size();
 
             cout << "[INFO] Aktualizace cesty pro agenta " << agent_id
                  << " | Původní lokální délka: " << old_local_length
                  << " | Nová lokální délka: " << new_local_length << endl;
 
-            // (1) Zkopírujeme prefix do T_sync
+            // Copy the prefix up to T_sync
             vector<PathEntry> updated_path(
                     agents[agent_id].path.begin(),
                     agents[agent_id].path.begin() + T_sync
             );
 
-            // (2) Vložíme novou lokální trasu (dekódovanou do glob. ID)
-            vector<PathEntry> new_local_path; // pro uložení nové lokální cesty zvlášť
+            // Insert the new local segment (decoded to global IDs)
+            vector<PathEntry> new_local_path; // to save a new local path separately
             for (int t = 0; t < new_local_length; t++)
             {
                 int local_id = plan[a][t];
                 // decodeLocalID => (sx,sy) submap
-                // *** POZOR na správné x/y a submap[x][y] vs submap[y][x]! ***
+                // *** WARNING: we have to ensure correct x/y orientation and submap[x][y] vs submap[y][x]! ***
                 pair<int, int> coords = decodeLocalID(local_id, map);
                 int sx = coords.first;
                 int sy = coords.second;
@@ -391,7 +380,7 @@ namespace SATUtils {
                          << " nelze dekódovat do platných souřadnic.\n";
                     continue;
                 }
-                // Globální ID z submapy:
+                // Global ID from the sub‑map:
                 int global_id = submap[sx][sy];
                 cout << "[DEBUG] agent " << agent_id << " t=" << t
                      << " => decoded (sx,sy)=(" << sx << "," << sy
@@ -400,17 +389,14 @@ namespace SATUtils {
                 updated_path.push_back(PathEntry(global_id));
             }
 
-            // (3) Připojíme suffix. Původní suffix začínal na indexu T_sync + old_local_length
-            // (tj. tam končila stará lokální část). V nové cestě jsme skončili na indexu T_sync + new_local_length - 1
-            // => suffix nalepíme od původního suffix_start dále.
+            // Append the suffix. The original suffix started at index T_sync + old_local_length; the new path ends at T_sync + new_local_length - 1
             int old_suffix_start = T_sync + old_local_length;
-            if (old_suffix_start < (int)agents[agent_id].path.size())
-            {
+            if (old_suffix_start < (int)agents[agent_id].path.size()) {
                 for (int t = old_suffix_start; t < (int)agents[agent_id].path.size(); t++)
                     updated_path.push_back(PathEntry(agents[agent_id].path[t].location));
             }
 
-            // (4) Volitelná kontrola navázání prefix->lokální start
+            // Optional check of prefix -> local start continuity
             if (T_sync > 0 && (size_t)T_sync < updated_path.size()) {
                 int prefix_last = agents[agent_id].path[T_sync].location;
                 int local_first = updated_path[T_sync].location;
@@ -423,9 +409,9 @@ namespace SATUtils {
 
             if (T_sync + old_local_length < agents[agent_id].path.size() &&
                 T_sync + new_local_length <= updated_path.size()) {
-                // Lokální cíl nové lokální části je na indexu T_sync + new_local_length - 1
+                // The local goal of the new segment is at index T_sync + new_local_length - 1
                 int local_goal = updated_path[T_sync + new_local_length].location;
-                // První prvek původního sufixu je na indexu T_sync + old_local_length (tj. kde stará lokální část končila)
+                // The first element of the original suffix is at index T_sync + old_local_length (i.e. where the old local part ended)                int suffix_first = agents[agent_id].path[T_sync + old_local_length].location;
                 int suffix_first = agents[agent_id].path[T_sync + old_local_length].location;
                 if (local_goal != suffix_first) {
                     cout << "[WARN] agent " << agent_id
@@ -434,7 +420,7 @@ namespace SATUtils {
                 }
             }
 
-            // zkontrolujeme, zda nová lokální cesta vrací původní cíl
+            // Verify that the new local path matches the original goal
             if (!new_local_path.empty()) {
                 pair<int, int> new_local_goal = decodeLocalID(plan[a].back(), map);
                 pair<int, int> original_goal = goal_positions[a];
@@ -449,7 +435,7 @@ namespace SATUtils {
             }
             else cout << "[WARN] agent " << agent_id << " nemá novou lokální cestu.\n";
 
-            // Vykreslíme celou cestu agenta před přeplánováním, lokální a suffix:
+            // Print the agent's entire path before replanning, the local segment, and the suffix:
             cout << "[DEBUG] Kompletní cesta agenta " << agent_id << ":" << endl;
             cout << "  Původní: ";
             for (auto& entry : agents[agent_id].path)
@@ -460,13 +446,13 @@ namespace SATUtils {
                 cout << entry.location << " ";
             cout << endl;
 
-            // Volitelně – voláme funkci, která vykreslí detailní informace:
+            // Optionally call the helper that prints detailed information:
             printPathDetails(updated_path, T_sync, old_local_length, submap, map);
 
             cout << "[INFO] Původní délka cesty agenta " << agent_id
                  << " je: " <<  agents[agent_id].path.size() << endl;
 
-            // (5) Uložíme hotovou cestu
+            // Save the final path
             agents[agent_id].path = updated_path;
             cout << "(SATUtils.cpp) nová cesta v agents[a].path agenta " << a << ": ";
             for (auto loc : agents[agent_id].path)

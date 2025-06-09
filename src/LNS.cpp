@@ -5,6 +5,7 @@
 
 #include "../include/MAPF.hpp"
 #include "SATUtils.h"
+#include "Log.h"
 
 LNS::LNS(const Instance& instance, double time_limit, const string & init_algo_name, const string & replan_algo_name,
          const string & destory_name, int neighbor_size, int num_of_iterations, bool use_init_lns,

@@ -1,10 +1,10 @@
 ﻿#include <boost/program_options.hpp>
 #include <boost/tokenizer.hpp>
 #include "LNS.h"
+#include "Log.h"
 #include "AnytimeBCBS.h"
 #include "AnytimeEECBS.h"
 #include "PIBT/pibt.h"
-
 
 /* Main function */
 int main(int argc, char** argv)
@@ -49,7 +49,9 @@ int main(int argc, char** argv)
         ("satHeuristic", po::value<string>()->default_value("adaptive"),
          "roundRobin | mostDelayed | adaptive (for SAT destroy operator)")
         ("satSubmap",    po::value<int>()->default_value(5),
-         "half-side of square SAT submap (5 → 25 cells)")
+         "half-side of square SAT submap (5 -> 25 cells)")
+        ("satDebug", po::value<bool>()->default_value(true),
+         "print verbose SAT debug output (default = on)")
 
          // params for initLNS
          ("initDestoryStrategy", po::value<string>()->default_value("Adaptive"),
@@ -92,6 +94,8 @@ int main(int argc, char** argv)
                 vm["satHeuristic"].as<string>(),
                 vm["satSubmap"].as<int>());
         bool succ;
+
+        satlog::debug_enabled = vm["satDebug"].as<bool>();
 
         try {
             succ = lns.run();

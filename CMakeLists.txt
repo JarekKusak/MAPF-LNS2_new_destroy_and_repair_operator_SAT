@@ -47,7 +47,8 @@ endif()
 
 # Statické knihovny z MAPF‑encodings
 foreach(lib IN ITEMS mapf pb kissat monosat)
-    add_library(${lib}_lib STATIC IMPORTED)
+    add_library(${lib}_lib STATIC IMPORTED
+            inc/Log.h)
     set_target_properties(${lib}_lib
             PROPERTIES IMPORTED_LOCATION ${CMAKE_SOURCE_DIR}/libs/lib${lib}.a)
 endforeach()

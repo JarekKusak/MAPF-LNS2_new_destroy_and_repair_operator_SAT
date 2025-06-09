@@ -1,4 +1,5 @@
 #include "SATUtils.h"
+#include "Log.h"
 
 #include <iostream>
 #include <algorithm>

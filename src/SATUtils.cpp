@@ -1,4 +1,5 @@
 #include "SATUtils.h"
+#include "Log.h"
 
 #include <iostream>
 #include <algorithm>
@@ -26,17 +27,25 @@ namespace SATUtils {
     void initializeSubmapData(const std::vector<std::vector<int>>& submap,
                               std::unordered_set<int>& submap_set,
                               std::unordered_map<int, std::pair<int, int>>& global_to_local) {
-        std::cout << "Submap content (global positions):" << std::endl;
+        SAT_DBG("Submap content (global positions):");
         for (size_t x = 0; x < submap.size(); ++x) {
             for (size_t y = 0; y < submap[x].size(); ++y) {
                 int global_pos = submap[x][y];
-                std::cout << global_pos << " ";
                 if (global_pos != -1) {
                     submap_set.insert(global_pos);
                     global_to_local[global_pos] = { static_cast<int>(x), static_cast<int>(y) };
                 }
             }
-            std::cout << std::endl;
+        }
+        if (satlog::debug_enabled) {
+            for (size_t x = 0; x < submap.size(); ++x) {
+                std::stringstream ss;
+                for (size_t y = 0; y < submap[x].size(); ++y) {
+                    int global_pos = submap[x][y];
+                    ss << global_pos << " ";
+                }
+                SAT_DBG(ss.str());
+            }
         }
     }
 
@@ -48,40 +57,55 @@ namespace SATUtils {
             const Instance& instance,
             const std::vector<Agent>& agents) {
 
-        std::cout << "Map content with agents and obstacles:" << std::endl;
+        SAT_DBG("Map content with agents and obstacles:");
         std::vector<std::vector<int>> map(submap.size(), std::vector<int>(submap[0].size(), 1));
+        if (satlog::debug_enabled) {
+            for (size_t x = 0; x < submap.size(); ++x) {
+                std::stringstream ss;
+                for (size_t y = 0; y < submap[0].size(); ++y) {
+                    int global_pos = submap[x][y];
+                    if (global_pos == -1)
+                        ss << "X ";
+                    else if (instance.isObstacle(global_pos)) {
+                        ss << "X ";
+                    }
+                    else {
+                        bool is_agent = false;
+                        for (int agent : agents_in_submap) {
+                            // Note: agents can occupy the sub‑map at different timesteps; we reference problematic_timestep here
+                            if (agents[agent].path[problematic_timestep].location == global_pos) {
+                                ss << "A ";
+                                is_agent = true;
+                                break;
+                            }
+                        }
+                        if (!is_agent)
+                            ss << ". ";
+                    }
+                }
+                SAT_DBG(ss.str());
+            }
+        }
         for (size_t x = 0; x < submap.size(); ++x) {
             for (size_t y = 0; y < submap[0].size(); ++y) {
                 int global_pos = submap[x][y];
-                if (global_pos == -1)
-                    std::cout << "X ";
+                if (global_pos == -1) {
+                    map[x][y] = 1; // keep as 1 (or could be -1, but follows previous logic)
+                }
                 else if (instance.isObstacle(global_pos)) {
-                    std::cout << "X ";
                     map[x][y] = -1;
                 }
-                else {
-                    bool is_agent = false;
-                    for (int agent : agents_in_submap) {
-                        // Note: agents can occupy the sub‑map at different timesteps; we reference problematic_timestep here
-                        if (agents[agent].path[problematic_timestep].location == global_pos) {
-                            std::cout << "A ";
-                            is_agent = true;
-                            break;
-                        }
-                    }
-                    if (!is_agent)
-                        std::cout << ". ";
-                }
+                // else: leave as 1 (free)
             }
-            std::cout << std::endl;
         }
 
-        cout << "[DEBUG] content of the map structure that we pass to the SAT solver: " << endl;
-
-        for (auto a : map){
-            for (auto b : a)
-                cout << b << "  ";
-            cout <<endl;
+        SAT_DBG("content of the map structure that we pass to the SAT solver:");
+        if (satlog::debug_enabled) {
+            for (auto& row : map) {
+                std::stringstream ss;
+                for (auto cell : row) ss << cell << "  ";
+                SAT_DBG(ss.str());
+            }
         }
 
         return map;
@@ -95,8 +119,7 @@ namespace SATUtils {
             const std::vector<Agent>& agents) {
 
         std::vector<int> agents_to_replan;
-        std::cout << "\n[INFO] Identifying agents in a submap for rescheduling "
-                  << "(when key_agent is there at the time " << T_sync << "):\n";
+        SAT_DBG("Identifying agents in a submap for rescheduling (when key_agent is there at the time " << T_sync << "):");
 
         for (int agent : agents_in_submap) {
             const auto& path = agents[agent].path;
@@ -122,35 +145,40 @@ namespace SATUtils {
             }
 
             // Debug: print all intervals found for this agent:
-            std::cout << "[DEBUG] Agent " << agent << " found intervals in the submap:";
-            for (const auto& interval : intervals) {
-                std::cout << " [" << interval.first << ".." << interval.second << "]";
+            SAT_DBG("Agent " << agent << " found intervals in the sub-map:");
+            if (satlog::debug_enabled) {
+                std::stringstream ss;
+                for (const auto& interval : intervals)
+                    ss << " [" << interval.first << ".." << interval.second << "]";
+                SAT_DBG(ss.str());
             }
-            std::cout << std::endl;
 
             // Select the interval that contains T_sync.
             bool found_interval = false;
             for (const auto& interval : intervals) {
                 if (interval.first <= T_sync && T_sync <= interval.second) {
                     agents_to_replan.push_back(agent);
-                    std::cout << "  Agent " << agent << " (interval in submap: ["
+                    SAT_DBG("Agent " << agent << " (interval in submap: ["
                               << interval.first << ".." << interval.second << "]) contains time " << T_sync
-                              << ", added to replan.\n";
+                              << ", added to replan.");
                     found_interval = true;
                     break;
                 }
             }
             if (!found_interval) {
-                std::cout << "[DEBUG] Agent " << agent << " is not in submap at time " << T_sync
-                          << " (intervals: ";
-                for (const auto& interval : intervals) {
-                    std::cout << "[" << interval.first << ".." << interval.second << "] ";
+                SAT_DBG("Agent " << agent << " is not in sub-map at time " << T_sync << " (intervals: ");
+                if (satlog::debug_enabled) {
+                    std::stringstream ss;
+                    for (const auto& interval : intervals) {
+                        ss << "[" << interval.first << ".." << interval.second << "] ";
+                    }
+                    ss << ")";
+                    SAT_DBG(ss.str());
                 }
-                std::cout << ")\n";
             }
         }
         if (agents_to_replan.empty())
-            std::cout << "[INFO] No agent was in the submap at the same time (time " << T_sync << ").\n";
+            SAT_DBG("No agent was in the submap at the same time (time " << T_sync << ").");
         return agents_to_replan;
     }
 
@@ -164,17 +192,17 @@ namespace SATUtils {
             const std::vector<Agent>& agents) {
 
         std::unordered_map<int, std::vector<std::pair<int,int>>> local_paths;
-        std::cout << "\n[INFO] Creating local paths (sx, sy) in the submap for T_sync = " << T_sync << std::endl;
+        SAT_DBG("Creating local paths (sx, sy) in the submap for T_sync = " << T_sync);
         for (int agent : agents_to_replan) {
             // Ensure the agent has a defined position at T_sync
             if ((size_t)T_sync >= agents[agent].path.size()) {
-                std::cout << "[WARN] Agent " << agent << " has no defined position in time T_sync=" << T_sync << ". Skipping.\n";
+                SAT_DBG("Agent " << agent << " has no defined position in time T_sync=" << T_sync << ". Skipping.");
                 continue;
             }
             // Verify the agent is in the sub‑map at T_sync
             int loc_at_Tsync = agents[agent].path[T_sync].location;
             if (submap_set.find(loc_at_Tsync) == submap_set.end()) {
-                std::cout << "[WARN] Agent " << agent << " not in submap in time " << T_sync << ". Skipping.\n";
+                SAT_DBG("Agent " << agent << " not in submap in time " << T_sync << ". Skipping.");
                 continue;
             }
             // Find the last timestep the agent remains in the sub‑map
@@ -187,7 +215,7 @@ namespace SATUtils {
             }
             if (last_time_in_submap == -1) {
                 // Theoretically this should not happen because loc_at_Tsync is inside the sub‑map
-                std::cout << "[WARN] Agent " << agent << " It's actually not in the submap? (strange)\n";
+                SAT_DBG("Agent " << agent << " It's actually not in the submap? (strange)");
                 continue;
             }
             // Build the true local path in (sx, sy)
@@ -197,8 +225,8 @@ namespace SATUtils {
                 int glob_loc = agents[agent].path[t].location;
                 auto it = global_to_local.find(glob_loc);
                 if (it == global_to_local.end()) {
-                    std::cout << "[ERROR] Agent " << agent << " at time " << t
-                              << " is out of submap but last_time_in_submap=" << last_time_in_submap << std::endl;
+                    SAT_DBG("Agent " << agent << " at time " << t
+                              << " is out of submap but last_time_in_submap=" << last_time_in_submap);
                     break;
                 }
                 // (sx, sy) = local coordinates in the sub‑map
@@ -208,39 +236,45 @@ namespace SATUtils {
             }
             // store into the resulting map
             local_paths[agent] = path_local;
-            std::cout << "  Agent " << agent << " (global paths from T=" << T_sync << " to " << last_time_in_submap << ") has local path: ";
-            for (auto& p : path_local)
-                std::cout << "(" << p.first << "," << p.second << ") ";
-            std::cout << std::endl;
+            {
+                std::stringstream ss;
+                ss << "  Agent " << agent << " (global paths from T=" << T_sync << " to " << last_time_in_submap << ") has local path: ";
+                for (auto& p : path_local)
+                    ss << "(" << p.first << "," << p.second << ") ";
+                SAT_DBG(ss.str());
+            }
         }
         return local_paths;
     }
 
     // Prints detailed information about an agent's path (prefix, local, and suffix segments).
     void printPathDetails(const std::vector<PathEntry>& path, int T_sync, int old_local_length, const std::vector<std::vector<int>>& submap, const std::vector<std::vector<int>>& map) {
-        std::cout << "[DEBUG] Rendering the ORIGINAL path:" << std::endl;
+        SAT_DBG("Rendering the ORIGINAL path:");
         // Print prefix (path before entering the sub‑map)
-        std::cout << "  Prefix (before submap): ";
-        for (int i = 0; i < T_sync && i < (int)path.size(); i++) {
-            std::cout << path[i].location << " ";
+        {
+            std::stringstream ss_prefix;
+            ss_prefix << "  Prefix (before submap): ";
+            for (int i = 0; i < T_sync && i < (int)path.size(); i++) {
+                ss_prefix << path[i].location << " ";
+            }
+            SAT_DBG(ss_prefix.str());
         }
-        std::cout << std::endl;
-
-        // Print local segment (inside sub‑map)
-        std::cout << "  Local path (in submap): ";
-        for (int i = T_sync; i < T_sync + old_local_length && i < (int)path.size(); i++) {
-            // Decode the local position using the map
-            //auto coords = decodeLocalID(path[i].location, map);
-            std::cout << path[i].location << " ";
+        {
+            std::stringstream ss_local;
+            ss_local << "  Local path (in submap): ";
+            for (int i = T_sync; i < T_sync + old_local_length && i < (int)path.size(); i++) {
+                ss_local << path[i].location << " ";
+            }
+            SAT_DBG(ss_local.str());
         }
-        std::cout << std::endl;
-
-        // Print suffix (after leaving sub‑map)
-        std::cout << "  Suffix (out of submap): ";
-        for (size_t i = T_sync + old_local_length; i < path.size(); i++) {
-            std::cout << path[i].location << " ";
+        {
+            std::stringstream ss_suffix;
+            ss_suffix << "  Suffix (out of submap): ";
+            for (size_t i = T_sync + old_local_length; i < path.size(); i++) {
+                ss_suffix << path[i].location << " ";
+            }
+            SAT_DBG(ss_suffix.str());
         }
-        std::cout << std::endl;
     }
 
     // Solves the local MAPF problem in the sub-map using a SAT-based solver and updates agent paths.
@@ -252,8 +286,8 @@ namespace SATUtils {
             int T_sync,
             std::vector<Agent>& agents) {
 
-        std::cout << "\n[DEBUG] Checking input data for SAT solver:\n";
-        std::cout << "  - Number of agents to replan: " << agents_to_replan.size() << std::endl;
+        SAT_DBG("Checking input data for SAT solver:");
+        SAT_DBG("  - Number of agents to replan: " << agents_to_replan.size());
 
         std::vector<std::pair<int,int>> start_positions;
         std::vector<std::pair<int,int>> goal_positions;
@@ -262,7 +296,7 @@ namespace SATUtils {
         for (int agent : agents_to_replan) {
             auto it = local_paths.find(agent);
             if (it == local_paths.end() || it->second.empty()) {
-                std::cout << "[WARN] Agent " << agent << " doesn't have local_path => skipping.\n";
+                SAT_DBG("Agent " << agent << " doesn't have local_path => skipping.");
                 continue;
             }
             const auto& path = it->second;
@@ -270,35 +304,41 @@ namespace SATUtils {
             goal_positions.push_back(path.back());
             original_local_lengths[agent] = (int) path.size();
 
-            std::cout << "[DEBUG] Agent " << agent << " has the original local path length: "
+            SAT_DBG("Agent " << agent << " has the original local path length: "
                       << path.size() << " => Start (" << path.front().first << "," << path.front().second
-                      << "), Goal (" << path.back().first << "," << path.back().second << ")\n";
+                      << "), Goal (" << path.back().first << "," << path.back().second << ")");
         }
 
-        cout << "Start position: ";
-        for (auto s : start_positions)
-            cout << "(" << s.first << ", " << s.second << "), ";
-        cout << endl;
-        cout << "Goal position: ";
-        for (auto s : goal_positions)
-            cout << "(" << s.first << ", " << s.second << "), ";
-        cout << endl;
+        {
+            std::stringstream ss;
+            ss << "Start position: ";
+            for (auto s : start_positions)
+                ss << "(" << s.first << ", " << s.second << "), ";
+            SAT_DBG(ss.str());
+        }
+        {
+            std::stringstream ss;
+            ss << "Goal position: ";
+            for (auto s : goal_positions)
+                ss << "(" << s.first << ", " << s.second << "), ";
+            SAT_DBG(ss.str());
+        }
 
         auto inst = std::make_unique<_MAPFSAT_Instance>(map, start_positions, goal_positions);
         auto solver = std::make_unique<_MAPFSAT_DisappearAtGoal>();
         auto log = std::make_unique<_MAPFSAT_Logger>(inst.get(), "disappear_at_goal", 2);
 
-        std::cout << "SAT instance and solver created.\n";
+        SAT_DBG("SAT instance and solver created.");
 
         solver->SetData(inst.get(), log.get(), 300, "", false, true);
         inst->SetAgents((int)start_positions.size());
         log->NewInstance((int)start_positions.size());
 
         int result = solver->Solve((int)start_positions.size(), 0, true, true);
-        std::cout << "Solver returned: " << result << std::endl;
+        SAT_DBG("Solver returned: " << result);
 
         if (result != 0) {
-            std::cout << "SAT solver failed.\n";
+            SAT_DBG("SAT solver failed.");
             return false;
         }
 
@@ -336,12 +376,14 @@ namespace SATUtils {
 
         // Debug: print new local path (in 1D submap indices).
         for (size_t a = 0; a < plan.size(); ++a) {
-            cout << "[DEBUG] Agent (index) " << agents_to_replan[a]
-                 << " | New local path (submap idx): ";
-            for (auto lid : plan[a]) {
-                cout << lid << " ";
+            SAT_DBG("Agent (index) " << agents_to_replan[a] << " | New local path (submap idx):");
+            if (satlog::debug_enabled) {
+                std::stringstream ss;
+                for (auto lid : plan[a]) {
+                    ss << lid << " ";
+                }
+                SAT_DBG(ss.str());
             }
-            cout << endl;
         }
 
         // Update updated_path for each agent (prefix + new local path + suffix)
@@ -353,9 +395,9 @@ namespace SATUtils {
             // (B) New local segment length
             int new_local_length = (int) plan[a].size();
 
-            cout << "[INFO] Update the agent path " << agent_id
+            SAT_DBG("Update the agent path " << agent_id
                  << " | Original local length: " << old_local_length
-                 << " | New local length: " << new_local_length << endl;
+                 << " | New local length: " << new_local_length);
 
             // Copy the prefix up to T_sync
             vector<PathEntry> updated_path(
@@ -374,16 +416,16 @@ namespace SATUtils {
                 int sx = coords.first;
                 int sy = coords.second;
                 if (sx == -1 || sy == -1) {
-                    cout << "[ERROR] agent " << agent_id
+                    SAT_DBG("agent " << agent_id
                          << " local_id=" << local_id
-                         << " cannot be decoded into valid coordinates.\n";
+                         << " cannot be decoded into valid coordinates.");
                     continue;
                 }
                 // Global ID from the sub‑map:
                 int global_id = submap[sx][sy];
-                cout << "[DEBUG] agent " << agent_id << " t=" << t
-                     << " => decoded (sx,sy)=(" << sx << "," << sy
-                     << ") => global_id=" << global_id << endl;
+            SAT_DBG("agent " << agent_id << " t=" << t
+                 << " => decoded (sx,sy)=(" << sx << "," << sy
+                 << ") => global_id=" << global_id);
                 new_local_path.push_back(PathEntry(global_id));
                 updated_path.push_back(PathEntry(global_id));
             }
@@ -432,38 +474,47 @@ namespace SATUtils {
                     return false;
                 }
             }
-            else cout << "[WARN] agent " << agent_id << " does not have a new local path.\n";
+            else SAT_DBG("agent " << agent_id << " does not have a new local path.");
 
             // Print the agent's entire path before replanning, the local segment, and the suffix:
-            cout << "[DEBUG] Complete path of agent " << agent_id << ":" << endl;
-            cout << "  Original: ";
-            for (auto& entry : agents[agent_id].path)
-                cout << entry.location << " ";
-            cout << endl;
-            cout << "  New:     ";
-            for (auto& entry : updated_path)
-                cout << entry.location << " ";
-            cout << endl;
+            SAT_DBG("Complete path of agent " << agent_id << ":");
+            {
+                std::stringstream ss;
+                ss << "  Original: ";
+                for (auto& entry : agents[agent_id].path)
+                    ss << entry.location << " ";
+                SAT_DBG(ss.str());
+            }
+            {
+                std::stringstream ss;
+                ss << "  New:     ";
+                for (auto& entry : updated_path)
+                    ss << entry.location << " ";
+                SAT_DBG(ss.str());
+            }
 
             // Optionally call the helper that prints detailed information:
             printPathDetails(updated_path, T_sync, old_local_length, submap, map);
 
-            cout << "[INFO] Original agent path length " << agent_id
-                 << " je: " <<  agents[agent_id].path.size() << endl;
+            SAT_DBG("Original agent path length " << agent_id
+                 << " je: " <<  agents[agent_id].path.size());
 
             // Save the final path
             agents[agent_id].path = updated_path;
-            cout << "(SATUtils.cpp) new path in agents[a].path of the agent " << a << ": ";
-            for (auto loc : agents[agent_id].path)
-                cout << loc.location << ", ";
-            cout << endl;
+            {
+                std::stringstream ss;
+                ss << "(SATUtils.cpp) new path in agents[a].path of the agent " << a << ": ";
+                for (auto loc : agents[agent_id].path)
+                    ss << loc.location << ", ";
+                SAT_DBG(ss.str());
+            }
 
-            cout << "[INFO] Path for agent " << agent_id
+            SAT_DBG("Path for agent " << agent_id
                  << " updated, resulting length: "
-                 << updated_path.size() << endl;
+                 << updated_path.size());
         }
 
-        std::cout << "Paths successfully updated.\n";
+        SAT_DBG("Paths successfully updated.");
         return true;
     }
 }

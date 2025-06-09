@@ -46,6 +46,10 @@ int main(int argc, char** argv)
              "window size for winPIBT")
         ("winPibtSoftmode", po::value<bool>()->default_value(true),
              "winPIBT soft mode")
+        ("satHeuristic", po::value<string>()->default_value("adaptive"),
+         "roundRobin | mostDelayed | adaptive (for SAT destroy operator)")
+        ("satSubmap",    po::value<int>()->default_value(5),
+         "half-side of square SAT submap (5 → 25 cells)")
 
          // params for initLNS
          ("initDestoryStrategy", po::value<string>()->default_value("Adaptive"),
@@ -73,8 +77,6 @@ int main(int argc, char** argv)
     int screen = vm["screen"].as<int>();
 	srand(vm["seed"].as<int>());
 
-
-
 	if (vm["solver"].as<string>() == "LNS")
     {
         LNS lns(instance, time_limit,
@@ -86,7 +88,9 @@ int main(int argc, char** argv)
                 vm["initLNS"].as<bool>(),
                 vm["initDestoryStrategy"].as<string>(),
                 vm["sipp"].as<bool>(),
-                screen, pipp_option);
+                screen, pipp_option,
+                vm["satHeuristic"].as<string>(),
+                vm["satSubmap"].as<int>());
         bool succ;
 
         try {

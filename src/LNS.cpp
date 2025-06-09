@@ -8,12 +8,14 @@
 
 LNS::LNS(const Instance& instance, double time_limit, const string & init_algo_name, const string & replan_algo_name,
          const string & destory_name, int neighbor_size, int num_of_iterations, bool use_init_lns,
-         const string & init_destory_name, bool use_sipp, int screen, PIBTPPS_option pipp_option) :
+         const string & init_destory_name, bool use_sipp, int screen, PIBTPPS_option pipp_option,
+         const string& sat_heur_name, int sat_submap_side) :
          BasicLNS(instance, time_limit, neighbor_size, screen),
          init_algo_name(init_algo_name),  replan_algo_name(replan_algo_name),
          num_of_iterations(num_of_iterations), // nastavuje se v argumentu
          use_init_lns(use_init_lns),init_destory_name(init_destory_name),
-         path_table(instance.map_size), pipp_option(pipp_option), metric_rng(std::random_device{}()) {
+         path_table(instance.map_size), pipp_option(pipp_option), metric_rng(std::random_device{}()),
+         sat_submap_side(sat_submap_side) {
     start_time = Time::now();
     replan_time_limit = time_limit / 100;
     component_weights = {W_DELAY_init, W_CONFL_init, W_STRETCH_init, W_REC_init};
@@ -40,6 +42,10 @@ LNS::LNS(const Instance& instance, double time_limit, const string & init_algo_n
         cerr << "Destroy heuristic " << destory_name << " does not exists. " << endl;
         exit(-1);
     }
+
+    if      (sat_heur_name == "roundRobin")  sat_heuristic = SAT_ROUND_ROBIN;
+    else if (sat_heur_name == "mostDelayed") sat_heuristic = SAT_MOST_DELAYED;
+    else                                     sat_heuristic = SAT_ADAPTIVE;   // default
 
     int N = instance.getDefaultNumberOfAgents();
     agents.reserve(N);
@@ -105,7 +111,14 @@ bool LNS::generateNeighborBySAT() {
     cout << "====================" << endl;
     cout << "SAT destroy operator called." << endl;
 
-    auto [key_agent_id, problematic_timestep] = findBestAgentAndTime();//roundRobin();findMostDelayedAgentAndTime();//
+    pair<int,int> agent_time;
+    switch (sat_heuristic) {
+        case SAT_ROUND_ROBIN:    agent_time = roundRobin();                  break;
+        case SAT_MOST_DELAYED:   agent_time = findMostDelayedAgentAndTime(); break;
+        case SAT_ADAPTIVE:       agent_time = findBestAgentAndTime();        break;
+    }
+    cout << "[DEBUG] SAT heuristic: " << sat_heuristic << endl;
+    auto [key_agent_id, problematic_timestep] = agent_time;
     if (key_agent_id < 0) {
         cout << "No delayed agent found." << endl;
         ignored_agents_with_timestep.clear();
@@ -115,7 +128,7 @@ bool LNS::generateNeighborBySAT() {
     cout << "[DEBUG] key_agent_id délka globální cesty: " << agents[key_agent_id].path.size() << endl;
 
     int agent_loc = agents[key_agent_id].path[problematic_timestep].location; // globalID of the cell in 1D matrix
-    int submap_size = 25;
+    int submap_size = sat_submap_side * sat_submap_side;
 
     // int agent_id, int submap_size, int agent_location
     auto [submap, agents_in_submap] = getSubmapAndAgents(key_agent_id, submap_size, agent_loc, problematic_timestep);

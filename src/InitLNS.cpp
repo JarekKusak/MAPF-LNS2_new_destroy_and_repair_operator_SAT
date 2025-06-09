@@ -3,6 +3,7 @@
 #include <algorithm>
 #include "GCBS.h"
 #include "PBS.h"
+#include "Log.h"
 
 #include "../include/MAPF.hpp"
 #include "SATUtils.h"
@@ -48,7 +49,7 @@ InitLNS::InitLNS(const Instance& instance, vector<Agent>& agents, double time_li
 *    v reálné implementaci ho lze najít analýzou path_tableWC (např. hasCollisions / getLastCollisionTimestep).
 */
 pair<int, int> InitLNS::findConflictAgent() {
-    cout << "[DEBUG] Agenti v sat_failed_agents: ";
+    SAT_DBG("Agenti v sat_failed_agents: ");
     for (auto a : failed_sat_agents)
         cout << "agent " << a << ", ";
     cout << endl;
@@ -66,7 +67,7 @@ pair<int, int> InitLNS::findConflictAgent() {
             int to = path[t].location;
 
             if (path_table.hasCollisions(from, to, t, agent.id)) {
-                cout << "[DEBUG] " << agent.id << " má konflikt!" << endl;
+                SAT_DBG(agent.id << " má konflikt!");
                 return {agent.id, t-1 }; // agent a čas_konfliktu-1 (kvůli vertex konfliktům)
             }
         }
@@ -335,9 +336,8 @@ bool InitLNS::runSAT()
 
 void InitLNS::buildCollisionData()
 {
-    cout << "[DEBUG] buildCollisionData() called – skip_initial_solution case." << endl;
-    cout << "[DEBUG] Agents.size()=" << agents.size()
-         << ", collision_graph.size()=" << collision_graph.size() << endl;
+    SAT_DBG("buildCollisionData() called – skip_initial_solution case.");
+    SAT_DBG("Agents.size()=" << agents.size() << ", collision_graph.size()=" << collision_graph.size());
 
     // Pro jistotu znovu zajistíme správnou velikost collision_graph
     collision_graph.assign(agents.size(), {});
@@ -350,7 +350,7 @@ void InitLNS::buildCollisionData()
     for (int i = 0; i < (int)agents.size(); i++)
     {
         if ((int)agents[i].path.size() == 0) {
-            cout << "[DEBUG] Agent " << i << " has an EMPTY path (size=0)." << endl;
+            SAT_DBG("Agent " << i << " has an EMPTY path (size=0).");
         } //else {
             //cout << "[DEBUG] Agent " << i << " has path length=" << agents[i].path.size() << endl;
        // }
@@ -368,26 +368,22 @@ void InitLNS::buildCollisionData()
         // Najdi kolize s cestou agent[i]
         bool foundCollision = updateCollidingPairs(colliding_pairs, agents[i].id, agents[i].path);
         if (foundCollision) {
-
-            cout << "[DEBUG] agent " << i
-                 << " => updateCollidingPairs => foundCollision" << endl;
+            SAT_DBG("agent " << i << " => updateCollidingPairs => foundCollision");
         }
     }
 
     // Naplníme collision_graph
     collision_graph.assign(agents.size(), {});
-    cout << "[DEBUG] Dvojice konfliktních agentů: " << endl;
+    SAT_DBG("Conflicting agent pairs:");
     for(const auto& ap : colliding_pairs)
     {
         auto a1 = ap.first;
-        cout << "agent " << a1 << " je v konfliktu s agentem ";
         auto a2 = ap.second;
-        cout << a2 << endl;
+        SAT_DBG("agent " << a1 << " is in conflict with agent " << a2);
         // Pro jistotu ověřit, zda a1,a2 < agents.size()
         if (a1 < 0 || a1 >= (int)agents.size() ||
             a2 < 0 || a2 >= (int)agents.size()) {
-            cout << "[ERROR] buildCollisionData() found out-of-range agent index: ("
-                 << a1 << "," << a2 << ") – possible cause of segfault." << endl;
+            SAT_DBG("ERROR: buildCollisionData() found out-of-range agent index: (" << a1 << "," << a2 << ") – possible cause of segfault.");
         } else {
             collision_graph[a1].emplace(a2);
             collision_graph[a2].emplace(a1);
@@ -395,23 +391,22 @@ void InitLNS::buildCollisionData()
     }
 
     num_of_colliding_pairs = colliding_pairs.size();
-    cout << "[DEBUG] buildCollisionData() => sum_of_costs=" << sum_of_costs
-         << ", num_of_colliding_pairs=" << num_of_colliding_pairs << endl;
+    SAT_DBG("buildCollisionData() => sum_of_costs=" << sum_of_costs << ", num_of_colliding_pairs=" << num_of_colliding_pairs);
 }
 
 bool InitLNS::run(bool skip_initial_solution)
 {
     start_time = Time::now();
     bool succ = false;
-    cout << "[DEBUG] hodnota skip_initial_solution=" << skip_initial_solution << endl;
+    SAT_DBG("hodnota skip_initial_solution=" << skip_initial_solution);
     if (!skip_initial_solution) {
         succ = getInitialSolution();
-        cout << "[DEBUG] getInitialSolution() => succ=" << succ
+        SAT_DBG("getInitialSolution() => succ=" << succ
              << ", sum_of_costs=" << sum_of_costs
-             << ", num_of_colliding_pairs=" << num_of_colliding_pairs << endl;
+             << ", num_of_colliding_pairs=" << num_of_colliding_pairs);
     }
     else {
-        cout << "[DEBUG] We skip initialSolution => call buildCollisionData()" << endl;
+        SAT_DBG("We skip initialSolution => call buildCollisionData()");
         buildCollisionData();
 
         /*
@@ -434,9 +429,9 @@ bool InitLNS::run(bool skip_initial_solution)
         }*/
 
         succ = true;
-        cout << "[DEBUG] buildCollisionData done => sum_of_costs=" << sum_of_costs
-             << ", num_of_colliding_pairs=" << num_of_colliding_pairs << endl;
-        cout << "[DEBUG] sum_of_cost hodnota: " << sum_of_costs << endl;
+        SAT_DBG("buildCollisionData done => sum_of_costs=" << sum_of_costs
+             << ", num_of_colliding_pairs=" << num_of_colliding_pairs);
+        SAT_DBG("sum_of_cost hodnota: " << sum_of_costs);
     }
 
     runtime = ((fsec)(Time::now() - start_time)).count();
@@ -445,9 +440,9 @@ bool InitLNS::run(bool skip_initial_solution)
     iteration_stats.emplace_back(neighbor.agents.size(), sum_of_costs, runtime, "PP", 0, num_of_colliding_pairs);
 
     // sanity-check
-    cout << "[DEBUG] After skip/init build => iteration_stats.back(): sum_of_costs="
+    SAT_DBG("After skip/init build => iteration_stats.back(): sum_of_costs="
          << iteration_stats.back().sum_of_costs
-         << ", collisions=" << iteration_stats.back().num_of_colliding_pairs << endl;
+         << ", collisions=" << iteration_stats.back().num_of_colliding_pairs);
 
     if (screen >= 3)
         printPath();

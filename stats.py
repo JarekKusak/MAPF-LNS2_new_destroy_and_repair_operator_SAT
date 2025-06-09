@@ -3,7 +3,6 @@
 batch_lns.py – hromadné spouštění MAPF‑LNS, parsování logu a tvorba statistik
 """
 
-import argparse
 import os
 import re
 import subprocess
@@ -16,30 +15,29 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 # konfigurace
-MAPS            = ["ost003d.map", "random-32-32-20.map"]# soubory s mapou
-INSTANCES_PER_MAP = 3 # kolik scén / mapu
-AGENT_COUNTS    = [100, 300]# 500, 700, 900] # -k hodnoty
+MAPS            = ["ost003d.map", "random-32-32-20.map"]# files with maps
+INSTANCES_PER_MAP = 3 # number of instances per map
+AGENT_COUNTS    = [100]#, 300]# 500, 700, 900] # -k number of agents
 MAX_ITERS       = 20 # --maxIterations
-LNS_BIN         = "./lns" # cesta k binárce
-RESULTS_ROOT    = Path("results") # kam ukládat
+LNS_BIN         = "./lns" # path to lns binary
+RESULTS_ROOT    = Path("results") # where to store results
+SAT_HEURISTICS = ["adaptive", "roundRobin"]#, "mostDelayed"]
+SUBMAP_SIDES   = [3, 5] # --satSubmap values
 
-# různé heuristiky
-HEURISTIC_TAG   = "adaptive" # čistě do názvu
-# HEURISTIC_TAG   = "roundRobin"
-# HEURISTIC_TAG   = "mostDelayedAgent"
 
-# regexy pro parsování logu
-RE_SOC_POST   = re.compile(r"\[DEBUG\] sum_of_costs po opětovném přepočtu: (\d+)")
-RE_SOC_PRE    = re.compile(r"\[DEBUG\] sum_of_costs před opětovným přepočtem: (\d+)")
-RE_NEIGH_OLD  = re.compile(r"\[DEBUG\] neighbor\.old_sum_of_costs .*: (\d+)")
-RE_NEIGH_NEW  = re.compile(r"\[DEBUG\] neighbor\.sum_of_costs .*: (\d+)")
+# regexes for parsing the (now English) log output --------------------------
+RE_SOC_POST   = re.compile(r"\[STAT\] sum_of_costs after recomputation: (\d+)")
+RE_SOC_PRE    = re.compile(r"\[STAT\] sum_of_costs before recomputation: (\d+)")
+RE_NEIGH_OLD  = re.compile(r"\[STAT\] neighbor\.old_sum_of_costs before recomputation: (\d+)")
+RE_NEIGH_NEW  = re.compile(r"\[STAT\] neighbor\.sum_of_costs before recomputation: (\d+)")
 RE_CONFLICT   = re.compile(r"\[WARNING\] Problem after SAT:")
 RE_FINAL      = re.compile(
-    r"LNS\([^)]+\): runtime = ([\d\.]+), iterations = (\d+), "
+    r"\[STAT\] .*: runtime = ([\d\.]+), iterations = (\d+), "
     r"solution cost = (\d+), initial solution cost = (\d+), failed iterations = (\d+)"
 )
 
-def run_single(map_file: str, scen_file: str, agent_num: int, run_id: str):
+def run_single(map_file: str, scen_file: str, agent_num: int,
+               run_id: str, *, heur_tag: str, submap: int):
     """
     Spustí ./lns s danou mapou, instancí a počtem agentů.
     Vrátí cestu k souboru logu.
@@ -55,6 +53,9 @@ def run_single(map_file: str, scen_file: str, agent_num: int, run_id: str):
         "-k", str(agent_num),
         "-o", str(out_dir / "out"), # prefix; soubory stejně nepoužijeme
         "--destoryStrategy=SAT",
+        f"--satHeuristic={heur_tag}",
+        f"--satSubmap={submap}",
+        "--satDebug=0",
         "--maxIterations", str(MAX_ITERS),
         "--screen", "0", # ticho, všechno jde do logu
         "--outputPaths", str(out_dir / "paths.txt"),
@@ -215,38 +216,45 @@ def main():
             scen = f"{map_stem}-instances/{map_stem}-random-{inst_idx}.scen"
 
             for k in AGENT_COUNTS:
-                run_tag = f"{map_stem}-i{inst_idx}-k{k}-it{MAX_ITERS}-{HEURISTIC_TAG}"
-                log_path = run_single(map_file, scen, k, run_tag)
-
-                out_dir = log_path.parent
-                # zjisti "initial solution cost" z výstupu solveru (out-LNS.csv), pokud existuje
-                lns_csv_path = out_dir / "out-LNS.csv"
-                external_init_soc = None
-                if lns_csv_path.exists():
-                    try:
-                        lns_df = pd.read_csv(lns_csv_path)
-                        if not lns_df.empty and "initial solution cost" in lns_df.columns:
-                            external_init_soc = int(lns_df["initial solution cost"].iloc[0])
-                    except Exception as e:
-                        print(f"[WARN] Nelze načíst {lns_csv_path}: {e}", file=sys.stderr)
-
-                stats = parse_log(log_path, external_init_soc=external_init_soc)
-
-                # ulož průběhový graf
-                save_curve(
-                    stats["soc_curve"],
-                    RESULTS_ROOT / run_tag / "soc.png",
-                    f"{run_tag}: SOC vs. iterace",
+                for heur_tag, submap in product(SAT_HEURISTICS, SUBMAP_SIDES):
+                    run_tag = (
+                        f"{map_stem}-i{inst_idx}-k{k}-it{MAX_ITERS}-"
+                        f"{heur_tag}-sub{submap}"
+                    )
+                    log_path = run_single(
+                        map_file, scen, k, run_tag,
+                        heur_tag=heur_tag, submap=submap
                     )
 
-                record = {
-                    "run_id"           : run_tag,
-                    "map"              : map_stem,
-                    "instance"         : inst_idx,
-                    "agents"           : k,
-                    **{k: v for k, v in stats.items() if k != "soc_curve"},
-                }
-                all_records.append(record)
+                    out_dir = log_path.parent
+                    # zjisti "initial solution cost" z výstupu solveru (out-LNS.csv), pokud existuje
+                    lns_csv_path = out_dir / "out-LNS.csv"
+                    external_init_soc = None
+                    if lns_csv_path.exists():
+                        try:
+                            lns_df = pd.read_csv(lns_csv_path)
+                            if not lns_df.empty and "initial solution cost" in lns_df.columns:
+                                external_init_soc = int(lns_df["initial solution cost"].iloc[0])
+                        except Exception as e:
+                            print(f"[WARN] Nelze načíst {lns_csv_path}: {e}", file=sys.stderr)
+
+                    stats = parse_log(log_path, external_init_soc=external_init_soc)
+
+                    # ulož průběhový graf
+                    save_curve(
+                        stats["soc_curve"],
+                        RESULTS_ROOT / run_tag / "soc.png",
+                        f"{run_tag}: SOC vs. iterace",
+                        )
+
+                    record = {
+                        "run_id"           : run_tag,
+                        "map"              : map_stem,
+                        "instance"         : inst_idx,
+                        "agents"           : k,
+                        **{k: v for k, v in stats.items() if k != "soc_curve"},
+                    }
+                    all_records.append(record)
 
     df = pd.DataFrame(all_records)
     csv_path = RESULTS_ROOT / "results.csv"

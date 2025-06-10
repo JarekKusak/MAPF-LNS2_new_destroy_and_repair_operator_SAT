@@ -2,7 +2,7 @@
 [DBG]  getInitialSolution() => succ=1, sum_of_costs=4461, num_of_colliding_pairs=1
 [DBG]  After skip/init build => iteration_stats.back(): sum_of_costs=4461, collisions=1
 [DEBUG] Using default neighbor generation strategy for conflicts: 0
-	InitLNS(PP): runtime = 0.0230592, iterations = 2, colliding pairs = 0, initial colliding pairs = 1, solution cost = 4490, initial solution cost = 4461, failed iterations = 0
+	InitLNS(PP): runtime = 0.025449, iterations = 2, colliding pairs = 0, initial colliding pairs = 1, solution cost = 4490, initial solution cost = 4461, failed iterations = 0
 [STAT] Iteration 1
 [DBG]  Using SAT operator (destroy+repair SAT).
 [DBG]  ====================
@@ -82,7 +82,7 @@ Agent #1 : 17 18 0 0 0 0
 Agent #2 : 9 14 13 18 17 16 
 Agent #3 : 8 13 12 11 0 0 
 
-[DBG]  Solver returned: 0
+[STAT] Solver returned: 0
 [DBG]  Agent (index) 22 | New local path (submap idx):
 [DBG]  16 17 18 19 20 15 
 [DBG]  Agent (index) 87 | New local path (submap idx):
@@ -163,8 +163,8 @@ Agent #3 : 8 13 12 11 0 0
 [DBG]  (LNS.cpp) New path for agent 120: 
 [DBG]  203, 235, 235, 235, 235, 235, 235, 235, 235, 235, 235, 235, 267, 266, 265, 264, 232, 200, 
 [DBG]  Delta value: 0.185185
-[DBG]  Rewarding metric index = 2
-[DBG]  component_weights = {0.235429, 0.235429, 0.293713, 0.235429}
+[DBG]  Rewarding metric index = 3
+[DBG]  component_weights = {0.235429, 0.235429, 0.235429, 0.293713}
 [DBG]  opSuccess value: 1
 [STAT] neighbor.sum_of_costs before recomputation: 110
 [STAT] neighbor.old_sum_of_costs before recomputation: 135
@@ -195,7 +195,7 @@ Agent #3 : 8 13 12 11 0 0
 [DBG]  sum_of_cost hodnota: 4465
 [DBG]  After skip/init build => iteration_stats.back(): sum_of_costs=4465, collisions=3
 [DEBUG] Using default neighbor generation strategy for conflicts: 1
-	InitLNS(PP): runtime = 0.00326112, iterations = 2, colliding pairs = 0, initial colliding pairs = 3, solution cost = 4472, initial solution cost = 4465, failed iterations = 0
+	InitLNS(PP): runtime = 0.00309458, iterations = 2, colliding pairs = 0, initial colliding pairs = 3, solution cost = 4472, initial solution cost = 4465, failed iterations = 0
 [DBG]  [DEBUG] init_lns->sum_of_costs after init_lns->run: 4472
 [DBG]  [DEBUG] sum_of_costs after assignment from init_lns->run: 4472
 [DBG]  Recomputing sum_of_cost by dividing neighbor.sum_of_costs and neighbor.old_sum_of_costs
@@ -302,7 +302,7 @@ Agent #1 : 7 3 4 5 1 0 0
 Agent #2 : 0 4 8 11 12 0 0 
 Agent #3 : 4 5 1 0 0 0 0 
 
-[DBG]  Solver returned: 0
+[STAT] Solver returned: 0
 [DBG]  Agent (index) 28 | New local path (submap idx):
 [DBG]  9 8 11 12 13 14 15 
 [DBG]  Agent (index) 63 | New local path (submap idx):
@@ -386,7 +386,7 @@ Agent #3 : 4 5 1 0 0 0 0
 [DBG]  529, 561, 593, 625, 657, 658, 659, 627, 628, 629, 597, 565, 566, 534, 502, 503, 504, 472, 440, 408, 376, 377, 378, 378, 379, 380, 348, 349, 317, 318, 319, 287, 255, 254, 222, 
 [DBG]  Delta value: 0.23741
 [DBG]  Rewarding metric index = 3
-[DBG]  component_weights = {0.219775, 0.219775, 0.274184, 0.286266}
+[DBG]  component_weights = {0.216216, 0.216216, 0.216216, 0.351351}
 [DBG]  opSuccess value: 1
 [STAT] neighbor.sum_of_costs before recomputation: 106
 [STAT] neighbor.old_sum_of_costs before recomputation: 139
@@ -425,7 +425,7 @@ Agent #3 : 4 5 1 0 0 0 0
 [DEBUG] Using default neighbor generation strategy for conflicts: 1
 [DEBUG] Using default neighbor generation strategy for conflicts: 0
 [DEBUG] Using default neighbor generation strategy for conflicts: 1
-	InitLNS(PP): runtime = 0.00844754, iterations = 5, colliding pairs = 0, initial colliding pairs = 5, solution cost = 4495, initial solution cost = 4438, failed iterations = 0
+	InitLNS(PP): runtime = 0.00817179, iterations = 5, colliding pairs = 0, initial colliding pairs = 5, solution cost = 4495, initial solution cost = 4438, failed iterations = 0
 [DBG]  [DEBUG] init_lns->sum_of_costs after init_lns->run: 4495
 [DBG]  [DEBUG] sum_of_costs after assignment from init_lns->run: 4495
 [DBG]  Recomputing sum_of_cost by dividing neighbor.sum_of_costs and neighbor.old_sum_of_costs
@@ -498,7 +498,7 @@ SoC LB: 18
 Delta: 0
 Remaining time: 300000 [ms]
 
-[DBG]  Solver returned: -1
+[STAT] Solver returned: -1
 [DBG]  SAT solver failed.
 [STAT] SAT solver failed to find a valid solution.
 [DBG]  ====================
@@ -569,7 +569,7 @@ SoC LB: 16
 Delta: 0
 Remaining time: 300000 [ms]
 
-[DBG]  Solver returned: -1
+[STAT] Solver returned: -1
 [DBG]  SAT solver failed.
 [STAT] SAT solver failed to find a valid solution.
 [DBG]  ====================
@@ -669,7 +669,7 @@ Agent #1 : 9 8 11 12 13 14 15
 Agent #2 : 4 5 1 0 0 0 0 
 Agent #3 : 0 1 0 0 0 0 0 
 
-[DBG]  Solver returned: 0
+[STAT] Solver returned: 0
 [DBG]  Agent (index) 1 | New local path (submap idx):
 [DBG]  14 15 
 [DBG]  Agent (index) 28 | New local path (submap idx):
@@ -747,7 +747,7 @@ Agent #3 : 0 1 0 0 0 0 0
 [DBG]  781, 782, 750, 718, 686, 687, 688, 689, 689, 657, 658, 659, 627, 628, 596, 597, 565, 566, 534, 502, 503, 504, 505, 506, 538, 539, 540, 541, 
 [DBG]  Delta value: 0.268657
 [DBG]  Rewarding metric index = 0
-[DBG]  component_weights = {0.273344, 0.204686, 0.255359, 0.266611}
+[DBG]  component_weights = {0.269216, 0.201596, 0.201596, 0.327592}
 [DBG]  opSuccess value: 1
 [STAT] neighbor.sum_of_costs before recomputation: 98
 [STAT] neighbor.old_sum_of_costs before recomputation: 134
@@ -777,7 +777,7 @@ Agent #3 : 0 1 0 0 0 0 0
 [DBG]  After skip/init build => iteration_stats.back(): sum_of_costs=4459, collisions=2
 [DEBUG] Using default neighbor generation strategy for conflicts: 0
 [DEBUG] Using default neighbor generation strategy for conflicts: 1
-	InitLNS(PP): runtime = 0.006589, iterations = 3, colliding pairs = 0, initial colliding pairs = 2, solution cost = 4476, initial solution cost = 4459, failed iterations = 0
+	InitLNS(PP): runtime = 0.00646146, iterations = 3, colliding pairs = 0, initial colliding pairs = 2, solution cost = 4476, initial solution cost = 4459, failed iterations = 0
 [DBG]  [DEBUG] init_lns->sum_of_costs after init_lns->run: 4476
 [DBG]  [DEBUG] sum_of_costs after assignment from init_lns->run: 4476
 [DBG]  Recomputing sum_of_cost by dividing neighbor.sum_of_costs and neighbor.old_sum_of_costs
@@ -852,7 +852,7 @@ Remaining time: 300000 [ms]
 Found plan [agents = 1] [timesteps = 4]
 Agent #0 : 8 10 11 12 
 
-[DBG]  Solver returned: 0
+[STAT] Solver returned: 0
 [DBG]  Agent (index) 28 | New local path (submap idx):
 [DBG]  8 10 11 12 
 [DBG]  Update the agent path 28 | Original local length: 19 | New local length: 4
@@ -874,8 +874,8 @@ Agent #0 : 8 10 11 12
 [DBG]  (LNS.cpp) New path for agent 28: 
 [DBG]  661, 661, 661, 661, 661, 661, 661, 661, 661, 661, 661, 661, 661, 661, 661, 661, 661, 661, 661, 661, 661, 661, 661, 661, 661, 661, 661, 661, 661, 661, 629, 629, 629, 628, 627, 659, 691, 692, 724, 725, 726, 727, 
 [DBG]  Delta value: 0.267857
-[DBG]  Rewarding metric index = 1
-[DBG]  component_weights = {0.255824, 0.255662, 0.238992, 0.249523}
+[DBG]  Rewarding metric index = 2
+[DBG]  component_weights = {0.252205, 0.188857, 0.252046, 0.306892}
 [DBG]  opSuccess value: 1
 [STAT] neighbor.sum_of_costs before recomputation: 41
 [STAT] neighbor.old_sum_of_costs before recomputation: 56
@@ -899,7 +899,7 @@ Agent #0 : 8 10 11 12
 [DBG]  sum_of_cost hodnota: 4461
 [DBG]  After skip/init build => iteration_stats.back(): sum_of_costs=4461, collisions=1
 [DEBUG] Using default neighbor generation strategy for conflicts: 1
-	InitLNS(PP): runtime = 0.00269287, iterations = 2, colliding pairs = 0, initial colliding pairs = 1, solution cost = 4500, initial solution cost = 4461, failed iterations = 0
+	InitLNS(PP): runtime = 0.00264058, iterations = 2, colliding pairs = 0, initial colliding pairs = 1, solution cost = 4500, initial solution cost = 4461, failed iterations = 0
 [DBG]  [DEBUG] init_lns->sum_of_costs after init_lns->run: 4500
 [DBG]  [DEBUG] sum_of_costs after assignment from init_lns->run: 4500
 [DBG]  Recomputing sum_of_cost by dividing neighbor.sum_of_costs and neighbor.old_sum_of_costs
@@ -966,7 +966,7 @@ Found plan [agents = 2] [timesteps = 3]
 Agent #0 : 7 8 9 
 Agent #1 : 8 9 0 
 
-[DBG]  Solver returned: 0
+[STAT] Solver returned: 0
 [DBG]  Agent (index) 28 | New local path (submap idx):
 [DBG]  7 8 9 
 [DBG]  Agent (index) 42 | New local path (submap idx):
@@ -1005,7 +1005,7 @@ Agent #1 : 8 9 0
 [DBG]  224, 224, 224, 256, 257, 289, 321, 353, 354, 355, 387, 419, 418, 450, 482, 483, 484, 516, 548, 580, 581, 613, 645, 646, 678, 710, 742, 774, 806, 807, 808, 809, 777, 778, 779, 780, 812, 813, 814, 846, 846, 847, 879, 880, 881, 882, 883, 851, 819, 787, 788, 756, 757, 725, 726, 727, 759, 
 [DBG]  Delta value: 0
 [DBG]  Rewarding metric index = 2
-[DBG]  component_weights = {0.252646, 0.252486, 0.248445, 0.246423}
+[DBG]  component_weights = {0.248903, 0.186384, 0.261838, 0.302874}
 [DBG]  opSuccess value: 1
 [STAT] neighbor.sum_of_costs before recomputation: 112
 [STAT] neighbor.old_sum_of_costs before recomputation: 112
@@ -1082,7 +1082,7 @@ SoC LB: 8
 Delta: 0
 Remaining time: 300000 [ms]
 
-[DBG]  Solver returned: -1
+[STAT] Solver returned: -1
 [DBG]  SAT solver failed.
 [STAT] SAT solver failed to find a valid solution.
 [DBG]  ====================
@@ -1169,7 +1169,7 @@ SoC LB: 28
 Delta: 0
 Remaining time: 300000 [ms]
 
-[DBG]  Solver returned: -1
+[STAT] Solver returned: -1
 [DBG]  SAT solver failed.
 [STAT] SAT solver failed to find a valid solution.
 [DBG]  ====================
@@ -1247,7 +1247,7 @@ Agent #1 : 8 10 11 12
 Agent #2 : 5 8 10 14 
 Agent #3 : 4 5 0 0 
 
-[DBG]  Solver returned: 0
+[STAT] Solver returned: 0
 [DBG]  Agent (index) 26 | New local path (submap idx):
 [DBG]  10 14 13 
 [DBG]  Agent (index) 28 | New local path (submap idx):
@@ -1323,8 +1323,8 @@ Agent #3 : 4 5 0 0
 [DBG]  (LNS.cpp) New path for agent 148: 
 [DBG]  776, 808, 808, 808, 808, 808, 807, 806, 806, 807, 808, 809, 841, 873, 874, 875, 876, 877, 878, 846, 847, 848, 848, 849, 817, 818, 819, 820, 788, 756, 724, 692, 691, 659, 660, 
 [DBG]  Delta value: 0.115854
-[DBG]  Rewarding metric index = 1
-[DBG]  component_weights = {0.241979, 0.284045, 0.237956, 0.236019}
+[DBG]  Rewarding metric index = 0
+[DBG]  component_weights = {0.280182, 0.178623, 0.250934, 0.290261}
 [DBG]  opSuccess value: 1
 [STAT] neighbor.sum_of_costs before recomputation: 145
 [STAT] neighbor.old_sum_of_costs before recomputation: 164
@@ -1352,7 +1352,7 @@ Agent #3 : 4 5 0 0
 [DBG]  After skip/init build => iteration_stats.back(): sum_of_costs=4481, collisions=1
 [DEBUG] Using default neighbor generation strategy for conflicts: 1
 [DEBUG] Using default neighbor generation strategy for conflicts: 1
-	InitLNS(PP): runtime = 0.00550138, iterations = 3, colliding pairs = 0, initial colliding pairs = 1, solution cost = 4514, initial solution cost = 4481, failed iterations = 0
+	InitLNS(PP): runtime = 0.00546221, iterations = 3, colliding pairs = 0, initial colliding pairs = 1, solution cost = 4514, initial solution cost = 4481, failed iterations = 0
 [DBG]  [DEBUG] init_lns->sum_of_costs after init_lns->run: 4514
 [DBG]  [DEBUG] sum_of_costs after assignment from init_lns->run: 4514
 [DBG]  Recomputing sum_of_cost by dividing neighbor.sum_of_costs and neighbor.old_sum_of_costs
@@ -1446,7 +1446,7 @@ Agent #0 : 9 5 1 0 0 0 0
 Agent #1 : 14 15 0 0 0 0 0 
 Agent #2 : 7 10 11 12 13 14 15 
 
-[DBG]  Solver returned: 0
+[STAT] Solver returned: 0
 [DBG]  Agent (index) 28 | New local path (submap idx):
 [DBG]  9 5 1 
 [DBG]  Agent (index) 46 | New local path (submap idx):
@@ -1506,8 +1506,8 @@ Agent #2 : 7 10 11 12 13 14 15
 [DBG]  (LNS.cpp) New path for agent 113: 
 [DBG]  529, 561, 593, 625, 657, 658, 659, 691, 692, 724, 725, 726, 727, 728, 696, 664, 632, 633, 601, 602, 603, 571, 539, 540, 541, 541, 509, 477, 445, 413, 381, 349, 350, 318, 319, 287, 255, 254, 222, 
 [DBG]  Delta value: 0.097561
-[DBG]  Rewarding metric index = 2
-[DBG]  component_weights = {0.233354, 0.273921, 0.265118, 0.227607}
+[DBG]  Rewarding metric index = 3
+[DBG]  component_weights = {0.268095, 0.170917, 0.240109, 0.32088}
 [DBG]  opSuccess value: 1
 [STAT] neighbor.sum_of_costs before recomputation: 111
 [STAT] neighbor.old_sum_of_costs before recomputation: 123
@@ -1544,7 +1544,7 @@ Agent #2 : 7 10 11 12 13 14 15
 [DBG]  After skip/init build => iteration_stats.back(): sum_of_costs=4502, collisions=6
 [DEBUG] Using default neighbor generation strategy for conflicts: 2
 [DEBUG] Using default neighbor generation strategy for conflicts: 1
-	InitLNS(PP): runtime = 0.00580483, iterations = 3, colliding pairs = 0, initial colliding pairs = 6, solution cost = 4537, initial solution cost = 4502, failed iterations = 0
+	InitLNS(PP): runtime = 0.00382813, iterations = 3, colliding pairs = 0, initial colliding pairs = 6, solution cost = 4537, initial solution cost = 4502, failed iterations = 0
 [DBG]  [DEBUG] init_lns->sum_of_costs after init_lns->run: 4537
 [DBG]  [DEBUG] sum_of_costs after assignment from init_lns->run: 4537
 [DBG]  Recomputing sum_of_cost by dividing neighbor.sum_of_costs and neighbor.old_sum_of_costs
@@ -1604,7 +1604,7 @@ Remaining time: 300000 [ms]
 Found plan [agents = 1] [timesteps = 4]
 Agent #0 : 8 3 4 5 
 
-[DBG]  Solver returned: 0
+[STAT] Solver returned: 0
 [DBG]  Agent (index) 28 | New local path (submap idx):
 [DBG]  8 3 4 5 
 [DBG]  Update the agent path 28 | Original local length: 13 | New local length: 4
@@ -1626,8 +1626,8 @@ Agent #0 : 8 3 4 5
 [DBG]  (LNS.cpp) New path for agent 28: 
 [DBG]  661, 661, 661, 661, 661, 661, 661, 661, 661, 661, 661, 660, 628, 628, 628, 628, 628, 628, 628, 628, 628, 628, 629, 629, 629, 629, 629, 629, 629, 629, 629, 629, 629, 628, 660, 692, 724, 725, 757, 757, 757, 757, 757, 757, 757, 725, 726, 727, 
 [DBG]  Delta value: 0.160714
-[DBG]  Rewarding metric index = 2
-[DBG]  component_weights = {0.220394, 0.258708, 0.305932, 0.214966}
+[DBG]  Rewarding metric index = 3
+[DBG]  component_weights = {0.250282, 0.15956, 0.224155, 0.366003}
 [DBG]  opSuccess value: 1
 [STAT] neighbor.sum_of_costs before recomputation: 47
 [STAT] neighbor.old_sum_of_costs before recomputation: 56
@@ -1651,7 +1651,7 @@ Agent #0 : 8 3 4 5
 [DBG]  sum_of_cost hodnota: 4528
 [DBG]  After skip/init build => iteration_stats.back(): sum_of_costs=4528, collisions=1
 [DEBUG] Using default neighbor generation strategy for conflicts: 1
-	InitLNS(PP): runtime = 0.00493579, iterations = 2, colliding pairs = 0, initial colliding pairs = 1, solution cost = 4553, initial solution cost = 4528, failed iterations = 0
+	InitLNS(PP): runtime = 0.00354017, iterations = 2, colliding pairs = 0, initial colliding pairs = 1, solution cost = 4553, initial solution cost = 4528, failed iterations = 0
 [DBG]  [DEBUG] init_lns->sum_of_costs after init_lns->run: 4553
 [DBG]  [DEBUG] sum_of_costs after assignment from init_lns->run: 4553
 [DBG]  Recomputing sum_of_cost by dividing neighbor.sum_of_costs and neighbor.old_sum_of_costs
@@ -1725,7 +1725,7 @@ Remaining time: 300000 [ms]
 Found plan [agents = 1] [timesteps = 4]
 Agent #0 : 8 13 17 18 
 
-[DBG]  Solver returned: 0
+[STAT] Solver returned: 0
 [DBG]  Agent (index) 28 | New local path (submap idx):
 [DBG]  8 13 17 18 
 [DBG]  Update the agent path 28 | Original local length: 14 | New local length: 4
@@ -1747,8 +1747,8 @@ Agent #0 : 8 13 17 18
 [DBG]  (LNS.cpp) New path for agent 28: 
 [DBG]  661, 661, 661, 661, 661, 661, 661, 661, 661, 661, 661, 660, 692, 692, 692, 660, 659, 627, 627, 627, 627, 627, 627, 627, 627, 627, 627, 627, 659, 691, 692, 724, 724, 724, 724, 724, 724, 724, 724, 724, 724, 724, 724, 724, 725, 726, 727, 
 [DBG]  Delta value: 0.178571
-[DBG]  Rewarding metric index = 3
-[DBG]  component_weights = {0.209556, 0.245985, 0.290887, 0.253572}
+[DBG]  Rewarding metric index = 2
+[DBG]  component_weights = {0.237474, 0.151395, 0.263857, 0.347274}
 [DBG]  opSuccess value: 1
 [STAT] neighbor.sum_of_costs before recomputation: 46
 [STAT] neighbor.old_sum_of_costs before recomputation: 56
@@ -1780,7 +1780,7 @@ Agent #0 : 8 13 17 18
 [DBG]  sum_of_cost hodnota: 4543
 [DBG]  After skip/init build => iteration_stats.back(): sum_of_costs=4543, collisions=5
 [DEBUG] Using default neighbor generation strategy for conflicts: 0
-	InitLNS(PP): runtime = 0.00238146, iterations = 2, colliding pairs = 0, initial colliding pairs = 5, solution cost = 4561, initial solution cost = 4543, failed iterations = 0
+	InitLNS(PP): runtime = 0.00185254, iterations = 2, colliding pairs = 0, initial colliding pairs = 5, solution cost = 4561, initial solution cost = 4543, failed iterations = 0
 [DBG]  [DEBUG] init_lns->sum_of_costs after init_lns->run: 4561
 [DBG]  [DEBUG] sum_of_costs after assignment from init_lns->run: 4561
 [DBG]  Recomputing sum_of_cost by dividing neighbor.sum_of_costs and neighbor.old_sum_of_costs
@@ -1865,7 +1865,7 @@ Agent #0 : 9 8 11 12 13 14 15
 Agent #1 : 5 9 8 11 12 0 0 
 Agent #2 : 14 15 0 0 0 0 0 
 
-[DBG]  Solver returned: 0
+[STAT] Solver returned: 0
 [DBG]  Agent (index) 28 | New local path (submap idx):
 [DBG]  9 8 11 12 13 14 15 
 [DBG]  Agent (index) 53 | New local path (submap idx):
@@ -1927,8 +1927,8 @@ Agent #2 : 14 15 0 0 0 0 0
 [DBG]  (LNS.cpp) New path for agent 111: 
 [DBG]  964, 996, 997, 998, 999, 1000, 968, 936, 937, 905, 906, 874, 875, 876, 877, 878, 846, 847, 848, 849, 850, 818, 786, 787, 755, 756, 724, 725, 726, 727, 728, 696, 664, 632, 600, 601, 602, 570, 538, 539, 540, 
 [DBG]  Delta value: 0.166667
-[DBG]  Rewarding metric index = 3
-[DBG]  component_weights = {0.198099, 0.232537, 0.274984, 0.294379}
+[DBG]  Rewarding metric index = 1
+[DBG]  component_weights = {0.229548, 0.179719, 0.25505, 0.335683}
 [DBG]  opSuccess value: 1
 [STAT] neighbor.sum_of_costs before recomputation: 110
 [STAT] neighbor.old_sum_of_costs before recomputation: 132
@@ -1957,7 +1957,7 @@ Agent #2 : 14 15 0 0 0 0 0
 [DBG]  After skip/init build => iteration_stats.back(): sum_of_costs=4539, collisions=2
 [DEBUG] Using default neighbor generation strategy for conflicts: 2
 [DEBUG] Using default neighbor generation strategy for conflicts: 0
-	InitLNS(PP): runtime = 0.00247, iterations = 3, colliding pairs = 0, initial colliding pairs = 2, solution cost = 4557, initial solution cost = 4539, failed iterations = 0
+	InitLNS(PP): runtime = 0.00198267, iterations = 3, colliding pairs = 0, initial colliding pairs = 2, solution cost = 4557, initial solution cost = 4539, failed iterations = 0
 [DBG]  [DEBUG] init_lns->sum_of_costs after init_lns->run: 4557
 [DBG]  [DEBUG] sum_of_costs after assignment from init_lns->run: 4557
 [DBG]  Recomputing sum_of_cost by dividing neighbor.sum_of_costs and neighbor.old_sum_of_costs
@@ -2020,7 +2020,7 @@ SoC LB: 6
 Delta: 0
 Remaining time: 300000 [ms]
 
-[DBG]  Solver returned: -1
+[STAT] Solver returned: -1
 [DBG]  SAT solver failed.
 [STAT] SAT solver failed to find a valid solution.
 [DBG]  ====================
@@ -2103,7 +2103,7 @@ Agent #0 : 15 0 0 0 0 0 0
 Agent #1 : 9 8 11 12 13 14 15 
 Agent #2 : 11 12 0 0 0 0 0 
 
-[DBG]  Solver returned: 0
+[STAT] Solver returned: 0
 [DBG]  Agent (index) 7 | New local path (submap idx):
 [DBG]  15 
 [DBG]  Agent (index) 28 | New local path (submap idx):
@@ -2161,8 +2161,8 @@ Agent #2 : 11 12 0 0 0 0 0
 [DBG]  (LNS.cpp) New path for agent 108: 
 [DBG]  628, 660, 692, 692, 692, 724, 756, 788, 788, 788, 820, 821, 822, 854, 886, 887, 888, 920, 952, 953, 954, 955, 956, 988, 989, 1021, 
 [DBG]  Delta value: 0.46
-[DBG]  Rewarding metric index = 1
-[DBG]  component_weights = {0.176114, 0.317711, 0.244466, 0.261709}
+[DBG]  Rewarding metric index = 3
+[DBG]  component_weights = {0.194498, 0.152277, 0.216106, 0.437119}
 [DBG]  opSuccess value: 1
 [STAT] neighbor.sum_of_costs before recomputation: 54
 [STAT] neighbor.old_sum_of_costs before recomputation: 100
@@ -2195,7 +2195,7 @@ Agent #2 : 11 12 0 0 0 0 0
 [DEBUG] Using default neighbor generation strategy for conflicts: 2
 [DEBUG] Using default neighbor generation strategy for conflicts: 2
 [DEBUG] Using default neighbor generation strategy for conflicts: 1
-	InitLNS(PP): runtime = 0.00717829, iterations = 5, colliding pairs = 0, initial colliding pairs = 3, solution cost = 4541, initial solution cost = 4511, failed iterations = 0
+	InitLNS(PP): runtime = 0.00630587, iterations = 5, colliding pairs = 0, initial colliding pairs = 3, solution cost = 4541, initial solution cost = 4511, failed iterations = 0
 [DBG]  [DEBUG] init_lns->sum_of_costs after init_lns->run: 4541
 [DBG]  [DEBUG] sum_of_costs after assignment from init_lns->run: 4541
 [DBG]  Recomputing sum_of_cost by dividing neighbor.sum_of_costs and neighbor.old_sum_of_costs
@@ -2299,7 +2299,7 @@ Agent #2 : 10 13 0 0
 Agent #3 : 1 0 0 0 
 Agent #4 : 13 14 0 0 
 
-[DBG]  Solver returned: 0
+[STAT] Solver returned: 0
 [DBG]  Agent (index) 26 | New local path (submap idx):
 [DBG]  11 10 6 
 [DBG]  Agent (index) 28 | New local path (submap idx):
@@ -2389,8 +2389,8 @@ Agent #4 : 13 14 0 0
 [DBG]  (LNS.cpp) New path for agent 69: 
 [DBG]  4, 5, 6, 7, 8, 9, 41, 73, 105, 106, 138, 139, 140, 172, 173, 205, 237, 269, 301, 333, 365, 366, 398, 430, 462, 494, 526, 558, 590, 622, 654, 655, 687, 719, 751, 783, 815, 847, 848, 849, 817, 818, 819, 820, 
 [DBG]  Delta value: 0.0756303
-[DBG]  Rewarding metric index = 3
-[DBG]  component_weights = {0.170223, 0.307083, 0.236288, 0.286406}
+[DBG]  Rewarding metric index = 2
+[DBG]  component_weights = {0.189094, 0.148046, 0.237886, 0.424974}
 [DBG]  opSuccess value: 1
 [STAT] neighbor.sum_of_costs before recomputation: 220
 [STAT] neighbor.old_sum_of_costs before recomputation: 238
@@ -2421,7 +2421,7 @@ Agent #4 : 13 14 0 0
 [DBG]  After skip/init build => iteration_stats.back(): sum_of_costs=4523, collisions=2
 [DEBUG] Using default neighbor generation strategy for conflicts: 2
 [DEBUG] Using default neighbor generation strategy for conflicts: 0
-	InitLNS(PP): runtime = 0.00489875, iterations = 3, colliding pairs = 0, initial colliding pairs = 2, solution cost = 4550, initial solution cost = 4523, failed iterations = 0
+	InitLNS(PP): runtime = 0.00440042, iterations = 3, colliding pairs = 0, initial colliding pairs = 2, solution cost = 4550, initial solution cost = 4523, failed iterations = 0
 [DBG]  [DEBUG] init_lns->sum_of_costs after init_lns->run: 4550
 [DBG]  [DEBUG] sum_of_costs after assignment from init_lns->run: 4550
 [DBG]  Recomputing sum_of_cost by dividing neighbor.sum_of_costs and neighbor.old_sum_of_costs
@@ -2499,7 +2499,7 @@ Agent #0 : 9 8 11 12
 Agent #1 : 11 12 13 0 
 Agent #2 : 12 13 14 15 
 
-[DBG]  Solver returned: 0
+[STAT] Solver returned: 0
 [DBG]  Agent (index) 28 | New local path (submap idx):
 [DBG]  9 8 11 12 
 [DBG]  Agent (index) 89 | New local path (submap idx):
@@ -2558,8 +2558,8 @@ Agent #2 : 12 13 14 15
 [DBG]  (LNS.cpp) New path for agent 113: 
 [DBG]  529, 561, 593, 625, 657, 658, 659, 660, 692, 724, 725, 726, 727, 728, 696, 664, 632, 600, 601, 569, 569, 570, 538, 539, 540, 541, 509, 477, 445, 413, 381, 349, 317, 318, 319, 287, 255, 254, 222, 
 [DBG]  Delta value: 0.132231
-[DBG]  Rewarding metric index = 1
-[DBG]  component_weights = {0.160753, 0.345629, 0.223144, 0.270473}
+[DBG]  Rewarding metric index = 3
+[DBG]  component_weights = {0.174841, 0.136887, 0.219955, 0.468317}
 [DBG]  opSuccess value: 1
 [STAT] neighbor.sum_of_costs before recomputation: 105
 [STAT] neighbor.old_sum_of_costs before recomputation: 121
@@ -2589,7 +2589,7 @@ Agent #2 : 12 13 14 15
 [DBG]  sum_of_cost hodnota: 4534
 [DBG]  After skip/init build => iteration_stats.back(): sum_of_costs=4534, collisions=3
 [DEBUG] Using default neighbor generation strategy for conflicts: 0
-	InitLNS(PP): runtime = 0.00148946, iterations = 2, colliding pairs = 0, initial colliding pairs = 3, solution cost = 4550, initial solution cost = 4534, failed iterations = 0
+	InitLNS(PP): runtime = 0.00134579, iterations = 2, colliding pairs = 0, initial colliding pairs = 3, solution cost = 4550, initial solution cost = 4534, failed iterations = 0
 [DBG]  [DEBUG] init_lns->sum_of_costs after init_lns->run: 4550
 [DBG]  [DEBUG] sum_of_costs after assignment from init_lns->run: 4550
 [DBG]  Recomputing sum_of_cost by dividing neighbor.sum_of_costs and neighbor.old_sum_of_costs
@@ -2698,7 +2698,7 @@ Agent #1 : 8 11 15 14 0 0 0
 Agent #2 : 3 0 0 0 0 0 0 
 Agent #3 : 15 0 0 0 0 0 0 
 
-[DBG]  Solver returned: 0
+[STAT] Solver returned: 0
 [DBG]  Agent (index) 26 | New local path (submap idx):
 [DBG]  2 5 9 12 16 15 14 
 [DBG]  Agent (index) 28 | New local path (submap idx):
@@ -2774,8 +2774,8 @@ Agent #3 : 15 0 0 0 0 0 0
 [DBG]  (LNS.cpp) New path for agent 148: 
 [DBG]  776, 777, 777, 777, 745, 745, 745, 746, 714, 714, 714, 714, 714, 682, 683, 682, 683, 684, 685, 653, 653, 653, 654, 686, 687, 688, 656, 657, 658, 659, 659, 660, 
 [DBG]  Delta value: 0.0223464
-[DBG]  Rewarding metric index = 1
-[DBG]  component_weights = {0.156631, 0.362411, 0.217421, 0.263537}
+[DBG]  Rewarding metric index = 2
+[DBG]  component_weights = {0.171961, 0.134632, 0.232806, 0.460601}
 [DBG]  opSuccess value: 1
 [STAT] neighbor.sum_of_costs before recomputation: 175
 [STAT] neighbor.old_sum_of_costs before recomputation: 179
@@ -2809,7 +2809,7 @@ Agent #3 : 15 0 0 0 0 0 0
 [DEBUG] Using default neighbor generation strategy for conflicts: 1
 [DEBUG] Using default neighbor generation strategy for conflicts: 1
 [DEBUG] Using default neighbor generation strategy for conflicts: 1
-	InitLNS(PP): runtime = 0.0101604, iterations = 5, colliding pairs = 0, initial colliding pairs = 3, solution cost = 4523, initial solution cost = 4546, failed iterations = 0
+	InitLNS(PP): runtime = 0.00950938, iterations = 5, colliding pairs = 0, initial colliding pairs = 3, solution cost = 4523, initial solution cost = 4546, failed iterations = 0
 [DBG]  [DEBUG] init_lns->sum_of_costs after init_lns->run: 4523
 [DBG]  [DEBUG] sum_of_costs after assignment from init_lns->run: 4523
 [DBG]  Recomputing sum_of_cost by dividing neighbor.sum_of_costs and neighbor.old_sum_of_costs
@@ -2880,7 +2880,7 @@ Found plan [agents = 2] [timesteps = 3]
 Agent #0 : 10 7 2 
 Agent #1 : 7 2 0 
 
-[DBG]  Solver returned: 0
+[STAT] Solver returned: 0
 [DBG]  Agent (index) 28 | New local path (submap idx):
 [DBG]  10 7 2 
 [DBG]  Agent (index) 42 | New local path (submap idx):
@@ -2918,8 +2918,8 @@ Agent #1 : 7 2 0
 [DBG]  (LNS.cpp) New path for agent 42: 
 [DBG]  224, 224, 256, 288, 289, 321, 353, 354, 354, 355, 387, 388, 420, 421, 422, 423, 424, 425, 457, 458, 490, 491, 523, 524, 523, 555, 555, 523, 524, 556, 588, 589, 590, 591, 623, 655, 687, 719, 751, 783, 815, 847, 879, 880, 881, 882, 850, 851, 819, 787, 788, 756, 757, 725, 726, 727, 759, 
 [DBG]  Delta value: 0
-[DBG]  Rewarding metric index = 2
-[DBG]  component_weights = {0.154859, 0.358311, 0.226275, 0.260555}
+[DBG]  Rewarding metric index = 3
+[DBG]  component_weights = {0.167891, 0.131445, 0.227296, 0.473368}
 [DBG]  opSuccess value: 1
 [STAT] neighbor.sum_of_costs before recomputation: 112
 [STAT] neighbor.old_sum_of_costs before recomputation: 112
@@ -2993,7 +2993,7 @@ Found plan [agents = 2] [timesteps = 1]
 Agent #0 : 6 
 Agent #1 : 10 
 
-[DBG]  Solver returned: 0
+[STAT] Solver returned: 0
 [DBG]  Agent (index) 28 | New local path (submap idx):
 [DBG]  6 
 [DBG]  Agent (index) 42 | New local path (submap idx):
@@ -3028,8 +3028,8 @@ Agent #1 : 10
 [DBG]  (LNS.cpp) New path for agent 42: 
 [DBG]  224, 224, 256, 288, 289, 321, 353, 354, 354, 355, 387, 388, 420, 421, 422, 423, 424, 425, 457, 458, 490, 491, 523, 524, 523, 555, 555, 523, 524, 556, 588, 589, 590, 591, 623, 655, 687, 719, 751, 783, 815, 847, 879, 880, 881, 882, 850, 851, 819, 787, 788, 756, 757, 725, 726, 727, 759, 
 [DBG]  Delta value: 0
-[DBG]  Rewarding metric index = 1
-[DBG]  component_weights = {0.151992, 0.370188, 0.222087, 0.255732}
+[DBG]  Rewarding metric index = 3
+[DBG]  component_weights = {0.163809, 0.12825, 0.221771, 0.48617}
 [DBG]  opSuccess value: 1
 [STAT] neighbor.sum_of_costs before recomputation: 112
 [STAT] neighbor.old_sum_of_costs before recomputation: 112
@@ -3112,7 +3112,7 @@ SoC LB: 15
 Delta: 0
 Remaining time: 300000 [ms]
 
-[DBG]  Solver returned: -1
+[STAT] Solver returned: -1
 [DBG]  SAT solver failed.
 [STAT] SAT solver failed to find a valid solution.
 [DBG]  ====================
@@ -3183,7 +3183,7 @@ Found plan [agents = 2] [timesteps = 4]
 Agent #0 : 8 12 17 16 
 Agent #1 : 9 13 12 17 
 
-[DBG]  Solver returned: 0
+[STAT] Solver returned: 0
 [DBG]  Agent (index) 3 | New local path (submap idx):
 [DBG]  8 12 17 16 
 [DBG]  Agent (index) 28 | New local path (submap idx):
@@ -3224,8 +3224,8 @@ Agent #1 : 9 13 12 17
 [DBG]  (LNS.cpp) New path for agent 28: 
 [DBG]  661, 661, 661, 661, 661, 661, 661, 661, 661, 661, 661, 661, 661, 661, 661, 661, 661, 661, 661, 661, 661, 661, 661, 660, 660, 628, 660, 692, 724, 756, 788, 820, 819, 851, 883, 883, 883, 851, 819, 787, 788, 756, 724, 725, 726, 727, 
 [DBG]  Delta value: 0.114583
-[DBG]  Rewarding metric index = 1
-[DBG]  component_weights = {0.142832, 0.408146, 0.208702, 0.24032}
+[DBG]  Rewarding metric index = 3
+[DBG]  component_weights = {0.151084, 0.118287, 0.204543, 0.526086}
 [DBG]  opSuccess value: 1
 [STAT] neighbor.sum_of_costs before recomputation: 85
 [STAT] neighbor.old_sum_of_costs before recomputation: 96
@@ -3252,7 +3252,7 @@ Agent #1 : 9 13 12 17
 [DEBUG] Using default neighbor generation strategy for conflicts: 1
 [DEBUG] Using default neighbor generation strategy for conflicts: 2
 [DEBUG] Using default neighbor generation strategy for conflicts: 0
-	InitLNS(PP): runtime = 0.00568538, iterations = 4, colliding pairs = 0, initial colliding pairs = 1, solution cost = 4521, initial solution cost = 4512, failed iterations = 0
+	InitLNS(PP): runtime = 0.00540067, iterations = 4, colliding pairs = 0, initial colliding pairs = 1, solution cost = 4521, initial solution cost = 4512, failed iterations = 0
 [DBG]  [DEBUG] init_lns->sum_of_costs after init_lns->run: 4521
 [DBG]  [DEBUG] sum_of_costs after assignment from init_lns->run: 4521
 [DBG]  Recomputing sum_of_cost by dividing neighbor.sum_of_costs and neighbor.old_sum_of_costs
@@ -3337,7 +3337,7 @@ SoC LB: 19
 Delta: 0
 Remaining time: 300000 [ms]
 
-[DBG]  Solver returned: -1
+[STAT] Solver returned: -1
 [DBG]  SAT solver failed.
 [STAT] SAT solver failed to find a valid solution.
 [DBG]  ====================
@@ -3408,7 +3408,7 @@ SoC LB: 17
 Delta: 0
 Remaining time: 300000 [ms]
 
-[DBG]  Solver returned: -1
+[STAT] Solver returned: -1
 [DBG]  SAT solver failed.
 [STAT] SAT solver failed to find a valid solution.
 [DBG]  ====================
@@ -3479,7 +3479,7 @@ Found plan [agents = 2] [timesteps = 5]
 Agent #0 : 9 8 11 12 13 
 Agent #1 : 5 1 0 0 0 
 
-[DBG]  Solver returned: 0
+[STAT] Solver returned: 0
 [DBG]  Agent (index) 28 | New local path (submap idx):
 [DBG]  9 8 11 12 13 
 [DBG]  Agent (index) 86 | New local path (submap idx):
@@ -3519,8 +3519,8 @@ Agent #1 : 5 1 0 0 0
 [DBG]  (LNS.cpp) New path for agent 86: 
 [DBG]  781, 782, 750, 751, 719, 720, 721, 689, 657, 658, 659, 627, 628, 629, 597, 565, 566, 534, 534, 502, 503, 504, 505, 506, 507, 539, 540, 541, 
 [DBG]  Delta value: 0.319444
-[DBG]  Rewarding metric index = 1
-[DBG]  component_weights = {0.123267, 0.489219, 0.180114, 0.207401}
+[DBG]  Rewarding metric index = 3
+[DBG]  component_weights = {0.125424, 0.0981972, 0.169803, 0.606576}
 [DBG]  opSuccess value: 1
 [STAT] neighbor.sum_of_costs before recomputation: 49
 [STAT] neighbor.old_sum_of_costs before recomputation: 72
@@ -3547,7 +3547,7 @@ Agent #1 : 5 1 0 0 0
 [DBG]  sum_of_cost hodnota: 4498
 [DBG]  After skip/init build => iteration_stats.back(): sum_of_costs=4498, collisions=2
 [DEBUG] Using default neighbor generation strategy for conflicts: 0
-	InitLNS(PP): runtime = 0.001717, iterations = 2, colliding pairs = 0, initial colliding pairs = 2, solution cost = 4520, initial solution cost = 4498, failed iterations = 0
+	InitLNS(PP): runtime = 0.001521, iterations = 2, colliding pairs = 0, initial colliding pairs = 2, solution cost = 4520, initial solution cost = 4498, failed iterations = 0
 [DBG]  [DEBUG] init_lns->sum_of_costs after init_lns->run: 4520
 [DBG]  [DEBUG] sum_of_costs after assignment from init_lns->run: 4520
 [DBG]  Recomputing sum_of_cost by dividing neighbor.sum_of_costs and neighbor.old_sum_of_costs
@@ -3632,7 +3632,7 @@ Found plan [agents = 2] [timesteps = 4]
 Agent #0 : 17 0 0 0 
 Agent #1 : 10 11 14 15 
 
-[DBG]  Solver returned: 0
+[STAT] Solver returned: 0
 [DBG]  Agent (index) 26 | New local path (submap idx):
 [DBG]  17 
 [DBG]  Agent (index) 28 | New local path (submap idx):
@@ -3671,7 +3671,7 @@ Agent #1 : 10 11 14 15
 [DBG]  661, 661, 661, 661, 661, 661, 661, 661, 661, 661, 661, 661, 661, 661, 661, 661, 661, 661, 661, 661, 661, 661, 661, 661, 661, 661, 661, 661, 661, 661, 661, 660, 692, 691, 691, 692, 724, 725, 726, 727, 
 [DBG]  Delta value: 0.0759494
 [DBG]  Rewarding metric index = 3
-[DBG]  component_weights = {0.119968, 0.476127, 0.175294, 0.228611}
+[DBG]  component_weights = {0.116088, 0.0908881, 0.157164, 0.63586}
 [DBG]  opSuccess value: 1
 [STAT] neighbor.sum_of_costs before recomputation: 73
 [STAT] neighbor.old_sum_of_costs before recomputation: 79
@@ -3698,9 +3698,12 @@ Agent #1 : 10 11 14 15
 [DBG]  sum_of_cost hodnota: 4514
 [DBG]  After skip/init build => iteration_stats.back(): sum_of_costs=4514, collisions=2
 [DEBUG] Using default neighbor generation strategy for conflicts: 1
-	InitLNS(PP): runtime = 0.00116692, iterations = 2, colliding pairs = 0, initial colliding pairs = 2, solution cost = 4521, initial solution cost = 4514, failed iterations = 0
+	InitLNS(PP): runtime = 0.00109262, iterations = 2, colliding pairs = 0, initial colliding pairs = 2, solution cost = 4521, initial solution cost = 4514, failed iterations = 0
 [DBG]  [DEBUG] init_lns->sum_of_costs after init_lns->run: 4521
 [DBG]  [DEBUG] sum_of_costs after assignment from init_lns->run: 4521
 [DBG]  Recomputing sum_of_cost by dividing neighbor.sum_of_costs and neighbor.old_sum_of_costs
 [STAT] sum_of_costs after recomputation: 4521
-[STAT] LNS(PP;PP): runtime = 0.245146, iterations = 21, solution cost = 4521, initial solution cost = 4490, failed iterations = 14
+[STAT] LNS(PP;PP): runtime = 0.182622, iterations = 21, solution cost = 4521, initial solution cost = 4490, failed iterations = 14
+[STAT] SAT total runtime = 0.0663807 s
+[STAT] Other operators runtime = 0.0853441 s
+[STAT] SAT runtime ratio = 36.3487 %

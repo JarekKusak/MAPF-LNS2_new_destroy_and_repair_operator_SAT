@@ -460,6 +460,9 @@ bool LNS::run()
     std::streambuf* coutbuf = std::cout.rdbuf();
     std::cout.rdbuf(out.rdbuf());
 
+    sat_runtime_total   = 0.0;
+    other_runtime_total = 0.0;
+
     sum_of_distances = 0;
     for (const auto & agent : agents)
         sum_of_distances += agent.path_planner->my_heuristic[agent.path_planner->start_location];
@@ -511,6 +514,8 @@ bool LNS::run()
     // Helper lambda for immediate conflict repair via init_lns
     // ============================================
     auto doInitLNSRepair = [&](const string& debug_reason){
+        auto repair_start = Time::now();
+
         SAT_DBG("[DEBUG] Attempting immediate repair via init_lns " << debug_reason << ".");
         init_lns = new InitLNS(instance, agents, time_limit - runtime,
                                replan_algo_name, init_destory_name, neighbor_size, screen);
@@ -555,6 +560,7 @@ bool LNS::run()
             init_lns->clear();
         }
         else std::cout << "[ERROR] Could not repair solution right after SAT." << std::endl;
+        other_runtime_total += ((fsec)(Time::now() - repair_start)).count();
     };
     // ============================================
 
@@ -579,6 +585,9 @@ bool LNS::run()
             if (r < sat_prob_percent) { // number here can be a hyperparameter
                 SATchosen = true;
                 SAT_DBG("Using SAT operator (destroy+repair SAT).");
+
+                auto sat_start = Time::now();
+
                 while (!opSuccess) {
                     if (!generateNeighborBySAT()) continue;
                     neighbor.old_paths.resize(neighbor.agents.size());
@@ -592,6 +601,8 @@ bool LNS::run()
                     // Removed stats and component weights updates from run() to be handled in runSAT().
                     opSuccess = runSAT();
                 }
+
+                sat_runtime_total += ((fsec)(Time::now() - sat_start)).count();
             }
             else SAT_DBG("Random chance did not select SAT operator (r=" << r << "), using default strategy.");
             SAT_DBG("opSuccess value: " << opSuccess);
@@ -599,6 +610,7 @@ bool LNS::run()
 
         if (!opSuccess)
         {
+            auto other_start = Time::now();
             // fallback neighbor generation
             int DEFAULT_DESTROY_STRATEGY = INTERSECTION;
             switch (DEFAULT_DESTROY_STRATEGY)
@@ -644,6 +656,8 @@ bool LNS::run()
             else if (DEFAULT_REPLAN_ALGO == "CBS")  succ = runCBS();
             else if (DEFAULT_REPLAN_ALGO == "EECBS")succ = runEECBS();
             else { std::cerr << "Wrong replanning strategy" << std::endl; exit(-1); }
+
+            other_runtime_total += ((fsec)(Time::now() - other_start)).count();
         }
         else succ = opSuccess;// opSuccess = true => runSAT completed
 
@@ -722,6 +736,10 @@ bool LNS::run()
          << ", initial solution cost = " << initial_sum_of_costs
          << ", failed iterations = " << num_of_failures
          );
+    SAT_STAT("SAT total runtime = " << sat_runtime_total << " s");
+    SAT_STAT("Other operators runtime = " << other_runtime_total << " s");
+    if (runtime > 0)
+        SAT_STAT("SAT runtime ratio = " << (100.0 * sat_runtime_total / runtime) << " %");
 
     return true;
 }

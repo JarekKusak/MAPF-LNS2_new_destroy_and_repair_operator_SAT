@@ -132,4 +132,8 @@ private:
     SatHeuristic sat_heuristic = SAT_ADAPTIVE;
     int          sat_submap_side = 5;
     int sat_prob_percent = 100;
+    
+    /* aggregated wall-clock times (seconds) */
+    double sat_runtime_total   = 0.0;   ///< time spent in runSAT + immediate conflict-repair
+    double other_runtime_total = 0.0;   ///< time spent in non-SAT operators
 };

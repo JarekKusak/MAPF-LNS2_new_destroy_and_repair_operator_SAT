@@ -42,7 +42,7 @@ public:
     LNS(const Instance& instance, double time_limit,
         const string & init_algo_name, const string & replan_algo_name, const string & destory_name,
         int neighbor_size, int num_of_iterations, bool init_lns, const string & init_destory_name, bool use_sipp,
-        int screen, PIBTPPS_option pipp_option, const string& sat_heur_name, int sat_submap_side);
+        int screen, PIBTPPS_option pipp_option, const string& sat_heur_name, int sat_submap_side, int sat_prob_percent);
     ~LNS()
     {
         delete init_lns;
@@ -131,4 +131,5 @@ private:
 
     SatHeuristic sat_heuristic = SAT_ADAPTIVE;
     int          sat_submap_side = 5;
+    int sat_prob_percent = 100;
 };

@@ -335,7 +335,7 @@ namespace SATUtils {
         log->NewInstance((int)start_positions.size());
 
         int result = solver->Solve((int)start_positions.size(), 0, true, true);
-        SAT_DBG("Solver returned: " << result);
+        SAT_STAT("Solver returned: " << result);
 
         if (result != 0) {
             SAT_DBG("SAT solver failed.");

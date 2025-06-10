@@ -10,13 +10,13 @@
 LNS::LNS(const Instance& instance, double time_limit, const string & init_algo_name, const string & replan_algo_name,
          const string & destory_name, int neighbor_size, int num_of_iterations, bool use_init_lns,
          const string & init_destory_name, bool use_sipp, int screen, PIBTPPS_option pipp_option,
-         const string& sat_heur_name, int sat_submap_side) :
+         const string& sat_heur_name, int sat_submap_side, int sat_prob_percent) :
          BasicLNS(instance, time_limit, neighbor_size, screen),
          init_algo_name(init_algo_name),  replan_algo_name(replan_algo_name),
          num_of_iterations(num_of_iterations),
          use_init_lns(use_init_lns),init_destory_name(init_destory_name),
          path_table(instance.map_size), pipp_option(pipp_option), metric_rng(std::random_device{}()),
-         sat_submap_side(sat_submap_side) {
+         sat_submap_side(sat_submap_side), sat_prob_percent(sat_prob_percent) {
     start_time = Time::now();
     replan_time_limit = time_limit / 100;
     component_weights = {W_DELAY_init, W_CONFL_init, W_STRETCH_init, W_REC_init};
@@ -141,7 +141,7 @@ bool LNS::generateNeighborBySAT() {
 
     std::vector<int> agents_to_replan = SATUtils::getAgentsToReplan(agents_in_submap, submap_set, problematic_timestep, agents);
     if (agents_to_replan.empty()) {
-        SAT_STAT("No agents to replan in submap.");
+        std::cout << "No agents to replan in submap." << std::endl;
         return false;
     }
 
@@ -152,12 +152,12 @@ bool LNS::generateNeighborBySAT() {
         int start_global = -1, goal_global = -1;
         int goal_time = -1;
         if ((size_t)T_sync >= agents[agent].path.size()) {
-            SAT_STAT("Agent " << agent << " has no position defined at time T_sync!");
+            std::cout << "Agent " << agent << " has no position defined at time T_sync!" << std::endl;
             continue;
         }
         int loc_at_Tsync = agents[agent].path[T_sync].location;
         if (submap_set.find(loc_at_Tsync) == submap_set.end()) {
-            SAT_STAT("Agent " << agent << " is not in the submap at time T_sync!");
+            std::cout << "Agent " << agent << " is not in the submap at time T_sync!" << std::endl;
             continue;
         }
         start_global = loc_at_Tsync;
@@ -169,13 +169,13 @@ bool LNS::generateNeighborBySAT() {
             } else break;
         }
         if (goal_time == -1) {
-            SAT_STAT("Agent " << agent << " has no valid goal position!");
+            std::cout << "Agent " << agent << " has no valid goal position!" << std::endl;
             continue;
         }
         auto itS = global_to_local.find(start_global);
         auto itG = global_to_local.find(goal_global);
         if (itS == global_to_local.end() || itG == global_to_local.end()) {
-            SAT_STAT("Missing mapping from global to local coordinates!");
+            std::cout << "Missing mapping from global to local coordinates!" << std::endl;
             continue;
         }
         start_positions.push_back(itS->second);
@@ -383,8 +383,8 @@ bool LNS::runSAT()
             int to   = agents[ag].path[t].location;
             if (!instance.validMove(from, to)) {
                 invalid_move = true;
-                SAT_STAT("Agent " << ag << " made an invalid move " << from << " -> " << to
-                                  << " between times " << t - 1 << " and " << t << ". Reverting to previous path.");
+                std::cout << "Agent " << ag << " made an invalid move " << from << " -> " << to
+                                  << " between times " << t - 1 << " and " << t << ". Reverting to previous path." << std::endl;
                 break;
             }
         }
@@ -401,8 +401,12 @@ bool LNS::runSAT()
         for (int a : agents_to_replan) {
             path_table.insertPath(agents[a].id, agents[a].path);
             SAT_DBG("(LNS.cpp) New path for agent " << a << ": ");
-            for (auto loc : agents[a].path)
-                SAT_DBG(loc.location << ", ");
+            {
+                std::stringstream ss;
+                for (auto loc : agents[a].path)
+                    ss << loc.location << ", ";
+                SAT_DBG(ss.str());
+            }
         }
 
         if (neighbor.sum_of_costs <= neighbor.old_sum_of_costs) {
@@ -452,9 +456,9 @@ bool LNS::runSAT()
 bool LNS::run()
 {
     // Open file for logging output
-    //std::ofstream out("log.txt");
-    //std::streambuf* coutbuf = std::cout.rdbuf();
-    //std::cout.rdbuf(out.rdbuf());
+    std::ofstream out("log.txt");
+    std::streambuf* coutbuf = std::cout.rdbuf();
+    std::cout.rdbuf(out.rdbuf());
 
     sum_of_distances = 0;
     for (const auto & agent : agents)
@@ -572,7 +576,7 @@ bool LNS::run()
 
         if (destroy_strategy == SAT) { // SAT is destroy operator merged with replan operator
             int r = rand() % 100;
-            if (r < 100) { // number here can be a hyperparameter
+            if (r < sat_prob_percent) { // number here can be a hyperparameter
                 SATchosen = true;
                 SAT_DBG("Using SAT operator (destroy+repair SAT).");
                 while (!opSuccess) {

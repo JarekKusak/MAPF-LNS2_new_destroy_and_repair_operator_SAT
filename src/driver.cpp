@@ -52,6 +52,8 @@ int main(int argc, char** argv)
          "half-side of square SAT submap (5 -> 25 cells)")
         ("satDebug", po::value<bool>()->default_value(true),
          "print verbose SAT debug output (default = on)")
+        ("satProb", po::value<int>()->default_value(100),
+        "sets the percentage usage of SAT as a destroy and repair operator")
 
          // params for initLNS
          ("initDestoryStrategy", po::value<string>()->default_value("Adaptive"),
@@ -92,7 +94,8 @@ int main(int argc, char** argv)
                 vm["sipp"].as<bool>(),
                 screen, pipp_option,
                 vm["satHeuristic"].as<string>(),
-                vm["satSubmap"].as<int>());
+                vm["satSubmap"].as<int>(),
+                vm["satProb"].as<int>());
         bool succ;
 
         satlog::debug_enabled = vm["satDebug"].as<bool>();

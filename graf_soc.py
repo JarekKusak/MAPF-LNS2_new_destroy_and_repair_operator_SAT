@@ -4,7 +4,7 @@ def parse_sum_of_costs(logfile_path):
     sum_of_costs = []
     with open(logfile_path, "r", encoding="utf-8") as f:
         for line in f:
-            if "[DEBUG] sum_of_costs po opětovném přepočtu:" in line:
+            if "[STAT] sum_of_costs after recomputation:" in line:
                 parts = line.strip().split()
                 # číslo bývá zpravidla na konci řádku
                 cost_value = int(parts[-1])

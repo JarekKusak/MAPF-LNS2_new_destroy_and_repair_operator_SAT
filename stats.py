@@ -18,14 +18,20 @@ import matplotlib.pyplot as plt
 # ---------------------------------------------------------------------------
 # EXPERIMENT MATRIX – adjust here to generate all desired runs
 # ---------------------------------------------------------------------------
-MAPS              = ["ost003d", "random-32-32-20", "brc202d",
-                     "lt_gallowstemplar_n", "room-32-32-4"]      # map “stems”
-INSTANCES_PER_MAP = 25                                           # scen files 1..N
-AGENT_COUNTS      = [100, 300, 500]                              # -k values
-MAX_ITERS         = 100                                          # --maxIterations
-SAT_PROBS         = [100, 50, 20, 0]                             # --satProb
-SAT_HEURISTICS    = ["adaptive", "roundRobin", "mostDelayed"]    # --satHeuristic
-SUBMAP_SIDES      = [3, 5]                                       # --satSubmap
+PURE_REPLANS   = ["PP", "CBS"]          # pro T1  (100 % PP / 100 % CBS)
+PURE_SAT       = True                   # pokud True, vygeneruje i čistých 100 % SAT
+MIX_PROBS      = [100, 50, 20, 0]       # pro T2
+
+MAPS              = ["ost003d", "random-32-32-20"]
+                     #"lt_gallowstemplar_n", "room-32-32-4", "Paris_1_256"]      # map “stems”
+INSTANCES_PER_MAP = 2                                          # scen files 1..N
+AGENT_COUNTS      = [100, 500]#, 500]                              # -k values
+# wall‑clock time budgets (seconds) – LNS receives identical cut‑off time
+CUTOFFS           = [2]# 30]                                  # --cutoffTime (-t)
+MAX_ITERS         = [10000]  # high default; customise if you want true iteration caps
+SAT_PROBS         = [100, 0]#, 50, 0]#, 20, 0]                             # --satProb
+SAT_HEURISTICS    = ["adaptive"]#, "roundRobin", "mostDelayed"]    # --satHeuristic
+SUBMAP_SIDES      = [3]#, 5]
 LNS_BIN           = "./lns"
 RESULTS_ROOT      = Path("results")
 
@@ -42,7 +48,7 @@ RE_FINAL      = re.compile(
 )
 
 def run_single(map_file: str, scen_file: str, agent_num: int, run_id: str,
-               *, heur_tag: str, submap: int, sat_prob: int):
+               *, heur_tag: str, submap: int, sat_prob: int, cutoff: int, max_iter: int):
     """
     Spustí ./lns s danou mapou, instancí a počtem agentů.
     Vrátí cestu k souboru logu.
@@ -57,12 +63,13 @@ def run_single(map_file: str, scen_file: str, agent_num: int, run_id: str,
         "-a", scen_file,
         "-k", str(agent_num),
         "-o", str(out_dir / "out"), # prefix; soubory stejně nepoužijeme
+        "-t", str(cutoff),
         "--destoryStrategy=SAT",
         f"--satHeuristic={heur_tag}",
         f"--satSubmap={submap}",
         f"--satProb={sat_prob}",
+        "--maxIterations", str(max_iter),
         "--satDebug=0",
-        "--maxIterations", str(MAX_ITERS),
         "--screen", "0", # ticho, všechno jde do logu
         "--outputPaths", str(out_dir / "paths.txt"),
     ]
@@ -99,18 +106,22 @@ def parse_log(log_path: Path, external_init_soc: int | None = None):
 
     with open(log_path, encoding="utf-8") as f:
         for line in f:
+            # --- pick up SAT and other operator runtimes -----------------
+            m_sat = RE_SAT_RT.search(line)
+            if m_sat:
+                final_stats["sat_runtime"] = float(m_sat.group(1))
+                continue  # nothing else of interest on this line
+
+            m_oth = RE_OTH_RT.search(line)
+            if m_oth:
+                final_stats["other_runtime"] = float(m_oth.group(1))
+                continue
+            # --------------------------------------------------------------
+
             # průběh SOC – ukládáme *pouze* hodnotu po úplném přepočtu
             m_post = RE_SOC_POST.search(line)
             if m_post:
                 soc_curve.append(int(m_post.group(1)))
-                m_sat = RE_SAT_RT.search(line)
-                if m_sat:
-                    final_stats["sat_runtime"] = float(m_sat.group(1))
-                    continue
-                m_oth = RE_OTH_RT.search(line)
-                if m_oth:
-                    final_stats["other_runtime"] = float(m_oth.group(1))
-                    continue
 
             # -------------------------------------------------------------
             # Zachyť první výskyt hodnot před opětovným přepočtem
@@ -171,13 +182,13 @@ def parse_log(log_path: Path, external_init_soc: int | None = None):
             # poslední souhrnný řádek
             m_fin = RE_FINAL.search(line)
             if m_fin:
-                final_stats = {
+                final_stats.update({
                     "runtime"          : float(m_fin.group(1)),
                     "iterations"       : int(m_fin.group(2)),
                     "final_soc"        : int(m_fin.group(3)),
                     "initial_soc"      : int(m_fin.group(4)),
                     "failed_iterations": int(m_fin.group(5)),
-                }
+                })
 
     # --- initial solution cost ------------------------------------------
     # Přednostně vezmeme hodnotu ze souboru out‑LNS.csv (sloupec
@@ -232,10 +243,11 @@ def main():
         map_path  = f"maps/{m}.map"
         for inst in range(1, INSTANCES_PER_MAP + 1):
             scen_path = f"instances/{m}-instances/{m}-random-{inst}.scen"
-            for k, prob, heur, sub in product(AGENT_COUNTS, SAT_PROBS, SAT_HEURISTICS, SUBMAP_SIDES):
-                tag = f"{m}-i{inst}-k{k}-it{MAX_ITERS}-{heur}-sub{sub}-p{prob}"
+            for k, prob, heur, sub, T, iters in product(AGENT_COUNTS, SAT_PROBS, SAT_HEURISTICS, SUBMAP_SIDES, CUTOFFS, MAX_ITERS):
+                tag = f"{m}-i{inst}-k{k}-t{T}-it{iters}-{heur}-sub{sub}-p{prob}"
                 log_path = run_single(map_path, scen_path, k, tag,
-                                      heur_tag=heur, submap=sub, sat_prob=prob)
+                                      heur_tag=heur, submap=sub, sat_prob=prob,
+                                      cutoff=T, max_iter=iters)
                 out_dir = log_path.parent
                 init_soc = None
                 lns_csv = out_dir / "out-LNS.csv"

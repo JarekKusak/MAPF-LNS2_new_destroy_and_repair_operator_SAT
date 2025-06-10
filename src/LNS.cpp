@@ -456,9 +456,9 @@ bool LNS::runSAT()
 bool LNS::run()
 {
     // Open file for logging output
-    std::ofstream out("log.txt");
-    std::streambuf* coutbuf = std::cout.rdbuf();
-    std::cout.rdbuf(out.rdbuf());
+    //std::ofstream out("log.txt");
+    //std::streambuf* coutbuf = std::cout.rdbuf();
+    //std::cout.rdbuf(out.rdbuf());
 
     sat_runtime_total   = 0.0;
     other_runtime_total = 0.0;
@@ -517,8 +517,11 @@ bool LNS::run()
         auto repair_start = Time::now();
 
         SAT_DBG("[DEBUG] Attempting immediate repair via init_lns " << debug_reason << ".");
-        init_lns = new InitLNS(instance, agents, time_limit - runtime,
-                               replan_algo_name, init_destory_name, neighbor_size, screen);
+        // if there is no time left, we add 100 ms for the possibility of corrections so that the program does not fail validation
+        double repl_budget = std::max(0.1, time_limit - runtime);
+        init_lns = new InitLNS(instance, agents, repl_budget,
+                               replan_algo_name, init_destory_name,
+                               neighbor_size, screen);
 
         SAT_DBG("[DEBUG] Passing " << agents.size()
                   << " agents to init_lns (skip=true).");
@@ -547,19 +550,20 @@ bool LNS::run()
 
         bool fixed = init_lns->run(true);
 
-        SAT_DBG("[DEBUG] init_lns->sum_of_costs after init_lns->run: " << init_lns->sum_of_costs);
+        SAT_DBG("init_lns->sum_of_costs after init_lns->run: " << init_lns->sum_of_costs);
 
         if (fixed) {
             sum_of_costs = init_lns->sum_of_costs;
             //neighbor.old_sum_of_costs = init_lns->sum_of_costs;
 
-            SAT_DBG("[DEBUG] sum_of_costs after assignment from init_lns->run: " << sum_of_costs);
+            SAT_DBG("sum_of_costs after assignment from init_lns->run: " << sum_of_costs);
             for (const auto &agent : agents)
                 path_table.insertPath(agent.id, agent.path);
 
             init_lns->clear();
         }
         else std::cout << "[ERROR] Could not repair solution right after SAT." << std::endl;
+
         other_runtime_total += ((fsec)(Time::now() - repair_start)).count();
     };
     // ============================================
@@ -598,7 +602,6 @@ bool LNS::run()
                         path_table.deletePath(a, agents[a].path);
                         neighbor.old_sum_of_costs += (int)agents[a].path.size() - 1;
                     }
-                    // Removed stats and component weights updates from run() to be handled in runSAT().
                     opSuccess = runSAT();
                 }
 

@@ -17,7 +17,8 @@ LNS::LNS(const Instance& instance, double time_limit, const string & init_algo_n
          num_of_iterations(num_of_iterations),
          use_init_lns(use_init_lns),init_destory_name(init_destory_name),
          path_table(instance.map_size), pipp_option(pipp_option), metric_rng(std::random_device{}()),
-         sat_submap_side(sat_submap_side), sat_prob_percent(sat_prob_percent) {
+         sat_submap_side(sat_submap_side), sat_prob_percent(sat_prob_percent), fallback_replan_algo(fallback_replan_name),
+         fallback_destroy_strategy(strToDestroyHeuristic(fallback_dest_name)) {
     start_time = Time::now();
     replan_time_limit = time_limit / 100;
     component_weights = {W_DELAY_init, W_CONFL_init, W_STRETCH_init, W_REC_init};
@@ -478,7 +479,8 @@ bool LNS::run()
         if (use_init_lns)
         {
             init_lns = new InitLNS(instance, agents, time_limit - initial_solution_runtime,
-                                   replan_algo_name, init_destory_name, neighbor_size, screen);
+                                   "PP",//replan_algo_name,
+                                   init_destory_name, neighbor_size, screen);
             succ = init_lns->run(false);
             if (succ)
             {
@@ -521,7 +523,8 @@ bool LNS::run()
         // if there is no time left, we add 100 ms for the possibility of corrections so that the program does not fail validation
         double repl_budget = std::max(0.1, time_limit - runtime);
         init_lns = new InitLNS(instance, agents, repl_budget,
-                               replan_algo_name, init_destory_name,
+                               "PP",//replan_algo_name,
+                               init_destory_name,
                                neighbor_size, screen);
 
         SAT_DBG("Passing " << agents.size()
@@ -619,15 +622,15 @@ bool LNS::run()
             int DEFAULT_DESTROY_STRATEGY;
             std::string DEFAULT_REPLAN_ALGO;
 
-            if (destroy_strategy == SAT) {         // jsme v MIX režimu (satProb 1-99)
-                DEFAULT_DESTROY_STRATEGY = INTERSECTION;
-                DEFAULT_REPLAN_ALGO      = "PP";
-            } else {                               // PURE non-SAT režim
-                DEFAULT_DESTROY_STRATEGY = destroy_strategy;  // to co přišlo z cmd-line
+            if (destroy_strategy == SAT) { // mix SAT with other operator from argument (satProb 1-99)
+                DEFAULT_DESTROY_STRATEGY = fallback_destroy_strategy;
+                DEFAULT_REPLAN_ALGO      = fallback_replan_algo;
+            } else { // PURE non-SAT
+                DEFAULT_DESTROY_STRATEGY = destroy_strategy;  // command line arguments
                 DEFAULT_REPLAN_ALGO = replan_algo_name;  // PP / CBS / EECBS ...
             }
-            std::cout << "[ECHO] pouštím destroy strategii " << DEFAULT_DESTROY_STRATEGY << endl;
-            std::cout << "[ECHO] pouštím replan strategii " << DEFAULT_REPLAN_ALGO << endl;
+            SAT_DBG("running destroy strategii " << DEFAULT_DESTROY_STRATEGY);
+            SAT_DBG("running replan strategii " << DEFAULT_REPLAN_ALGO);
 
             switch (DEFAULT_DESTROY_STRATEGY)
             {
@@ -780,9 +783,6 @@ bool LNS::getInitialSolution()
         succ = runWinPIBT();
     else if (init_algo_name == "CBS")
         succ = runCBS();
-    else if (init_algo_name == "SAT") // TODO: popravdě nevím, jestli máme upravovat - možná není nutné
-        runPP();
-        //succ = runSAT();
     else
     {
         cerr <<  "Initial MAPF solver " << init_algo_name << " does not exist!" << endl;

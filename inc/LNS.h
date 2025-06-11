@@ -141,4 +141,18 @@ private:
 
     destroy_heuristic fallback_destroy_strategy = INTERSECTION;   // used when SAT not selected
     std::string       fallback_replan_algo     = "PP";            // PP / CBS / EECBS
+
+    /* helper function for converting string to enum from argument*/
+    static destroy_heuristic strToDestroyHeuristic(const std::string& s)
+    {
+        if (s == "Random" || s == "RandomAgents")  return RANDOMAGENTS;
+        if (s == "RandomWalk")                     return RANDOMWALK;
+        if (s == "Intersection")                   return INTERSECTION;
+        if (s == "SAT")                            return SAT;
+
+        // default
+        std::cerr << "[WARN] Unknown destroy heuristic '" << s
+                  << "', falling back to Intersection.\n";
+        return INTERSECTION;
+    }
 };

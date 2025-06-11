@@ -435,7 +435,7 @@ bool LNS::runSAT()
                 SAT_DBG(loc.location << ", ");
 
             path_table.insertPath(agents[a].id, agents[a].path);
-            SAT_DBG("[DEBUG] Verifying OLD path_table for agent " << a << ":");
+            SAT_DBG("Verifying OLD path_table for agent " << a << ":");
             for (int t = 0; t < (int) agents[a].path.size(); t++)
             {
                 int loc = agents[a].path[t].location;
@@ -457,9 +457,9 @@ bool LNS::runSAT()
 bool LNS::run()
 {
     // Open file for logging output
-    std::ofstream out("log.txt");
-    std::streambuf* coutbuf = std::cout.rdbuf();
-    std::cout.rdbuf(out.rdbuf());
+    //std::ofstream out("log.txt");
+    //std::streambuf* coutbuf = std::cout.rdbuf();
+    //std::cout.rdbuf(out.rdbuf());
 
     sat_runtime_total   = 0.0;
     other_runtime_total = 0.0;
@@ -517,20 +517,20 @@ bool LNS::run()
     auto doInitLNSRepair = [&](const string& debug_reason){
         auto repair_start = Time::now();
 
-        SAT_DBG("[DEBUG] Attempting immediate repair via init_lns " << debug_reason << ".");
+        SAT_DBG("Attempting immediate repair via init_lns " << debug_reason << ".");
         // if there is no time left, we add 100 ms for the possibility of corrections so that the program does not fail validation
         double repl_budget = std::max(0.1, time_limit - runtime);
         init_lns = new InitLNS(instance, agents, repl_budget,
                                replan_algo_name, init_destory_name,
                                neighbor_size, screen);
 
-        SAT_DBG("[DEBUG] Passing " << agents.size()
+        SAT_DBG("Passing " << agents.size()
                   << " agents to init_lns (skip=true).");
 
         // ------------------------------------------------------------------
         // Output: path_table contents for selected agents (e.g., neighbor.agents)
         // ------------------------------------------------------------------
-        SAT_DBG("[DEBUG] path_table contents for selected agents (neighbor.agents):");
+        SAT_DBG("path_table contents for selected agents (neighbor.agents):");
         for (int a : neighbor.agents) {
             SAT_DBG("  Agent " << a << " => controlling path length=" << agents[a].path.size());
             for (int t = 0; t < (int)agents[a].path.size(); t++) {
@@ -611,55 +611,6 @@ bool LNS::run()
             else SAT_DBG("Random chance did not select SAT operator (r=" << r << "), using default strategy.");
             SAT_DBG("opSuccess value: " << opSuccess);
         }
-        /*
-        else { // pure something else
-            auto other_start = Time::now();
-            // fallback neighbor generation
-            switch (destroy_strategy)
-            {
-                case RANDOMWALK:
-                    opSuccess = generateNeighborByRandomWalk();
-                    break;
-                case INTERSECTION:
-                    opSuccess = generateNeighborByIntersection();
-                    break;
-                case RANDOMAGENTS:
-                {
-                    neighbor.agents.resize(agents.size());
-                    for (int i = 0; i < (int)agents.size(); i++) neighbor.agents[i] = i;
-                    if ((int)neighbor.agents.size() > neighbor_size)
-                    {
-                        std::random_shuffle(neighbor.agents.begin(), neighbor.agents.end());
-                        neighbor.agents.resize(neighbor_size);
-                    }
-                    opSuccess = true;
-                }
-                    break;
-                default:
-                    std::cerr << "Wrong neighbor generation strategy" << std::endl;
-                    exit(-1);
-            }
-
-            if (!opSuccess)
-                continue;
-
-            neighbor.old_paths.resize(neighbor.agents.size());
-            neighbor.old_sum_of_costs = 0;
-            for (int i = 0; i < (int)neighbor.agents.size(); i++)
-            {
-                int a = neighbor.agents[i];
-                neighbor.old_paths[i] = agents[a].path;
-                path_table.deletePath(a, agents[a].path);
-                neighbor.old_sum_of_costs += (int)agents[a].path.size() - 1;
-            }
-
-            if      (replan_algo_name == "PP")   succ = runPP();
-            else if (replan_algo_name == "CBS")  succ = runCBS();
-            else if (replan_algo_name == "EECBS")succ = runEECBS();
-            else { std::cerr << "Wrong replanning strategy" << std::endl; exit(-1); }
-
-            other_runtime_total += ((fsec)(Time::now() - other_start)).count();
-        }*/
 
         if (!opSuccess)
         {
@@ -673,7 +624,7 @@ bool LNS::run()
                 DEFAULT_REPLAN_ALGO      = "PP";
             } else {                               // PURE non-SAT režim
                 DEFAULT_DESTROY_STRATEGY = destroy_strategy;  // to co přišlo z cmd-line
-                DEFAULT_REPLAN_ALGO = replan_algo_name;  // PP / CBS / EECBS …
+                DEFAULT_REPLAN_ALGO = replan_algo_name;  // PP / CBS / EECBS ...
             }
             std::cout << "[ECHO] pouštím destroy strategii " << DEFAULT_DESTROY_STRATEGY << endl;
             std::cout << "[ECHO] pouštím replan strategii " << DEFAULT_REPLAN_ALGO << endl;
@@ -719,8 +670,8 @@ bool LNS::run()
             //std::string DEFAULT_REPLAN_ALGO = "PP"; // fixed
             if      (DEFAULT_REPLAN_ALGO == "PP")   succ = runPP();
             else if (DEFAULT_REPLAN_ALGO == "CBS")  succ = runCBS();
-            else if (DEFAULT_REPLAN_ALGO == "EECBS")succ = runEECBS();
-            else { std::cerr << "Wrong replanning strategy" << std::endl; exit(-1); }
+            else if (DEFAULT_REPLAN_ALGO == "EECBS") succ = runEECBS();
+            else { std::cerr << "Wrong replanning strategy " << std::endl; exit(-1); }
 
             other_runtime_total += ((fsec)(Time::now() - other_start)).count();
         }

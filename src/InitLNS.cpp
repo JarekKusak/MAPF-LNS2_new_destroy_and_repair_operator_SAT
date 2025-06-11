@@ -559,12 +559,10 @@ bool InitLNS::run(bool skip_initial_solution)
                     cerr << "Wrong neighbor generation strategy" << endl;
                     exit(-1);
             }
-            // najdi kolizní páry
             neighbor.old_colliding_pairs.clear();
             for (int a : neighbor.agents)
                 for (auto j: collision_graph[a])
                     neighbor.old_colliding_pairs.emplace(min(a, j), max(a, j));
-            // uložení starých cest
             neighbor.old_paths.resize(neighbor.agents.size());
             neighbor.old_sum_of_costs = 0;
             for (int i = 0; i < (int)neighbor.agents.size(); i++) {
@@ -578,7 +576,6 @@ bool InitLNS::run(bool skip_initial_solution)
         if (!opSuccess || neighbor.agents.empty())
             continue;
 
-        // Replan podle zvolené strategie
         if (replan_algo_name == "PP" || neighbor.agents.size() == 1)
             succ = runPP();
         else if (replan_algo_name == "GCBS")

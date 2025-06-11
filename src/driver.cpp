@@ -54,6 +54,12 @@ int main(int argc, char** argv)
          "print verbose SAT debug output (default = on)")
         ("satProb", po::value<int>()->default_value(100),
         "sets the percentage usage of SAT as a destroy and repair operator")
+        ("destoryStrategyFallback",
+         po::value<string>()->default_value("Intersection"),
+         "Fallback destroy heuristic (RandomWalk, Intersection, RandomAgents)")
+        ("replanAlgoFallback",
+         po::value<string>()->default_value("PP"),
+         "Fallback replanner (PP, CBS, EECBS)")
 
          // params for initLNS
          ("initDestoryStrategy", po::value<string>()->default_value("Adaptive"),
@@ -95,7 +101,9 @@ int main(int argc, char** argv)
                 screen, pipp_option,
                 vm["satHeuristic"].as<string>(),
                 vm["satSubmap"].as<int>(),
-                vm["satProb"].as<int>());
+                vm["satProb"].as<int>(),
+                vm["destoryStrategyFallback"].as<string>(),
+                vm["replanAlgoFallback"].as<string>());
         bool succ;
 
         satlog::debug_enabled = vm["satDebug"].as<bool>();

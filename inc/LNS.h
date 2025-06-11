@@ -42,7 +42,9 @@ public:
     LNS(const Instance& instance, double time_limit,
         const string & init_algo_name, const string & replan_algo_name, const string & destory_name,
         int neighbor_size, int num_of_iterations, bool init_lns, const string & init_destory_name, bool use_sipp,
-        int screen, PIBTPPS_option pipp_option, const string& sat_heur_name, int sat_submap_side, int sat_prob_percent);
+        int screen, PIBTPPS_option pipp_option, const string& sat_heur_name, int sat_submap_side, int sat_prob_percent,
+        const std::string& fallback_dest_name,
+        const std::string& fallback_replan_name);
     ~LNS()
     {
         delete init_lns;
@@ -136,4 +138,7 @@ private:
     /* aggregated wall-clock times (seconds) */
     double sat_runtime_total   = 0.0;   ///< time spent in runSAT + immediate conflict-repair
     double other_runtime_total = 0.0;   ///< time spent in non-SAT operators
+
+    destroy_heuristic fallback_destroy_strategy = INTERSECTION;   // used when SAT not selected
+    std::string       fallback_replan_algo     = "PP";            // PP / CBS / EECBS
 };

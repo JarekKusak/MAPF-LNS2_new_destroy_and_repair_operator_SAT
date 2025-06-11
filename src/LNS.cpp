@@ -10,7 +10,8 @@
 LNS::LNS(const Instance& instance, double time_limit, const string & init_algo_name, const string & replan_algo_name,
          const string & destory_name, int neighbor_size, int num_of_iterations, bool use_init_lns,
          const string & init_destory_name, bool use_sipp, int screen, PIBTPPS_option pipp_option,
-         const string& sat_heur_name, int sat_submap_side, int sat_prob_percent) :
+         const string& sat_heur_name, int sat_submap_side, int sat_prob_percent, const std::string& fallback_dest_name,
+         const std::string& fallback_replan_name) :
          BasicLNS(instance, time_limit, neighbor_size, screen),
          init_algo_name(init_algo_name),  replan_algo_name(replan_algo_name),
          num_of_iterations(num_of_iterations),

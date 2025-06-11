@@ -120,6 +120,10 @@ def build_cmd(cfg: dict, out_dir: Path) -> list[str]:
         f"--satProb={cfg['satProb']}",
         "--satDebug=0",                     # keep logs small
     ]
+    # Add fallback strategy parameters when the primary destroy strategy is SAT.
+    if cfg['dest'] == 'SAT':
+        cmd.append(f"--destoryStrategyFallback={cfg.get('destFallback', 'Intersection')}")
+        cmd.append(f"--replanAlgoFallback={cfg.get('algoFallback', 'PP')}")
     if cfg["dest"] == "SAT":
         cmd.append(f"--satHeuristic={cfg['satHeur']}")
     return cmd
@@ -153,11 +157,21 @@ def parse_log(log_path: Path) -> tuple[dict, list[int]]:
             elif m := RE_SOC_POST.search(line):
                 curve.append(int(m[1]))
 
-    # defaults & derived fields
+    # defaults
     stats.setdefault("sat_runtime", 0.0)
     stats.setdefault("other_runtime", 0.0)
-    total = stats["sat_runtime"] + stats["other_runtime"]
-    stats["sat_ratio"] = 100.0 * stats["sat_runtime"] / total if total else 0.0
+    stats.setdefault("runtime", 0.0)   # total wall‑clock time of the run
+
+    # Derived fields:
+    # (1) Share of SAT time *within all operator time* (SAT + “other” LNS ops)
+    total_ops = stats["sat_runtime"] + stats["other_runtime"]
+    stats["sat_ratio_ops"] = 100.0 * stats["sat_runtime"] / total_ops if total_ops else 0.0
+
+    # (2) Share of SAT time w.r.t. the entire wall‑time reported by the solver
+    stats["sat_ratio"] = (
+        100.0 * stats["sat_runtime"] / stats["runtime"]
+        if stats["runtime"] else 0.0
+    )
 
     return stats, curve
 

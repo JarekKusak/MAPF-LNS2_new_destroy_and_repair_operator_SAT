@@ -589,7 +589,7 @@ bool LNS::run()
         updateAllStats(current_iter);
 
         if (destroy_strategy == SAT) { // SAT is destroy operator merged with replan operator
-            int r = rand() % 100;
+            int r = rand() % 100; // TODO: ostatním operátorům to může trvat, nakonec se po několikátém restartu spustí SAT
             if (r < sat_prob_percent) { // number here can be a hyperparameter
                 SATchosen = true;
                 SAT_DBG("Using SAT operator (destroy+repair SAT).");

@@ -2,15 +2,17 @@
 """
 tables.py
 ─────────
-• Enumerates all benchmark runs for the bachelor-thesis experiments.
-• Launches `lns` with the chosen parameter matrix.
-• Parses each run’s log to collect the headline statistics required for
-  – T1 : pure re-planning strategies (PP, CBS) and pure SAT,
-  – T2 : mixed SAT + PP with different satProb values.
-• Produces three CSV files in <repo>/results/:
+Enumerates all benchmark runs for the bachelor-thesis experiments.
+Launches `lns` with the chosen parameter matrix.
+Parses each run’s log to collect the headline statistics required for
+  – T1 : pure replanning strategies (PP / CBS / optional pure SAT).
+  – T2 : PP + SAT mixes (varying SAT probability, fallback strategies).
+  – T3 : runtime statistics (SAT time, other LNS ops time, ratios).
+Produces three CSV files in <repo>/results/:
       ├─ results_all.csv   – every single run
       ├─ results_T1_pure.csv
-      └─ results_T2_mix.csv
+      ├─ results_T2_mix.csv
+      └─ results_T3_runtime.csv
 """
 
 from itertools import product
@@ -23,51 +25,42 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import shutil
 
-# ------------------ CONFIGURATION MATRIX (edit as needed) ------------------ #
-
-MAPS = {
-    "warehouse-10-20-10-2-1",
-    "random-32-32-20",
-    "room-32-32-4",
-    "Paris_1_256",
-    "ost003d",
-}
-
-# --- CONFIGURATION MATRIX (quick sanity run) ---
+# CONFIGURATION MATRIX
 MAPS              = {"ost003d"}
 INSTANCES_PER_MAP = 1
 AGENT_COUNTS      = [100]
-TIMEOUTS          = [5]          # 5 s wall-time
-MAX_ITERS         = [5_000]      # libovolně velké, stejně to utneme časem
+TIMEOUTS          = [5] # 5 (+ margin)
+MAX_ITERS         = [5_000] # arbitrary long
 SUBMAP_SIDES      = [3]
 
 PURE_REPLANS      = ["PP"]
 INCLUDE_PURE_SAT  = True
-MIX_PROBS         = [100, 50, 20]     # 100 % SAT   ×  0 % SAT
+MIX_PROBS         = [100, 50, 20] 
 SAT_HEURISTICS    = ["adaptive"]
 
 FALLBACK_DESTS  = ["Random", "Intersection"]
-FALLBACK_ALGOS  = ["CBS", "EECBS"]
+FALLBACK_ALGOS  = ["PP","CBS"]#, "EECBS"]
 
-SAFE_MARGIN = 3  # seconds added on top of cfg['T'] to forcibly kill hanging runs
-'''
-INSTANCES_PER_MAP = 5          # scenario-files random-1..random-5
-AGENT_COUNTS      = [100, 500]
-TIMEOUTS          = [2]       # seconds; thesis advisor suggested 30 s
-SAFE_MARGIN = 3  # seconds added on top of cfg['T'] to forcibly kill hanging runs
-MAX_ITERS         = [10_000]   # “high enough” – loop is limited by timeout
-SUBMAP_SIDES      = [3, 5]
+SAFE_MARGIN = 2  # seconds added on top of cfg['T'] to forcibly kill hanging runs
 
-PURE_REPLANS = ["PP", "CBS"]   # T1 without SAT
-INCLUDE_PURE_SAT = True
-MIX_PROBS    = [100, 50, 20]   # satProb for T2
-SAT_HEURISTICS = ["adaptive"]  # you can add ["roundRobin","mostDelayed"]
 '''
+MAPS = {"random-32-32-20", "room-32-32-4", "warehouse-10-20-10-2-1",
+        "maze-32-32-4", "Paris_1_256"}
+INSTANCES_PER_MAP = 5
+AGENT_COUNTS      = [100, 300, 500]
+TIMEOUTS          = [30]
+SUBMAP_SIDES      = [5]
+MIX_PROBS         = [50, 20] # 0 a 100 jsou generovány mimo MIX
+SAT_HEURISTICS    = ["adaptive"]
+FALLBACK_DESTS    = ["Random", "Intersection"]
+FALLBACK_ALGOS    = ["PP", "CBS", "EECBS"]
+'''
+
 LNS_BIN     = "./lns"          # path to compiled solver
 RESULTS_DIR = Path("results").absolute()
 RESULTS_DIR.mkdir(exist_ok=True)
 
-# ------------------ REGEX PATTERNS (must match solver output) -------------- #
+# REGEX PATTERNS (must match solver output)
 
 RE_FINAL   = re.compile(
     r"\[STAT\] .*: runtime = ([\d\.eE+-]+), iterations = (\d+), "
@@ -77,7 +70,7 @@ RE_SAT_RT  = re.compile(r"\[STAT\] SAT total runtime = ([\d\.eE+-]+) s")
 RE_OTH_RT  = re.compile(r"\[STAT\] Other operators runtime = ([\d\.eE+-]+) s")
 RE_SOC_POST = re.compile(r"\[STAT\] sum_of_costs after recomputation: (\d+)")
 
-# ────────────────────────── CASE GENERATION ─────────────────────────────── #
+# CASE GENERATION
 
 cases: list[dict] = []
 
@@ -112,7 +105,7 @@ for m, scen_i, k, T, iters, sub, prob, heur, fb_dest, fb_algo in product(
                       algoFallback=fb_algo,
                       map=m, inst=scen_i, k=k, T=T, iters=iters, sub=sub))
 
-# ──────────────────────── LAUNCH / PARSE HELPERS ────────────────────────── #
+# LAUNCH / PARSE HELPERS
 
 def build_cmd(cfg: dict, out_dir: Path) -> list[str]:
     """Build command-line for a single solver run."""
@@ -185,9 +178,15 @@ def parse_log(log_path: Path) -> tuple[dict, list[int]]:
         if stats["runtime"] else 0.0
     )
 
+    # (3) Percentage improvement of final SoC vs. initial SoC (positive = better)
+    if "initial_soc" in stats and stats["initial_soc"]:
+        stats["soc_improvement_pct"] = 100.0 * (stats["initial_soc"] - stats["final_soc"]) / stats["initial_soc"]
+    else:
+        stats["soc_improvement_pct"] = 0.0
+
     return stats, curve
 
-# ───────────────────────────── MAIN LOOP ────────────────────────────────── #
+# MAIN LOOP
 
 records = []
 for cfg in cases:
@@ -239,11 +238,18 @@ for cfg in cases:
     records.append({**cfg, "algo": csv_algo, "run_id": tag, **stats})
     print(f"[INFO] {tag:<70} {elapsed:5.1f}s")
 
-# ───────────────────────────── CSV EXPORT ───────────────────────────────── #
+# CSV EXPORT 
 
 df = pd.DataFrame(records)
 df.to_csv(RESULTS_DIR / "results_all.csv", index=False)
 df[df.kind == "PURE"].to_csv(RESULTS_DIR / "results_T1_pure.csv", index=False)
 df[df.kind == "MIX" ].to_csv(RESULTS_DIR / "results_T2_mix.csv",  index=False)
 
-print("✓ CSV files written to", RESULTS_DIR)
+df_runtime = df[[
+    "map", "inst", "k",
+    "algo", "satProb", "destFallback", "algoFallback",
+    "sat_runtime", "other_runtime", "sat_ratio_ops", "sat_ratio"
+]]
+df_runtime.to_csv(RESULTS_DIR / "results_T3_runtime.csv", index=False)
+
+print("CSV files written to", RESULTS_DIR)

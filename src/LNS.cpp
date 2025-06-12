@@ -219,7 +219,6 @@ int LNS::countConflicts(const Agent& ag) {
     return c;
 }
 
-
 // The higher the score, the more "interesting" the agent is for further destruction/replan.
 double LNS::agentScore(const Agent& ag) const {
     const auto& st = ag.stats;
@@ -506,6 +505,8 @@ bool LNS::run()
 
     iteration_stats.emplace_back(neighbor.agents.size(),
                                  initial_sum_of_costs, initial_solution_runtime, init_algo_name);
+
+    other_runtime_total += initial_solution_runtime;
     runtime = initial_solution_runtime;
     if (!succ) {
         std::cout << "[ERROR] Failed to find an initial solution in "
@@ -574,9 +575,30 @@ bool LNS::run()
 
     bool needConflictRepair = false;
 
+    size_t  sat_iter_count        = 0;     // kolikrát se SAT skutečně spustil
+    double  last_sat_iter_runtime = 0.0;   // délka poslední SAT iterace
+    double  max_sat_iter_runtime  = 0.0;   // nejdelší SAT iterace
+
+    /* ------------------------------------------------------
+    Flags fixing the choice of operator for the current
+    outer iteration (i.e. before we successfully complete it
+    or "continue" returns control to the beginning of the loop).
+     ------------------------------------------------------ */
+    bool decision_taken = false;   // Have we already drawn?
+    bool SATchosenIter  = false;   // was SAT chosen for this iteration?
+
     // Optimization loop
     while (runtime < time_limit && iteration_stats.size() <= num_of_iterations) {
         current_iter = static_cast<int>(iteration_stats.size());
+
+        // one-time SAT x fallback selection for this iteration
+        if (!decision_taken) {
+            if (destroy_strategy == SAT)
+                SATchosenIter = (rand() % 100) < sat_prob_percent;
+            else SATchosenIter = false; // pure non-SAT configuration
+            decision_taken = true;
+        }
+
         SAT_STAT("Iteration " << current_iter);
         std::cout.flush();
         runtime = ((fsec)(Time::now() - start_time)).count();
@@ -589,8 +611,7 @@ bool LNS::run()
         updateAllStats(current_iter);
 
         if (destroy_strategy == SAT) { // SAT is destroy operator merged with replan operator
-            int r = rand() % 100; // TODO: ostatním operátorům to může trvat, nakonec se po několikátém restartu spustí SAT
-            if (r < sat_prob_percent) { // number here can be a hyperparameter
+            if (SATchosenIter) {
                 SATchosen = true;
                 SAT_DBG("Using SAT operator (destroy+repair SAT).");
 
@@ -609,9 +630,16 @@ bool LNS::run()
                     opSuccess = runSAT();
                 }
 
-                sat_runtime_total += ((fsec)(Time::now() - sat_start)).count();
+                double sat_iter_runtime =
+                        ((fsec)(Time::now() - sat_start)).count();
+
+                sat_runtime_total += sat_iter_runtime;
+                last_sat_iter_runtime = sat_iter_runtime;
+                if (sat_iter_runtime > max_sat_iter_runtime)
+                    max_sat_iter_runtime = sat_iter_runtime;
+                ++sat_iter_count;
             }
-            else SAT_DBG("Random chance did not select SAT operator (r=" << r << "), using default strategy.");
+            else SAT_STAT("Random chance did not select SAT operator, using default destroy strategy " << fallback_destroy_strategy << " with replan algo " << fallback_replan_algo);
             SAT_DBG("opSuccess value: " << opSuccess);
         }
 
@@ -622,15 +650,15 @@ bool LNS::run()
             int DEFAULT_DESTROY_STRATEGY;
             std::string DEFAULT_REPLAN_ALGO;
 
-            if (destroy_strategy == SAT) { // mix SAT with other operator from argument (satProb 1-99)
+            if (destroy_strategy == SAT && !SATchosenIter) { // mix SAT with other operator from argument (satProb 1-99)
                 DEFAULT_DESTROY_STRATEGY = fallback_destroy_strategy;
                 DEFAULT_REPLAN_ALGO      = fallback_replan_algo;
             } else { // PURE non-SAT
                 DEFAULT_DESTROY_STRATEGY = destroy_strategy;  // command line arguments
                 DEFAULT_REPLAN_ALGO = replan_algo_name;  // PP / CBS / EECBS ...
             }
-            SAT_DBG("running destroy strategii " << DEFAULT_DESTROY_STRATEGY);
-            SAT_DBG("running replan strategii " << DEFAULT_REPLAN_ALGO);
+            SAT_DBG("running destroy strategy " << DEFAULT_DESTROY_STRATEGY);
+            SAT_DBG("running replan strategy " << DEFAULT_REPLAN_ALGO);
 
             switch (DEFAULT_DESTROY_STRATEGY)
             {
@@ -724,7 +752,6 @@ bool LNS::run()
                 std::cout << "[WARNING] Problem after SAT: " << e.what() << std::endl;
                 // unify
                 doInitLNSRepair("because problem occurred after SAT (should be applied only for conflicts...)");
-                //continue;
             }
         } else sum_of_costs += neighbor.sum_of_costs - neighbor.old_sum_of_costs;
 
@@ -740,6 +767,10 @@ bool LNS::run()
                  );
         }
         iteration_stats.emplace_back(neighbor.agents.size(), sum_of_costs, runtime, replan_algo_name);
+
+        // prepare another outer iteration – we will draw again
+        decision_taken = false;
+        SATchosenIter  = false;
     }
 
     average_group_size = -iteration_stats.front().num_of_agents;
@@ -755,10 +786,17 @@ bool LNS::run()
          << ", initial solution cost = " << initial_sum_of_costs
          << ", failed iterations = " << num_of_failures
          );
+
     SAT_STAT("SAT total runtime = " << sat_runtime_total << " s");
     SAT_STAT("Other operators runtime = " << other_runtime_total << " s");
     if (runtime > 0)
         SAT_STAT("SAT runtime ratio = " << (100.0 * sat_runtime_total / runtime) << " %");
+    if (sat_iter_count > 0)
+        SAT_STAT("SAT iterations = " << sat_iter_count
+                                     << ", avg SAT iter = "
+                                     << (sat_runtime_total / sat_iter_count) << " s"
+                                     << ", max SAT iter = " << max_sat_iter_runtime << " s"
+                                     << ", last SAT iter = " << last_sat_iter_runtime << " s");
 
     return true;
 }

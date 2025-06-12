@@ -21,6 +21,7 @@ import time
 import sys
 import pandas as pd
 import matplotlib.pyplot as plt
+import shutil
 
 # ------------------ CONFIGURATION MATRIX (edit as needed) ------------------ #
 
@@ -44,6 +45,9 @@ PURE_REPLANS      = ["PP"]
 INCLUDE_PURE_SAT  = True
 MIX_PROBS         = [100, 50, 20]     # 100 % SAT   ×  0 % SAT
 SAT_HEURISTICS    = ["adaptive"]
+
+FALLBACK_DESTS  = ["Random", "Intersection"]
+FALLBACK_ALGOS  = ["CBS", "EECBS"]
 
 SAFE_MARGIN = 3  # seconds added on top of cfg['T'] to forcibly kill hanging runs
 '''
@@ -91,13 +95,21 @@ for m, scen_i, k, T, iters, sub in product(
                           map=m, inst=scen_i, k=k, T=T, iters=iters, sub=sub))
 
 # T2 ─ PP + SAT mixes
-for m, scen_i, k, T, iters, sub, prob, heur in product(
+for m, scen_i, k, T, iters, sub, prob, heur, fb_dest, fb_algo in product(
         MAPS, range(1, INSTANCES_PER_MAP + 1), AGENT_COUNTS,
-        TIMEOUTS, MAX_ITERS, SUBMAP_SIDES, MIX_PROBS, SAT_HEURISTICS):
-    if prob == 0:
+        TIMEOUTS, MAX_ITERS, SUBMAP_SIDES,
+        MIX_PROBS, SAT_HEURISTICS,
+        FALLBACK_DESTS, FALLBACK_ALGOS):
+    # skip degenerate mixes – 0 % >>> žádný SAT, 100 % >>> čistý SAT už máme v "PURE"
+    if prob in (0, 100):
         continue
-    cases.append(dict(kind="MIX", algo="PP", satProb=prob,
-                      dest="SAT", satHeur=heur,
+    cases.append(dict(kind="MIX",
+                      algo="PP", # primary non‑SAT replanner (internal)
+                      satProb=prob,
+                      dest="SAT",
+                      satHeur=heur,
+                      destFallback=fb_dest,
+                      algoFallback=fb_algo,
                       map=m, inst=scen_i, k=k, T=T, iters=iters, sub=sub))
 
 # ──────────────────────── LAUNCH / PARSE HELPERS ────────────────────────── #
@@ -118,7 +130,7 @@ def build_cmd(cfg: dict, out_dir: Path) -> list[str]:
         f"--destoryStrategy={cfg['dest']}",
         f"--satSubmap={cfg['sub']}",
         f"--satProb={cfg['satProb']}",
-        "--satDebug=0",                     # keep logs small
+        "--satDebug=0", # keep logs small
     ]
     # Add fallback strategy parameters when the primary destroy strategy is SAT.
     if cfg['dest'] == 'SAT':
@@ -182,7 +194,12 @@ for cfg in cases:
     tag = (f"{cfg['map']}-i{cfg['inst']}-k{cfg['k']}-t{cfg['T']}"
            f"-sub{cfg['sub']}-p{cfg['satProb']}"
            f"-{cfg.get('satHeur','')}")
+    # add fallback info only for MIX cases (keys present)
+    if cfg.get("destFallback"):
+        tag += f"-fb{cfg['algoFallback']}-{cfg['destFallback']}"
     out_dir = RESULTS_DIR / tag
+    if out_dir.exists():
+        shutil.rmtree(out_dir)   # ensure fresh directory for each run
     out_dir.mkdir(exist_ok=True)
     log_file = out_dir / "log.txt"
 
@@ -192,10 +209,10 @@ for cfg in cases:
             build_cmd(cfg, out_dir),
             stdout=log_file.open("w"),
             stderr=subprocess.STDOUT,
-            timeout=cfg["T"] + SAFE_MARGIN,          # hard wall‑time per run
+            timeout=cfg["T"] + SAFE_MARGIN, # hard wall‑time per run
         )
     except subprocess.TimeoutExpired:
-        # Kill the still‑running solver and mark as timeout
+        # kill the still‑running solver and mark as timeout
         proc = subprocess.CompletedProcess(args=[], returncode=-9)
         print(f"[TIMEOUT] {tag} exceeded {cfg['T']+SAFE_MARGIN}s, skipping …",
               file=sys.stderr)
@@ -204,7 +221,7 @@ for cfg in cases:
         print(f"[WARN] {tag} exited with code {proc.returncode}", file=sys.stderr)
 
     stats, curve = parse_log(log_file)
-    # Save SoC curve and create a PNG plot
+    # save SoC curve and create a PNG plot
     if curve:
         (out_dir / "soc.csv").write_text("\n".join(map(str, curve)))
         # quick line chart
@@ -216,7 +233,10 @@ for cfg in cases:
         plt.tight_layout()
         plt.savefig(out_dir / "soc.png")
         plt.close()
-    records.append({**cfg, "run_id": tag, **stats})
+
+    # The algo column in the CSV shows "SAT" whenever dest=="SAT". However, internally it remains --replanAlgo=PP so the binary doesn't run with an invalid value
+    csv_algo = "SAT" if cfg["dest"] == "SAT" else cfg["algo"]
+    records.append({**cfg, "algo": csv_algo, "run_id": tag, **stats})
     print(f"[INFO] {tag:<70} {elapsed:5.1f}s")
 
 # ───────────────────────────── CSV EXPORT ───────────────────────────────── #

@@ -75,12 +75,12 @@ struct Agent
         int prev_delay_max = 0;
         int prev_conflict_cnt = 0;
         double prev_stretch_ratio = 0;
-        int prev_last_replanned = 0;
+        int prev_last_replanned = -1;
 
         int   delay_max        = 0;
         int   conflict_cnt     = 0;
         double stretch_ratio   = 0.0;
-        int   last_replanned   = 0;
+        int   last_replanned   = -1;
     };
     mutable AgentStats stats;
 };

@@ -856,6 +856,7 @@ bool LNS::run()
                                      << ", max SAT iter = " << max_sat_iter_runtime << " s"
                                      << ", last SAT iter = " << last_sat_iter_runtime << " s");
 
+    std::cout.rdbuf(coutbuf);
     return true;
 }
 

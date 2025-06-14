@@ -57,7 +57,7 @@ RM = /opt/homebrew/Cellar/cmake/3.27.6/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /Users/jaroslavkusak/Documents/škola/BAKALÁŘKA/MAPF-LNS2
+CMAKE_SOURCE_DIR = /Users/jaroslavkusak/Documents/škola/BAKALÁŘKA/MAPF-LNS2
 
 # The top-level build directory on which CMake was run.
 CMAKE_BINARY_DIR = /Users/jaroslavkusak/Documents/škola/BAKALÁŘKA/MAPF-LNS2

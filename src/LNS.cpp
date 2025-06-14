@@ -195,6 +195,7 @@ bool LNS::generateNeighborBySAT() {
     neighbor.global_to_local = global_to_local;
     neighbor.map = map;
     neighbor.T_sync = T_sync;
+    neighbor.key_agent_id = key_agent_id;
     ignored_agents_with_timestep.insert({key_agent_id, T_sync});
 
     return true;
@@ -306,6 +307,13 @@ pair<int,int> LNS::findBestAgentAndTime()
 void LNS::updateAllStats(int iter) {
     for (auto& ag : agents) {
         auto& st = ag.stats;
+
+        // save previous values
+        st.prev_delay_max     = st.delay_max;
+        st.prev_conflict_cnt  = st.conflict_cnt;
+        st.prev_stretch_ratio = st.stretch_ratio;
+        st.prev_last_replanned = st.last_replanned;
+
         // maximum delay at any step of the path
         st.delay_max     = computeMaxDelay(ag);
         // number of invalid steps (edge/vertex conflicts)
@@ -313,8 +321,6 @@ void LNS::updateAllStats(int iter) {
         // relative path extension compared to the heuristic lower bound
         st.stretch_ratio = double(ag.path.size() - 1) /
                            ag.path_planner->my_heuristic[ ag.path_planner->start_location ];
-        // the last iteration when the given agent was rescheduled
-        st.last_replanned = iter;
     }
 }
 
@@ -359,7 +365,8 @@ bool LNS::runSAT()
     const auto& submap_set       = neighbor.submap_set;
     const auto& global_to_local  = neighbor.global_to_local;
     auto& map              = neighbor.map;
-    int T_sync                   = neighbor.T_sync;
+    int T_sync = neighbor.T_sync;
+    int key_agent_id = neighbor.key_agent_id;
 
     auto local_paths = SATUtils::findLocalPaths(agents_to_replan, submap, submap_set, global_to_local, T_sync, agents);
 
@@ -371,6 +378,10 @@ bool LNS::runSAT()
 
         SAT_STAT("SAT solver failed to find a valid solution.");
         return false;
+    }
+    else { // if succesful replan, add current_iter to agents' stats (for adaptive heur)
+        for (auto a: agents_to_replan)
+            agents[a].stats.last_replanned = current_iter;
     }
 
     // Additional validity check for paths returned by the SAT solver:
@@ -404,27 +415,70 @@ bool LNS::runSAT()
             SAT_DBG("(LNS.cpp) New path for agent " << a << ": ");
             {
                 std::stringstream ss;
-                for (auto loc : agents[a].path)
+                for (auto loc: agents[a].path)
                     ss << loc.location << ", ";
                 SAT_DBG(ss.str());
             }
         }
 
-        if (neighbor.sum_of_costs <= neighbor.old_sum_of_costs) {
-            double delta = double(neighbor.old_sum_of_costs - neighbor.sum_of_costs)
-                           / double(neighbor.old_sum_of_costs);
-            SAT_DBG("Delta value: " << delta);
-            int metric_index = selectMetricIndex();
-            SAT_DBG("Rewarding metric index = " << metric_index);
-            updateComponentWeights(metric_index, delta);
-            SAT_DBG("component_weights = {"
-                     << component_weights[0] << ", "
-                     << component_weights[1] << ", "
-                     << component_weights[2] << ", "
-                     << component_weights[3] << "}");
-        }
+        auto& key_stats = agents[key_agent_id].stats;
+        key_stats.prev_delay_max     = key_stats.delay_max;
+        key_stats.prev_conflict_cnt  = key_stats.conflict_cnt;
+        key_stats.prev_stretch_ratio = key_stats.stretch_ratio;
 
-        return true;
+        key_stats.delay_max     = computeMaxDelay(agents[key_agent_id]);
+        key_stats.conflict_cnt  = countConflicts(agents[key_agent_id]);
+        key_stats.stretch_ratio = double(agents[key_agent_id].path.size()-1) /
+                                  agents[key_agent_id].path_planner
+                                          ->my_heuristic[agents[key_agent_id]
+                                          .path_planner->start_location];
+
+        double delta = double(neighbor.old_sum_of_costs - neighbor.sum_of_costs)
+                       / double(neighbor.old_sum_of_costs);
+
+        // how did statistics change for key agent
+        const Agent& key_ag = agents[neighbor.key_agent_id];
+        const auto& st = key_ag.stats;
+
+        double d_delta = double(st.prev_delay_max    - st.delay_max);          // ↓  ==> positive
+        double c_delta = double(st.prev_conflict_cnt - st.conflict_cnt);
+        double s_delta =         st.prev_stretch_ratio - st.stretch_ratio;     // ↓  ==> positive
+        //double l_delta = double(current_iter - st.last_replanned);             // raises
+        // this ensures that the recency component gets a positive number only when the agent moves forward
+        double l_delta = double(st.last_replanned - st.prev_last_replanned);
+
+        // find the index of the component with the largest *relative* contribution (>0)
+        std::array<double,4> deltas = {d_delta, c_delta, s_delta, l_delta};
+        int metric_index = std::distance(deltas.begin(),
+                                         std::max_element(deltas.begin(), deltas.end()));
+        if (deltas[metric_index] <= 0)
+            metric_index = 0; // fallback – reward delay when nothing else has improved
+
+        // reward chosen weight
+        updateComponentWeights(metric_index, delta);
+
+        SAT_DBG("component_weights = {"
+                        << component_weights[0] << ", "
+                        << component_weights[1] << ", "
+                        << component_weights[2] << ", "
+                        << component_weights[3] << "}");
+
+        /*
+        double delta = double(neighbor.old_sum_of_costs - neighbor.sum_of_costs)
+                       / double(neighbor.old_sum_of_costs);
+        SAT_DBG("Delta value: " << delta);
+        int metric_index = selectMetricIndex();
+        SAT_DBG("Rewarding metric index = " << metric_index);
+        updateComponentWeights(metric_index, delta);
+        SAT_DBG("component_weights = {"
+                 << component_weights[0] << ", "
+                 << component_weights[1] << ", "
+                 << component_weights[2] << ", "
+                 << component_weights[3] << "}");
+        */
+
+
+    return true;
     } else {
         SAT_DBG("[INFO] New SAT solution is worse, reverting.");
         for (int i = 0; i < (int)neighbor.agents.size(); i++) {
@@ -457,9 +511,9 @@ bool LNS::runSAT()
 bool LNS::run()
 {
     // Open file for logging output
-    //std::ofstream out("log.txt");
-    //std::streambuf* coutbuf = std::cout.rdbuf();
-    //std::cout.rdbuf(out.rdbuf());
+    std::ofstream out("log.txt");
+    std::streambuf* coutbuf = std::cout.rdbuf();
+    std::cout.rdbuf(out.rdbuf());
 
     sat_runtime_total   = 0.0;
     other_runtime_total = 0.0;
@@ -528,8 +582,11 @@ bool LNS::run()
                                init_destory_name,
                                neighbor_size, screen);
 
+        // TODO: return last solution
+
         SAT_DBG("Passing " << agents.size()
                   << " agents to init_lns (skip=true).");
+
 
         // ------------------------------------------------------------------
         // Output: path_table contents for selected agents (e.g., neighbor.agents)
@@ -603,7 +660,8 @@ bool LNS::run()
         std::cout.flush();
         runtime = ((fsec)(Time::now() - start_time)).count();
 
-        if (ALNS) chooseDestroyHeuristicbyALNS();
+        if (ALNS)
+            chooseDestroyHeuristicbyALNS();
 
         bool opSuccess = false;
         bool SATchosen = false;
@@ -1140,7 +1198,7 @@ void LNS::updatePIBTResult(const PIBT_Agents& A, vector<int>& shuffled_agents){
     neighbor.sum_of_costs =soc;
 }
 
-void LNS::chooseDestroyHeuristicbyALNS()
+void LNS::chooseDestroyHeuristicbyALNS() // TODO: zprovoznit
 {
     rouletteWheel();
     switch (selected_neighbor)
@@ -1148,7 +1206,6 @@ void LNS::chooseDestroyHeuristicbyALNS()
         case 0 : destroy_strategy = RANDOMWALK; break;
         case 1 : destroy_strategy = INTERSECTION; break;
         case 2 : destroy_strategy = RANDOMAGENTS; break;
-        case 3 : destroy_strategy = SAT; break;
         default : cerr << "ERROR" << endl; exit(-1);
     }
 }

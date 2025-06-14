@@ -28,32 +28,32 @@ import shutil
 # CONFIGURATION MATRIX
 MAPS              = {"ost003d"}
 INSTANCES_PER_MAP = 1
-AGENT_COUNTS      = [100]
+AGENT_COUNTS      = [100, 300, 500, 1000]
 TIMEOUTS          = [5] # 5 (+ margin)
 MAX_ITERS         = [5_000] # arbitrary long
 SUBMAP_SIDES      = [3]
 
-PURE_REPLANS      = ["PP"]
+PURE_REPLANS      = ["PP", "CBS"]
 INCLUDE_PURE_SAT  = True
 MIX_PROBS         = [100, 50, 20] 
 SAT_HEURISTICS    = ["adaptive"]
 
 FALLBACK_DESTS  = ["Random", "Intersection"]
-FALLBACK_ALGOS  = ["PP","CBS"]#, "EECBS"]
+FALLBACK_ALGOS  = ["PP"]  #,"CBS"] #, "EECBS"]
 
-SAFE_MARGIN = 2  # seconds added on top of cfg['T'] to forcibly kill hanging runs
+SAFE_MARGIN = 0  # seconds added on top of cfg['T'] to forcibly kill hanging runs
 
 '''
-MAPS = {"random-32-32-20", "room-32-32-4", "warehouse-10-20-10-2-1",
-        "maze-32-32-4", "Paris_1_256"}
-INSTANCES_PER_MAP = 5
-AGENT_COUNTS      = [100, 300, 500]
+MAPS = {"random-32-32-20", "room-64-64-16", "warehouse-20-40-10-2-1",
+        "templar", "Paris_1_256"}
+INSTANCES_PER_MAP = 10
+AGENT_COUNTS      = [100, 300, 500, 1000] # rozdělit na malé a velké mapy
 TIMEOUTS          = [30]
-SUBMAP_SIDES      = [5]
-MIX_PROBS         = [50, 20] # 0 a 100 jsou generovány mimo MIX
+SUBMAP_SIDES      = [5, 7] 
+MIX_PROBS         = [50, 20] # 0 a 100 jsou generovány mimo MIX - smíchat s ALNS
 SAT_HEURISTICS    = ["adaptive"]
-FALLBACK_DESTS    = ["Random", "Intersection"]
-FALLBACK_ALGOS    = ["PP", "CBS", "EECBS"]
+FALLBACK_DESTS    = ["Random", "Intersection"] # ALNS
+FALLBACK_ALGOS    = ["PP"]   #, "CBS", "EECBS"]
 '''
 
 LNS_BIN     = "./lns"          # path to compiled solver
@@ -127,9 +127,8 @@ def build_cmd(cfg: dict, out_dir: Path) -> list[str]:
     ]
     # Add fallback strategy parameters when the primary destroy strategy is SAT.
     if cfg['dest'] == 'SAT':
-        cmd.append(f"--destoryStrategyFallback={cfg.get('destFallback', 'Intersection')}")
-        cmd.append(f"--replanAlgoFallback={cfg.get('algoFallback', 'PP')}")
-    if cfg["dest"] == "SAT":
+        cmd.append(f"--destoryStrategyFallback={cfg.get('destFallback', 'Intersection')}") # if destFallback is not set, use default Intersection
+        cmd.append(f"--replanAlgoFallback={cfg.get('algoFallback', 'PP')}") # if algoFallback is not set, use default PP
         cmd.append(f"--satHeuristic={cfg['satHeur']}")
     return cmd
 

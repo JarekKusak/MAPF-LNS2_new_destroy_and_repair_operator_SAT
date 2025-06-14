@@ -493,13 +493,13 @@ namespace SATUtils {
                 SAT_DBG(ss.str());
             }
 
-            // Optionally call the helper that prints detailed information:
+            // optionally call the helper that prints detailed information:
             printPathDetails(updated_path, T_sync, old_local_length, submap, map);
 
             SAT_DBG("Original agent path length " << agent_id
                  << " je: " <<  agents[agent_id].path.size());
 
-            // Save the final path
+            // save the final path
             agents[agent_id].path = updated_path;
             {
                 std::stringstream ss;

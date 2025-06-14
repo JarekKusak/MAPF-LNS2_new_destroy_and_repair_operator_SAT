@@ -1,4 +1,69 @@
 [DBG]  hodnota skip_initial_solution=0
-[DBG]  getInitialSolution() => succ=1, sum_of_costs=4461, num_of_colliding_pairs=1
-[DBG]  After skip/init build => iteration_stats.back(): sum_of_costs=4461, collisions=1
+[DBG]  getInitialSolution() => succ=1, sum_of_costs=5711, num_of_colliding_pairs=39
+[DBG]  After skip/init build => iteration_stats.back(): sum_of_costs=5711, collisions=39
+[DEBUG] Using default neighbor generation strategy for conflicts: 2
 [DEBUG] Using default neighbor generation strategy for conflicts: 0
+[DEBUG] Using default neighbor generation strategy for conflicts: 0
+[DEBUG] Using default neighbor generation strategy for conflicts: 2
+[DEBUG] Using default neighbor generation strategy for conflicts: 1
+[DEBUG] Using default neighbor generation strategy for conflicts: 0
+[DEBUG] Using default neighbor generation strategy for conflicts: 0
+[DEBUG] Using default neighbor generation strategy for conflicts: 2
+[DEBUG] Using default neighbor generation strategy for conflicts: 1
+[DEBUG] Using default neighbor generation strategy for conflicts: 0
+[DEBUG] Using default neighbor generation strategy for conflicts: 0
+[DEBUG] Using default neighbor generation strategy for conflicts: 0
+[DEBUG] Using default neighbor generation strategy for conflicts: 1
+[DEBUG] Using default neighbor generation strategy for conflicts: 1
+[DEBUG] Using default neighbor generation strategy for conflicts: 1
+[DEBUG] Using default neighbor generation strategy for conflicts: 1
+[DEBUG] Using default neighbor generation strategy for conflicts: 0
+[DEBUG] Using default neighbor generation strategy for conflicts: 0
+[DEBUG] Using default neighbor generation strategy for conflicts: 0
+[DEBUG] Using default neighbor generation strategy for conflicts: 2
+[DEBUG] Using default neighbor generation strategy for conflicts: 0
+[DEBUG] Using default neighbor generation strategy for conflicts: 0
+[DEBUG] Using default neighbor generation strategy for conflicts: 2
+[DEBUG] Using default neighbor generation strategy for conflicts: 1
+[DEBUG] Using default neighbor generation strategy for conflicts: 0
+[DEBUG] Using default neighbor generation strategy for conflicts: 1
+[DEBUG] Using default neighbor generation strategy for conflicts: 1
+	InitLNS(PP): runtime = 0.144723, iterations = 28, colliding pairs = 0, initial colliding pairs = 39, solution cost = 6206, initial solution cost = 5711, failed iterations = 3
+[STAT] Iteration 1
+[DBG]  running destroy strategy 2
+[DBG]  running replan strategy PP
+[STAT] Iteration 1
+[DBG]  running destroy strategy 2
+[DBG]  running replan strategy PP
+[STAT] neighbor.sum_of_costs before recomputation: 409
+[STAT] neighbor.old_sum_of_costs before recomputation: 425
+[STAT] sum_of_costs before recomputation: 6206
+[DBG]  Recomputing sum_of_cost by dividing neighbor.sum_of_costs and neighbor.old_sum_of_costs
+[STAT] sum_of_costs after recomputation: 6190
+[STAT] Iteration 2
+[DBG]  running destroy strategy 0
+[DBG]  running replan strategy PP
+[STAT] Iteration 2
+[DBG]  running destroy strategy 2
+[DBG]  running replan strategy PP
+[STAT] Iteration 2
+[DBG]  running destroy strategy 1
+[DBG]  running replan strategy PP
+[STAT] Iteration 2
+[DBG]  running destroy strategy 1
+[DBG]  running replan strategy PP
+[STAT] Iteration 2
+[DBG]  running destroy strategy 1
+[DBG]  running replan strategy PP
+[STAT] Iteration 2
+[DBG]  running destroy strategy 1
+[DBG]  running replan strategy PP
+[STAT] neighbor.sum_of_costs before recomputation: 336
+[STAT] neighbor.old_sum_of_costs before recomputation: 350
+[STAT] sum_of_costs before recomputation: 6190
+[DBG]  Recomputing sum_of_cost by dividing neighbor.sum_of_costs and neighbor.old_sum_of_costs
+[STAT] sum_of_costs after recomputation: 6176
+[STAT] LNS(PP;PP): runtime = 0.158385, iterations = 3, solution cost = 6176, initial solution cost = 6206, failed iterations = 7
+[STAT] SAT total runtime = 0 s
+[STAT] Other operators runtime = 0.158065 s
+[STAT] SAT runtime ratio = 0 %

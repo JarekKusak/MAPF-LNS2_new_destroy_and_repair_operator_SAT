@@ -36,7 +36,7 @@ struct Agent
         int problematic_timestep = -1;
 
         for (int t = 0; t < path.size(); t++) {
-            if (ignored_ts.count({id, t}))  // nově: přeskoč už ignorované
+            if (ignored_ts.count({id, t}))  // skip ignored
                 continue;
 
             int delays = path_planner->getNumOfDelaysAtTimestep(
@@ -60,22 +60,27 @@ struct Agent
             int d = path_planner->getNumOfDelaysAtTimestep(tab, path,
                                                            path[t].location, t);
             if (d == 0) continue;
-            if (d > maxDel) { // nové maximum
+            if (d > maxDel) { // new max
                 maxDel = d;
                 best.clear();
                 best.push_back(t);
-            } else if (d == maxDel) {        // stejná špička
+            } else if (d == maxDel) {
                 best.push_back(t);
             }
         }
-        return best; // prázdné = agent momentálně „bez problémů“
+        return best; // empty = agent without delays...
     }
 
     struct AgentStats {
+        int prev_delay_max = 0;
+        int prev_conflict_cnt = 0;
+        double prev_stretch_ratio = 0;
+        int prev_last_replanned = 0;
+
         int   delay_max        = 0;
         int   conflict_cnt     = 0;
         double stretch_ratio   = 0.0;
-        int   last_replanned   = 0;   // iterace
+        int   last_replanned   = 0;
     };
     mutable AgentStats stats;
 };
@@ -103,7 +108,7 @@ class BasicLNS
 public:
     // statistics
     int num_of_failures = 0; // #replanning that fails to find any solutions
-    list<IterationStats> iteration_stats; //stats about each iteration
+    list<IterationStats> iteration_stats; // stats about each iteration
     double runtime = 0;
     double average_group_size = -1;
     int sum_of_costs = 0;

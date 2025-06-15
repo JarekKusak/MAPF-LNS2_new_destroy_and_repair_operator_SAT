@@ -157,4 +157,8 @@ private:
                   << "', falling back to Intersection.\n";
         return INTERSECTION;
     }
+
+    void doInitLNSRepair(const string& debug_reason);
+    void rollbackNeighbor();
+    int sum_of_costs_before_recomputation = 0;
 };

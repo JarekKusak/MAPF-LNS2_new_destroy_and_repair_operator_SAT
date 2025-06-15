@@ -474,22 +474,7 @@ bool LNS::runSAT()
                         << component_weights[2] << ", "
                         << component_weights[3] << "}");
 
-        /*
-        double delta = double(neighbor.old_sum_of_costs - neighbor.sum_of_costs)
-                       / double(neighbor.old_sum_of_costs);
-        SAT_DBG("Delta value: " << delta);
-        int metric_index = selectMetricIndex();
-        SAT_DBG("Rewarding metric index = " << metric_index);
-        updateComponentWeights(metric_index, delta);
-        SAT_DBG("component_weights = {"
-                 << component_weights[0] << ", "
-                 << component_weights[1] << ", "
-                 << component_weights[2] << ", "
-                 << component_weights[3] << "}");
-        */
-
-
-    return true;
+        return true;
     } else {
         SAT_DBG("[INFO] New SAT solution is worse, reverting.");
         for (int i = 0; i < (int)neighbor.agents.size(); i++) {
@@ -517,6 +502,88 @@ bool LNS::runSAT()
         neighbor.sum_of_costs = neighbor.old_sum_of_costs;
         return false;
     }
+}
+
+// vrátí systém do stavu před voláním runSAT()
+void LNS::rollbackNeighbor()
+{ // TODO: opravit
+    for (size_t k = 0; k < neighbor.agents.size(); ++k) {
+        int a = neighbor.agents[k];
+        agents[a].path = neighbor.old_paths[k];
+        //path_table.insertPath(a, agents[a].path);
+    }
+
+    for (const auto &agent : agents)
+        path_table.insertPath(agent.id, agent.path);
+
+    size_t new_soc = 0;
+    for (const auto& ag : agents)
+        new_soc += ag.path.size() - 1;
+    sum_of_costs = static_cast<int>(new_soc);
+
+    SAT_DBG("Rollback done – solution is back to SoC "
+                    << sum_of_costs << " and is known valid.");
+}
+
+// ============================================
+// Helper function for immediate conflict repair via init_lns
+// ============================================
+void LNS::doInitLNSRepair(const string& debug_reason) {
+    auto repair_start = Time::now();
+
+    SAT_DBG("Attempting immediate repair via init_lns " << debug_reason << ".");
+    // if there is no time left, we add 100 ms for the possibility of corrections so that the program does not fail validation
+    //double repl_budget = std::max(0.1, time_limit - runtime);
+    init_lns = new InitLNS(instance, agents, time_limit - runtime,
+                           "PP",//replan_algo_name,
+                           init_destory_name,
+                           neighbor_size, screen);
+
+    SAT_DBG("Passing " << agents.size()
+                       << " agents to init_lns (skip=true).");
+
+    // ------------------------------------------------------------------
+    // Output: path_table contents for selected agents (e.g., neighbor.agents)
+    // ------------------------------------------------------------------
+    SAT_DBG("path_table contents for selected agents (neighbor.agents):");
+    for (int a : neighbor.agents) {
+        SAT_DBG("  Agent " << a << " => controlling path length=" << agents[a].path.size());
+        for (int t = 0; t < (int)agents[a].path.size(); t++) {
+            int loc = agents[a].path[t].location;
+            // Check if loc is a valid index
+            if (loc < 0 || loc >= (int)path_table.table.size()) {
+                SAT_DBG("    [time=" << t << "]: loc=" << loc << " (out of range)");
+                continue;
+            }
+            // Check if path_table.table[loc].size() > t
+            if ((int)path_table.table[loc].size() <= t) {
+                SAT_DBG("    [time=" << t << ", loc=" << loc << "]: path_table.table[loc].size()="
+                                     << path_table.table[loc].size() << " => out of range for t=" << t);
+                continue;
+            }
+        }
+    }
+
+    bool fixed = init_lns->run(true);
+
+    SAT_DBG("init_lns->sum_of_costs after init_lns->run: " << init_lns->sum_of_costs);
+
+    fixed = false;
+    if (fixed) {
+        sum_of_costs = init_lns->sum_of_costs;
+        //neighbor.old_sum_of_costs = init_lns->sum_of_costs;
+
+        SAT_DBG("sum_of_costs after assignment from init_lns->run: " << sum_of_costs);
+        for (const auto &agent : agents)
+            path_table.insertPath(agent.id, agent.path);
+
+        init_lns->clear();
+    }
+    else {
+        std::cout << "[ERROR] Could not repair solution right after SAT." << std::endl;
+        rollbackNeighbor();
+    }
+    other_runtime_total += ((fsec)(Time::now() - repair_start)).count();
 }
 
 bool LNS::run()
@@ -579,68 +646,6 @@ bool LNS::run()
                   << runtime << " seconds after  " << restart_times << " restarts" << std::endl;
         return false;
     }
-
-    // ============================================
-    // Helper lambda for immediate conflict repair via init_lns
-    // ============================================
-    auto doInitLNSRepair = [&](const string& debug_reason){
-        auto repair_start = Time::now();
-
-        SAT_DBG("Attempting immediate repair via init_lns " << debug_reason << ".");
-        // if there is no time left, we add 100 ms for the possibility of corrections so that the program does not fail validation
-        double repl_budget = std::max(0.1, time_limit - runtime);
-        init_lns = new InitLNS(instance, agents, repl_budget,
-                               "PP",//replan_algo_name,
-                               init_destory_name,
-                               neighbor_size, screen);
-
-        // TODO: return last solution
-
-        SAT_DBG("Passing " << agents.size()
-                  << " agents to init_lns (skip=true).");
-
-
-        // ------------------------------------------------------------------
-        // Output: path_table contents for selected agents (e.g., neighbor.agents)
-        // ------------------------------------------------------------------
-        SAT_DBG("path_table contents for selected agents (neighbor.agents):");
-        for (int a : neighbor.agents) {
-            SAT_DBG("  Agent " << a << " => controlling path length=" << agents[a].path.size());
-            for (int t = 0; t < (int)agents[a].path.size(); t++) {
-                int loc = agents[a].path[t].location;
-                // Check if loc is a valid index
-                if (loc < 0 || loc >= (int)path_table.table.size()) {
-                    SAT_DBG("    [time=" << t << "]: loc=" << loc << " (out of range)");
-                    continue;
-                }
-                // Check if path_table.table[loc].size() > t
-                if ((int)path_table.table[loc].size() <= t) {
-                    SAT_DBG("    [time=" << t << ", loc=" << loc << "]: path_table.table[loc].size()="
-                              << path_table.table[loc].size() << " => out of range for t=" << t);
-                    continue;
-                }
-            }
-        }
-
-        bool fixed = init_lns->run(true);
-
-        SAT_DBG("init_lns->sum_of_costs after init_lns->run: " << init_lns->sum_of_costs);
-
-        if (fixed) {
-            sum_of_costs = init_lns->sum_of_costs;
-            //neighbor.old_sum_of_costs = init_lns->sum_of_costs;
-
-            SAT_DBG("sum_of_costs after assignment from init_lns->run: " << sum_of_costs);
-            for (const auto &agent : agents)
-                path_table.insertPath(agent.id, agent.path);
-
-            init_lns->clear();
-        }
-        else std::cout << "[ERROR] Could not repair solution right after SAT." << std::endl;
-
-        other_runtime_total += ((fsec)(Time::now() - repair_start)).count();
-    };
-    // ============================================
 
     bool needConflictRepair = false;
 

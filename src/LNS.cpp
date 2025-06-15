@@ -16,7 +16,7 @@ LNS::LNS(const Instance& instance, double time_limit, const string & init_algo_n
          init_algo_name(init_algo_name),  replan_algo_name(replan_algo_name),
          num_of_iterations(num_of_iterations),
          use_init_lns(use_init_lns),init_destory_name(init_destory_name),
-         path_table(instance.map_size), pipp_option(pipp_option), metric_rng(std::random_device{}()),
+         path_table(instance.map_size), pipp_option(pipp_option),
          sat_submap_side(sat_submap_side), sat_prob_percent(sat_prob_percent), fallback_replan_algo(fallback_replan_name),
          fallback_destroy_strategy(strToDestroyHeuristic(fallback_dest_name)) {
     start_time = Time::now();
@@ -353,15 +353,6 @@ void LNS::updateComponentWeights(int metric_index, double delta) {
             w /= sum_w;
 }
 
-int LNS::selectMetricIndex() const {
-    // Discrete distribution that picks i with probability component_weights[i].
-    std::discrete_distribution<int> dist(
-            component_weights.begin(),
-            component_weights.end()
-    );
-    return dist(metric_rng);
-}
-
 // --------------------------------------------------------
 // REPAIR phase: runSAT() – calls findLocalPaths + solveWithSAT,
 //               and updates agent paths + path_table
@@ -456,7 +447,7 @@ bool LNS::runSAT()
         double s_delta =         st.prev_stretch_ratio - st.stretch_ratio;     // ↓  ==> positive
         //double l_delta = double(current_iter - st.last_replanned);             // raises
         // this ensures that the recency component gets a positive number only when the agent moves forward
-        double l_delta = double(st.last_replanned - st.prev_last_replanned);
+        double l_delta = (delta>0) ? (st.last_replanned - st.prev_last_replanned) : 0; // only if SoC dropped
 
         // find the index of the component with the largest *relative* contribution (>0)
         std::array<double,4> deltas = {d_delta, c_delta, s_delta, l_delta};
@@ -506,9 +497,9 @@ bool LNS::runSAT()
 
 void LNS::rollbackNeighbor()
 {
-    if (!iter_backup_valid) return;        // nemáme co vracet
+    if (!iter_backup_valid) return;        // nothing to return
 
-    /* 1) srazíme celý path_table a postavíme znovu z kopie */
+    // return snapshot
     path_table.reset();
 
     for (int id = 0; id < agents.size(); ++id) {
@@ -517,7 +508,7 @@ void LNS::rollbackNeighbor()
     }
 
     sum_of_costs      = iter_backup_soc;
-    iter_backup_valid = false;             // snapshot už byl využit
+    iter_backup_valid = false; // snapshot used
 
     SAT_DBG("Rollback -> SoC = " << sum_of_costs << " (restored entire snapshot)");
 }
@@ -564,7 +555,6 @@ void LNS::doInitLNSRepair(const string& debug_reason) {
     bool fixed = init_lns->run(true);
 
     SAT_DBG("init_lns->sum_of_costs after init_lns->run: " << init_lns->sum_of_costs);
-
     if (fixed) {
         sum_of_costs = init_lns->sum_of_costs;
         //neighbor.old_sum_of_costs = init_lns->sum_of_costs;
@@ -665,15 +655,6 @@ bool LNS::run()
         selected_neighbor = -1;
         last_other_iter_runtime = 0.0;
 
-        /* ---------------  na začátku vnější iterace ------------- */
-        // těsně poté, co spočteš   sum_of_costs  = ...;
-        iter_backup_soc   = sum_of_costs;
-        iter_backup_valid = true;
-        iter_backup_paths.resize(agents.size());
-        for (int i = 0; i < agents.size(); ++i)
-            iter_backup_paths[i] = agents[i].path;      // full deep-copy
-        //-------------------------------------------------------------------------//
-
         // one-time SAT x fallback selection for this iteration
         if (!decision_taken) {
             if (destroy_strategy == SAT)
@@ -700,6 +681,13 @@ bool LNS::run()
                 SAT_DBG("Using SAT operator (destroy+repair SAT).");
 
                 auto sat_start = Time::now();
+
+                // backup snapshot
+                iter_backup_soc   = sum_of_costs;
+                iter_backup_valid = true;
+                iter_backup_paths.resize(agents.size());
+                for (int i = 0; i < agents.size(); ++i)
+                    iter_backup_paths[i] = agents[i].path; // full deep-copy - INEFFECTIVE - lot of consumption memory and time
 
                 while (!opSuccess) {
                     if (!generateNeighborBySAT()) continue;

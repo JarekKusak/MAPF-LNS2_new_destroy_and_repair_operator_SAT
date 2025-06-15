@@ -41,7 +41,7 @@ SAT_HEURISTICS    = ["adaptive"]
 FALLBACK_DESTS  = ["Random", "Intersection"]
 FALLBACK_ALGOS  = ["PP"]  #,"CBS"] #, "EECBS"]
 
-SAFE_MARGIN = 0  # seconds added on top of cfg['T'] to forcibly kill hanging runs
+SAFE_MARGIN = 2  # seconds added on top of cfg['T'] to forcibly kill hanging runs
 
 '''
 MAPS = {"random-32-32-20", "room-64-64-16", "warehouse-20-40-10-2-1",

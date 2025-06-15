@@ -442,10 +442,9 @@ bool LNS::runSAT()
         const Agent& key_ag = agents[neighbor.key_agent_id];
         const auto& st = key_ag.stats;
 
-        double d_delta = double(st.prev_delay_max    - st.delay_max);          // ↓  ==> positive
+        double d_delta = double(st.prev_delay_max    - st.delay_max); // drop  ==> positive
         double c_delta = double(st.prev_conflict_cnt - st.conflict_cnt);
-        double s_delta =         st.prev_stretch_ratio - st.stretch_ratio;     // ↓  ==> positive
-        //double l_delta = double(current_iter - st.last_replanned);             // raises
+        double s_delta =         st.prev_stretch_ratio - st.stretch_ratio; // drop  ==> positive
         // this ensures that the recency component gets a positive number only when the agent moves forward
         double l_delta = (delta>0) ? (st.last_replanned - st.prev_last_replanned) : 0; // only if SoC dropped
 
@@ -640,6 +639,9 @@ bool LNS::run()
     double last_other_iter_runtime = 0.0;
     double max_sat_iter_runtime  = 0.0;   // longest SAT iteration
 
+    // Maximum SAT attempts per outer iteration
+    const int MAX_SAT_TRIALS = 8;   // maximum SAT attempts within one outer iteration
+
     /* ------------------------------------------------------
     Flags fixing the choice of operator for the current
     outer iteration (i.e. before we successfully complete it
@@ -689,16 +691,23 @@ bool LNS::run()
                 for (int i = 0; i < agents.size(); ++i)
                     iter_backup_paths[i] = agents[i].path; // full deep-copy - INEFFECTIVE - lot of consumption memory and time
 
-                while (!opSuccess) {
-                    if (!generateNeighborBySAT()) continue;
+                // New SAT trial loop with global time check
+                for (int sat_trials = 0; !opSuccess && sat_trials < MAX_SAT_TRIALS &&
+                 ((fsec)(Time::now() - start_time)).count() < time_limit;
+                    ++sat_trials) {
+                    if (!generateNeighborBySAT())
+                        continue;
+
+                    /* --------- backup old paths and empty path_table --------- */
                     neighbor.old_paths.resize(neighbor.agents.size());
                     neighbor.old_sum_of_costs = 0;
-                    for (int i = 0; i < (int)neighbor.agents.size(); i++) {
+                    for (int i = 0; i < (int)neighbor.agents.size(); ++i) {
                         int a = neighbor.agents[i];
                         neighbor.old_paths[i] = agents[a].path;
                         path_table.deletePath(a, agents[a].path);
                         neighbor.old_sum_of_costs += (int)agents[a].path.size() - 1;
                     }
+
                     opSuccess = runSAT();
                 }
 
@@ -715,7 +724,8 @@ bool LNS::run()
             SAT_DBG("opSuccess value: " << opSuccess);
         }
 
-        if (!opSuccess)
+        // Fallback and SAT-failed guards
+        if (!opSuccess && !SATchosen)
         {
             auto other_start = Time::now();
             // fallback neighbor generation
@@ -725,7 +735,8 @@ bool LNS::run()
             if (destroy_strategy == SAT && !SATchosenIter) { // mix SAT with other operator from argument (satProb 1-99)
                 DEFAULT_DESTROY_STRATEGY = fallback_destroy_strategy;
                 DEFAULT_REPLAN_ALGO      = fallback_replan_algo;
-            } else { // PURE non-SAT
+            }
+            else { // PURE non-SAT
                 DEFAULT_DESTROY_STRATEGY = destroy_strategy;  // command line arguments
                 DEFAULT_REPLAN_ALGO = replan_algo_name;  // PP / CBS / EECBS ...
             }
@@ -796,10 +807,17 @@ bool LNS::run()
             else if (DEFAULT_REPLAN_ALGO == "EECBS") succ = runEECBS();
             else { std::cerr << "Wrong replanning strategy " << std::endl; exit(-1); }
 
-            // TODO: zkontrolovat
             auto other_iter_runtime = ((fsec)(Time::now() - other_start)).count();
             other_runtime_total += other_iter_runtime;
             last_other_iter_runtime = other_iter_runtime;
+        }
+        else if (!opSuccess && SATchosen)
+        {
+            // SAT was the chosen operator but didn’t find a solution within the limits:
+            // account overhead and continue with next outer iteration
+            double iter_total = ((fsec)(Time::now() - iter_begin_TS)).count();
+            overhead_runtime_total += iter_total;
+            continue;
         }
         else succ = opSuccess;// opSuccess = true => runSAT completed
 
@@ -851,6 +869,7 @@ bool LNS::run()
                 std::cout << "[WARNING] Problem after SAT: " << e.what() << std::endl;
                 // unify
                 doInitLNSRepair("because problem occurred after SAT (should be applied only for conflicts...)");
+                validateSolution();
             }
         } else sum_of_costs += neighbor.sum_of_costs - neighbor.old_sum_of_costs;
 
@@ -896,19 +915,6 @@ bool LNS::run()
     if (runtime > 0)
         SAT_STAT("SAT runtime ratio    = "
                          << 100.0 * sat_runtime_total / runtime << " %");
-
-    /*
-    SAT_STAT("SAT total runtime = " << sat_runtime_total << " s");
-    SAT_STAT("Other operators runtime = " << other_runtime_total << " s");
-    if (runtime > 0)
-        SAT_STAT("SAT runtime ratio = " << (100.0 * sat_runtime_total / runtime) << " %");
-    if (sat_iter_count > 0)
-        SAT_STAT("SAT iterations = " << sat_iter_count
-                                     << ", avg SAT iter = "
-                                     << (sat_runtime_total / sat_iter_count) << " s"
-                                     << ", max SAT iter = " << max_sat_iter_runtime << " s"
-                                     << ", last SAT iter = " << last_sat_iter_runtime << " s");
-    */
 
     std::cout.rdbuf(coutbuf);
     return true;

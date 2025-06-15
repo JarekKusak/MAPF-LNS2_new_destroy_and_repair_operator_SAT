@@ -138,6 +138,7 @@ private:
     /* aggregated wall-clock times (seconds) */
     double sat_runtime_total   = 0.0;   ///< time spent in runSAT + immediate conflict-repair
     double other_runtime_total = 0.0;   ///< time spent in non-SAT operators
+    double overhead_runtime_total = 0.0;
 
     destroy_heuristic fallback_destroy_strategy = INTERSECTION;   // used when SAT not selected
     std::string       fallback_replan_algo     = "PP";            // PP / CBS / EECBS

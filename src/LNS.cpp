@@ -729,6 +729,7 @@ bool LNS::run()
             }
 
             // --- fallback neighbour generation ---------------------------------
+            auto saved_destroy_strategy = destroy_strategy;   // SAT
             if (DEFAULT_DESTROY_STRATEGY == NONE)
             {
                 /*  Adaptive fallback:
@@ -738,6 +739,7 @@ bool LNS::run()
                  */
                 chooseDestroyHeuristicbyALNS();
                 DEFAULT_DESTROY_STRATEGY = destroy_strategy;   // value from ALNS
+                destroy_strategy = saved_destroy_strategy;
                 SAT_DBG("ALNS picked destroy = " << DEFAULT_DESTROY_STRATEGY);
             }
 
@@ -1225,7 +1227,7 @@ void LNS::updatePIBTResult(const PIBT_Agents& A, vector<int>& shuffled_agents){
     neighbor.sum_of_costs =soc;
 }
 
-void LNS::chooseDestroyHeuristicbyALNS() // TODO: zprovoznit
+void LNS::chooseDestroyHeuristicbyALNS()
 {
     rouletteWheel();
     switch (selected_neighbor)

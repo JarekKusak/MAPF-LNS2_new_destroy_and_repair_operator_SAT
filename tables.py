@@ -28,20 +28,20 @@ import shutil
 # CONFIGURATION MATRIX
 MAPS              = {"ost003d"}
 INSTANCES_PER_MAP = 1
-AGENT_COUNTS      = [100, 300, 500, 1000]
+AGENT_COUNTS      = [100,300]#, 1000]
 TIMEOUTS          = [5] # 5 (+ margin)
 MAX_ITERS         = [5_000] # arbitrary long
 SUBMAP_SIDES      = [3]
 
-PURE_REPLANS      = ["PP", "CBS"]
+PURE_REPLANS      = ["PP"]#, "CBS"]
 INCLUDE_PURE_SAT  = True
-MIX_PROBS         = [100, 50, 20] 
+MIX_PROBS         = [50, 20] 
 SAT_HEURISTICS    = ["adaptive"]
 
-FALLBACK_DESTS  = ["Random", "Intersection"]
+FALLBACK_DESTS  = ["Adaptive"]
 FALLBACK_ALGOS  = ["PP"]  #,"CBS"] #, "EECBS"]
 
-SAFE_MARGIN = 2  # seconds added on top of cfg['T'] to forcibly kill hanging runs
+SAFE_MARGIN = 5  # seconds added on top of cfg['T'] to forcibly kill hanging runs
 
 '''
 MAPS = {"random-32-32-20", "room-64-64-16", "warehouse-20-40-10-2-1",
@@ -66,8 +66,10 @@ RE_FINAL   = re.compile(
     r"\[STAT\] .*: runtime = ([\d\.eE+-]+), iterations = (\d+), "
     r"solution cost = (\d+), initial solution cost = (\d+), failed iterations = (\d+)"
 )
-RE_SAT_RT  = re.compile(r"\[STAT\] SAT total runtime = ([\d\.eE+-]+) s")
-RE_OTH_RT  = re.compile(r"\[STAT\] Other operators runtime = ([\d\.eE+-]+) s")
+RE_SAT_RT  = re.compile(
+    r"\[STAT\]\s+SAT total runtime\s*=\s*([\d\.eE+-]+)\s+s")
+RE_OTH_RT  = re.compile(
+    r"\[STAT\]\s+Other operators runtime\s*=\s*([\d\.eE+-]+)\s+s")
 RE_SOC_POST = re.compile(r"\[STAT\] sum_of_costs after recomputation: (\d+)")
 
 # CASE GENERATION

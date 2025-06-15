@@ -574,9 +574,9 @@ void LNS::doInitLNSRepair(const string& debug_reason) {
 bool LNS::run()
 {
     // Open file for logging output
-    std::ofstream out("log.txt");
-    std::streambuf* coutbuf = std::cout.rdbuf();
-    std::cout.rdbuf(out.rdbuf());
+    //std::ofstream out("log.txt");
+    //std::streambuf* coutbuf = std::cout.rdbuf();
+    //std::cout.rdbuf(out.rdbuf());
 
     sat_runtime_total   = 0.0;
     other_runtime_total = 0.0;
@@ -916,7 +916,7 @@ bool LNS::run()
         SAT_STAT("SAT runtime ratio    = "
                          << 100.0 * sat_runtime_total / runtime << " %");
 
-    std::cout.rdbuf(coutbuf);
+    //std::cout.rdbuf(coutbuf);
     return true;
 }
 

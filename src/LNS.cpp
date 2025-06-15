@@ -50,6 +50,17 @@ LNS::LNS(const Instance& instance, double time_limit, const string & init_algo_n
     else if (sat_heur_name == "mostDelayed") sat_heuristic = SAT_MOST_DELAYED;
     else                                     sat_heuristic = SAT_ADAPTIVE;   // default
 
+    //fallback_destroy_strategy = strToDestroyHeuristic(fallback_dest_name);
+
+    if (fallback_destroy_strategy == NONE)
+    {
+        SAT_DBG("ALNS set as fallback destroy strategy.");
+        ALNS = true;
+        destroy_weights.assign(DESTORY_COUNT, 1);
+        decay_factor     = 0.01;
+        reaction_factor  = 0.01;
+    }
+
     int N = instance.getDefaultNumberOfAgents();
     agents.reserve(N);
     for (int i = 0; i < N; i++)
@@ -647,6 +658,7 @@ bool LNS::run()
     // Optimization loop
     while (runtime < time_limit && iteration_stats.size() <= num_of_iterations) {
         current_iter = static_cast<int>(iteration_stats.size());
+        selected_neighbor = -1;
 
         // one-time SAT x fallback selection for this iteration
         if (!decision_taken) {
@@ -660,7 +672,7 @@ bool LNS::run()
         std::cout.flush();
         runtime = ((fsec)(Time::now() - start_time)).count();
 
-        if (ALNS)
+        if (ALNS && destroy_strategy != SAT)
             chooseDestroyHeuristicbyALNS();
 
         bool opSuccess = false;
@@ -715,6 +727,20 @@ bool LNS::run()
                 DEFAULT_DESTROY_STRATEGY = destroy_strategy;  // command line arguments
                 DEFAULT_REPLAN_ALGO = replan_algo_name;  // PP / CBS / EECBS ...
             }
+
+            // --- fallback neighbour generation ---------------------------------
+            if (DEFAULT_DESTROY_STRATEGY == NONE)
+            {
+                /*  Adaptive fallback:
+                    – let ALNS choose the destruction heuristic,
+                    – save it in DEFAULT_DESTROY_STRATEGY,
+                    – and then everything works as it should in the code.
+                 */
+                chooseDestroyHeuristicbyALNS();
+                DEFAULT_DESTROY_STRATEGY = destroy_strategy;   // value from ALNS
+                SAT_DBG("ALNS picked destroy = " << DEFAULT_DESTROY_STRATEGY);
+            }
+
             SAT_DBG("running destroy strategy " << DEFAULT_DESTROY_STRATEGY);
             SAT_DBG("running replan strategy " << DEFAULT_REPLAN_ALGO);
 
@@ -770,7 +796,7 @@ bool LNS::run()
             continue;
 
         // ALNS evaluation
-        if (ALNS)
+        if (ALNS && selected_neighbor >= 0)
         {
             if (neighbor.old_sum_of_costs > neighbor.sum_of_costs)
                 destroy_weights[selected_neighbor] =

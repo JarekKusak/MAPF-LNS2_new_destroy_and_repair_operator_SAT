@@ -13,7 +13,7 @@
 
 #include <random>
 
-enum destroy_heuristic { RANDOMAGENTS, RANDOMWALK, INTERSECTION, DESTORY_COUNT, SAT };
+enum destroy_heuristic { RANDOMAGENTS, RANDOMWALK, INTERSECTION, DESTORY_COUNT, SAT, NONE };
 
 // TODO: adaptively change the neighbor size, that is,
 // increase it if no progress is made for a while
@@ -149,6 +149,7 @@ private:
         if (s == "RandomWalk")                     return RANDOMWALK;
         if (s == "Intersection")                   return INTERSECTION;
         if (s == "SAT")                            return SAT;
+        if (s == "Adaptive" || s == "ALNS")        return NONE;
 
         // default
         std::cerr << "[WARN] Unknown destroy heuristic '" << s

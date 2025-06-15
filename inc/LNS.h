@@ -160,5 +160,7 @@ private:
 
     void doInitLNSRepair(const string& debug_reason);
     void rollbackNeighbor();
-    int sum_of_costs_before_recomputation = 0;
+    std::vector<std::vector<PathEntry>>  iter_backup_paths;   // velikost = agents.size()
+    int                       iter_backup_soc;
+    bool                      iter_backup_valid;    // flag
 };

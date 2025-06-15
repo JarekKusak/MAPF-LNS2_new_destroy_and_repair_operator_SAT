@@ -504,25 +504,22 @@ bool LNS::runSAT()
     }
 }
 
-// vrátí systém do stavu před voláním runSAT()
 void LNS::rollbackNeighbor()
-{ // TODO: opravit
-    for (size_t k = 0; k < neighbor.agents.size(); ++k) {
-        int a = neighbor.agents[k];
-        agents[a].path = neighbor.old_paths[k];
-        //path_table.insertPath(a, agents[a].path);
+{
+    if (!iter_backup_valid) return;        // nemáme co vracet
+
+    /* 1) srazíme celý path_table a postavíme znovu z kopie */
+    path_table.reset();
+
+    for (int id = 0; id < agents.size(); ++id) {
+        agents[id].path = iter_backup_paths[id];
+        path_table.insertPath(id, agents[id].path);
     }
 
-    for (const auto &agent : agents)
-        path_table.insertPath(agent.id, agent.path);
+    sum_of_costs      = iter_backup_soc;
+    iter_backup_valid = false;             // snapshot už byl využit
 
-    size_t new_soc = 0;
-    for (const auto& ag : agents)
-        new_soc += ag.path.size() - 1;
-    sum_of_costs = static_cast<int>(new_soc);
-
-    SAT_DBG("Rollback done – solution is back to SoC "
-                    << sum_of_costs << " and is known valid.");
+    SAT_DBG("Rollback -> SoC = " << sum_of_costs << " (restored entire snapshot)");
 }
 
 // ============================================
@@ -568,7 +565,6 @@ void LNS::doInitLNSRepair(const string& debug_reason) {
 
     SAT_DBG("init_lns->sum_of_costs after init_lns->run: " << init_lns->sum_of_costs);
 
-    fixed = false;
     if (fixed) {
         sum_of_costs = init_lns->sum_of_costs;
         //neighbor.old_sum_of_costs = init_lns->sum_of_costs;
@@ -668,6 +664,15 @@ bool LNS::run()
         auto iter_begin_TS = Time::now(); // framework overhead runtime
         selected_neighbor = -1;
         last_other_iter_runtime = 0.0;
+
+        /* ---------------  na začátku vnější iterace ------------- */
+        // těsně poté, co spočteš   sum_of_costs  = ...;
+        iter_backup_soc   = sum_of_costs;
+        iter_backup_valid = true;
+        iter_backup_paths.resize(agents.size());
+        for (int i = 0; i < agents.size(); ++i)
+            iter_backup_paths[i] = agents[i].path;      // full deep-copy
+        //-------------------------------------------------------------------------//
 
         // one-time SAT x fallback selection for this iteration
         if (!decision_taken) {

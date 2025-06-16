@@ -82,7 +82,7 @@ for m, scen_i, k, T, iters, sub in product(
         AGENT_COUNTS, TIMEOUTS, MAX_ITERS, SUBMAP_SIDES):
     for repl in PURE_REPLANS:
         cases.append(dict(kind="PURE", algo=repl, satProb=0,
-                          dest="Intersection",   # any non-SAT strategy
+                          dest="Adaptive",   # any non-SAT strategy
                           map=m, inst=scen_i, k=k, T=T, iters=iters, sub=sub))
     if INCLUDE_PURE_SAT:
         cases.append(dict(kind="PURE", algo="PP", satProb=100,
@@ -129,7 +129,7 @@ def build_cmd(cfg: dict, out_dir: Path) -> list[str]:
     ]
     # Add fallback strategy parameters when the primary destroy strategy is SAT.
     if cfg['dest'] == 'SAT':
-        cmd.append(f"--destoryStrategyFallback={cfg.get('destFallback', 'Intersection')}") # if destFallback is not set, use default Intersection
+        cmd.append(f"--destoryStrategyFallback={cfg.get('destFallback', 'Adaptive')}") # if destFallback is not set, use default Intersection
         cmd.append(f"--replanAlgoFallback={cfg.get('algoFallback', 'PP')}") # if algoFallback is not set, use default PP
         cmd.append(f"--satHeuristic={cfg['satHeur']}")
     return cmd

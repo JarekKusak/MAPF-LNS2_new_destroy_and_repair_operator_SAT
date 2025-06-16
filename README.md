@@ -10,52 +10,74 @@ More details can be found in our paper at AAAI 2022 [1].
 
 This software is an advanced version and a superset of MAPF-LNS (https://github.com/Jiaoyang-Li/MAPF-LNS); that is, it also contains Anytime Multi-Agent Path Finding via Large Neighborhood Search [2]. 
 
-## Usage
-The code requires the external libraries 
-BOOST (https://www.boost.org/) and Eigen (https://eigen.tuxfamily.org/). 
-Here is an easy way of installing the required libraries on Ubuntu:    
-```shell script
+## Build & Run
+
+Below we give **two** concise build recipes – one for **macOS** (Home‑brew + CMake) and one for **Linux** (APT + Ninja).  
+Both assume you already cloned the repository **after** the library folders have been split into  
+`libs-macos/` and `libs-linux/` as described in the build notes.
+
+---
+
+### macOS (Apple silicon / Intel)
+
+```bash
+# Packages
+brew install boost eigen gmp zlib cmake
+
+# Configure + build
+cmake -B build-macos -DCMAKE_BUILD_TYPE=Release
+cmake --build build-macos -j$(sysctl -n hw.ncpu)
+
+# Example run
+build-macos/lns \
+  -m random-32-32-20.map \
+  -a random-32-32-20-random-1.scen \
+  -o test -k 150 --outputPaths=paths.txt \
+  --destoryStrategy=SAT --maxIterations 20
+```
+
+---
+
+### Linux (Ubuntu 20.04/22.04)
+
+```bash
+# Packages
 sudo apt update
-```
-- Install the Eigen library (used for linear algebra computing)
-    ```shell script
-    sudo apt install libeigen3-dev
-    ```
-- Install the boost library 
-    ```shell script
-    sudo apt install libboost-all-dev
-    ```
-    
-After you installed both libraries and downloaded the source code, 
-go into the directory of the source code and compile it with CMake: 
-```shell script
-cmake -DCMAKE_BUILD_TYPE=RELEASE .
-make
+sudo apt install build-essential ninja-build \
+                 libboost-all-dev libeigen3-dev \
+                 libgmp-dev zlib1g-dev cmake
+
+# Configure with Ninja (faster)
+cmake -S . -B build-linux -G Ninja -DCMAKE_BUILD_TYPE=Release
+cmake --build build-linux
+
+# Example run
+build-linux/lns \
+  -m random-32-32-20.map \
+  -a random-32-32-20-random-1.scen \
+  -o test -k 150 --outputPaths=paths.txt \
+  --destoryStrategy=SAT --maxIterations 20
 ```
 
-Then, you are able to run the code:
-```
-./lns -m random-32-32-20.map -a random-32-32-20-random-1.scen -o test -k 150   --outputPaths=paths.txt --destoryStrategy=SAT --maxIterations 20 
-```
+> **Note:**  
+> The static libraries from *MAPF‑encodings* are pre‑compiled for each OS:  
+> `libs-macos/` is used automatically on macOS, `libs-linux/` on Linux.
 
-- m: the map file from the MAPF benchmark
-- a: the scenario file from the MAPF benchmark
-- o: the output file name (no need for file extension)
-- k: the number of agents
-- t: the runtime limit
-- outputPaths: the output file that contains the paths
+---
 
-You can find more details and explanations for all parameters with:
-```
-./lns --help
-```
+### Command‑line options
 
-We provide example instance files "random-32-32-20.map" and "random-32-32-20-random-1.scen" in the repo. 
-More instances can be download from the [MAPF benchmark](https://movingai.com/benchmarks/mapf/index.html).
-All the experiments in the paper used in instances from the benchmark except for Experiment 5, 
-for which the instances are in folder "instances". 
-In particular, the format of the scen files is explained [here](https://movingai.com/benchmarks/formats.html). 
-For a given number of agents k, the first k rows of the scen file are used to generate the k pairs of start and target locations.
+- `-m` : map file (MovingAI format)  
+- `-a` : scenario file  
+- `-o` : prefix for output files (no extension)  
+- `-k` : number of agents to load from the scenario  
+- `-t` : runtime limit in seconds  
+- `--outputPaths` : file to which the final paths are written  
+- `--destoryStrategy` / `--maxIterations` : algorithmic parameters
+
+Run `./lns --help` to see the full list and defaults.
+
+---
 
 ## Credits
 

@@ -26,35 +26,32 @@ import matplotlib.pyplot as plt
 import shutil
 
 # CONFIGURATION MATRIX
-MAPS              = {"ost003d"}
+#MAPS = {"random-32-32-20" (max 409), "room-64-64-16", "warehouse-20-40-10-2-1",
+#        "lt_gallowstemplar_n", "Paris_1_256"}
+MAPS= {"room-64-64-16"}
 INSTANCES_PER_MAP = 1
-AGENT_COUNTS      = [100,300]#, 1000]
-TIMEOUTS          = [5] # 5 (+ margin)
-MAX_ITERS         = [5_000] # arbitrary long
-SUBMAP_SIDES      = [3]
-
-PURE_REPLANS      = ["PP"]#, "CBS"]
+AGENT_COUNTS      = [300] #[100, 500, 1000] # rozdělit na malé a velké mapy
+TIMEOUTS          = [60]
+SUBMAP_SIDES      = [5] 
+MIX_PROBS         = [20]#[50, 20] # 0 a 100 jsou generovány mimo MIX
+PURE_REPLANS     = ["PP"]  # pure replanners to test
+SAT_HEURISTICS    = ["adaptive"]
+FALLBACK_DESTS    = ["Adaptive"]
+FALLBACK_ALGOS    = ["PP"]
+MAX_ITERS         = [100_000_000] # arbitrary long
 INCLUDE_PURE_SAT  = True
-MIX_PROBS         = [50, 20] 
-SAT_HEURISTICS    = ["adaptive"]
 
-FALLBACK_DESTS  = ["Adaptive"]
-FALLBACK_ALGOS  = ["PP"]  #,"CBS"] #, "EECBS"]
-
-SAFE_MARGIN = 5  # seconds added on top of cfg['T'] to forcibly kill hanging runs
-
-'''
-MAPS = {"random-32-32-20", "room-64-64-16", "warehouse-20-40-10-2-1",
-        "templar", "Paris_1_256"}
-INSTANCES_PER_MAP = 10
-AGENT_COUNTS      = [100, 300, 500, 1000] # rozdělit na malé a velké mapy
-TIMEOUTS          = [30]
-SUBMAP_SIDES      = [5, 7] 
-MIX_PROBS         = [50, 20] # 0 a 100 jsou generovány mimo MIX - smíchat s ALNS
-SAT_HEURISTICS    = ["adaptive"]
-FALLBACK_DESTS    = ["Random", "Intersection"] # ALNS
-FALLBACK_ALGOS    = ["PP"]   #, "CBS", "EECBS"]
-'''
+# ──────────────────────────────────────────────────────────────────────────────
+# Runtime limits
+#   T  … algorithm budget handed to the solver via -t
+#   Δ  … small reserve so that Python can still kill a wedged process
+# The wall‑clock hard kill used in subprocess.run() is  T + Δ .
+# Δ = max(2 s, 5 % of T)  → fair for all configurations.
+# ──────────────────────────────────────────────────────────────────────────────
+def wall_clock_limit(T: int) -> int:
+    """Return hard timeout (seconds) for subprocess.run()."""
+    reserve = max(2, int(0.05 * T))
+    return T + reserve
 
 LNS_BIN     = "./lns"          # path to compiled solver
 RESULTS_DIR = Path("results").absolute()
@@ -125,7 +122,7 @@ def build_cmd(cfg: dict, out_dir: Path) -> list[str]:
         f"--destoryStrategy={cfg['dest']}",
         f"--satSubmap={cfg['sub']}",
         f"--satProb={cfg['satProb']}",
-        "--satDebug=0", # keep logs small
+        "--satDebug=1", # keep logs small
     ]
     # Add fallback strategy parameters when the primary destroy strategy is SAT.
     if cfg['dest'] == 'SAT':
@@ -209,18 +206,24 @@ for cfg in cases:
             build_cmd(cfg, out_dir),
             stdout=log_file.open("w"),
             stderr=subprocess.STDOUT,
-            timeout=cfg["T"] + SAFE_MARGIN, # hard wall‑time per run
+            timeout=wall_clock_limit(cfg["T"]),
         )
     except subprocess.TimeoutExpired:
         # kill the still‑running solver and mark as timeout
         proc = subprocess.CompletedProcess(args=[], returncode=-9)
-        print(f"[TIMEOUT] {tag} exceeded {cfg['T']+SAFE_MARGIN}s, skipping …",
+        print(f"[TIMEOUT] {tag} exceeded {cfg['T']+2}s, skipping …",
               file=sys.stderr)
     elapsed = time.time() - start
     if proc.returncode != 0:
         print(f"[WARN] {tag} exited with code {proc.returncode}", file=sys.stderr)
 
     stats, curve = parse_log(log_file)
+
+    # detect solver that reported runtime > allocated T (overtime)
+    overtime = False
+    if proc.returncode == 0 and stats.get("runtime", 0) > cfg["T"]:
+        overtime = True
+
     # save SoC curve and create a PNG plot
     if curve:
         (out_dir / "soc.csv").write_text("\n".join(map(str, curve)))
@@ -236,7 +239,10 @@ for cfg in cases:
 
     # The algo column in the CSV shows "SAT" whenever dest=="SAT". However, internally it remains --replanAlgo=PP so the binary doesn't run with an invalid value
     csv_algo = "SAT" if cfg["dest"] == "SAT" else cfg["algo"]
-    records.append({**cfg, "algo": csv_algo, "run_id": tag, **stats})
+    records.append({**cfg, "algo": csv_algo, "run_id": tag,
+                    "state": ("timeout" if proc.returncode == -9 else
+                              "overtime" if overtime else "OK"),
+                    **stats})
     print(f"[INFO] {tag:<70} {elapsed:5.1f}s")
 
 # CSV EXPORT 

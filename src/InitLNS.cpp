@@ -506,7 +506,6 @@ bool InitLNS::run(bool skip_initial_solution)
                 }
                 opSuccess = sat_success;
             } else {
-                // Pokud náhodná volba nespadla do SAT bloku, použijeme defaultní strategii
                 cout << "[DEBUG] Random chance did not select SAT operator (r=" << r << "), defaulting to non-SAT operator." << endl;
                 int strategy = TARGET_BASED; // defaultní strategie – například TARGET_BASED
                 cout << "[DEBUG] Používám výchozí neighbor a repair strategii na řešení konfliktů: " << strategy << endl;
@@ -525,12 +524,12 @@ bool InitLNS::run(bool skip_initial_solution)
                         cerr << "Wrong neighbor generation strategy" << endl;
                         exit(-1);
                 }
-                // najdi kolizní páry
+                // find collision pairs
                 neighbor.old_colliding_pairs.clear();
                 for (int a : neighbor.agents)
                     for (auto j: collision_graph[a])
                         neighbor.old_colliding_pairs.emplace(min(a, j), max(a, j));
-                // uložení starých cest
+
                 neighbor.old_paths.resize(neighbor.agents.size());
                 neighbor.old_sum_of_costs = 0;
                 for (int i = 0; i < (int)neighbor.agents.size(); i++) {
@@ -541,8 +540,7 @@ bool InitLNS::run(bool skip_initial_solution)
                 }
             }
         } else {
-            // Pokud nebyla zvolena SAT strategie, vždy použijeme defaultní strategii.
-            int strategy = init_destroy_strategy; // očekáváme, že není SAT_BASED
+            int strategy = init_destroy_strategy; // non-SAT based
             cout << "[DEBUG] Using default neighbor generation strategy for conflicts: " << strategy << endl;
             switch (strategy)
             {

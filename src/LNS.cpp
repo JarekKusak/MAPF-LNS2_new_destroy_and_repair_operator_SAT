@@ -378,7 +378,7 @@ bool LNS::runSAT()
         for (auto a : agents_to_replan)
             path_table.insertPath(agents[a].id, agents[a].path); // return old paths of agents
 
-        SAT_STAT("SAT solver failed to find a valid solution.");
+        std::cout << "SAT solver failed to find a valid solution." << std::endl;
         return false;
     }
     else { // if succesful replan, add current_iter to agents' stats (for adaptive heur)

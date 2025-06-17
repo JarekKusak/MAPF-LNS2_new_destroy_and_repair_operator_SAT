@@ -28,10 +28,10 @@ import shutil
 # CONFIGURATION MATRIX
 #MAPS = {"random-32-32-20" (max 409), "room-64-64-16", "warehouse-20-40-10-2-1",
 #        "lt_gallowstemplar_n", "Paris_1_256"}
-MAPS= {"room-64-64-16"}
+MAPS= {"Paris_1_256"}
 INSTANCES_PER_MAP = 1
 AGENT_COUNTS      = [300] #[100, 500, 1000] # rozdělit na malé a velké mapy
-TIMEOUTS          = [60]
+TIMEOUTS          = [30]
 SUBMAP_SIDES      = [5] 
 MIX_PROBS         = [20]#[50, 20] # 0 a 100 jsou generovány mimo MIX
 PURE_REPLANS     = ["PP"]  # pure replanners to test
@@ -43,15 +43,19 @@ INCLUDE_PURE_SAT  = True
 
 # ──────────────────────────────────────────────────────────────────────────────
 # Runtime limits
-#   T  … algorithm budget handed to the solver via -t
-#   Δ  … small reserve so that Python can still kill a wedged process
-# The wall‑clock hard kill used in subprocess.run() is  T + Δ .
-# Δ = max(2 s, 5 % of T)  → fair for all configurations.
+#   T  … algorithm budget handed to the solver via -t (soft deadline)
+#   Hard kill = T + SAFE_MARGIN:   **only** a last‑resort fuse when the solver
+#     neither respects the soft deadline nor terminates within a very generous
+#     clean‑up window (I/O, destructors, etc.).
+#
+# In practice the solver finishes normal runs within ≈10 s of bookkeeping after
+# hitting its soft  -t  limit.  We therefore give it a full minute of slack.
 # ──────────────────────────────────────────────────────────────────────────────
-def wall_clock_limit(T: int) -> int:
-    """Return hard timeout (seconds) for subprocess.run()."""
-    reserve = max(2, int(0.05 * T))
-    return T + reserve
+SAFE_MARGIN = 60        # seconds – generous clean‑up window, still guards hangs
+def wall_clock_limit(T):
+    """Return wall-clock limit = soft limit T  + SAFE_MARGIN.
+    Soft deadline is enforced by solver; hard kill only catches infinite loops."""
+    return T + SAFE_MARGIN
 
 LNS_BIN     = "./lns"          # path to compiled solver
 RESULTS_DIR = Path("results").absolute()
@@ -122,7 +126,7 @@ def build_cmd(cfg: dict, out_dir: Path) -> list[str]:
         f"--destoryStrategy={cfg['dest']}",
         f"--satSubmap={cfg['sub']}",
         f"--satProb={cfg['satProb']}",
-        "--satDebug=1", # keep logs small
+        "--satDebug=0", # keep logs small
     ]
     # Add fallback strategy parameters when the primary destroy strategy is SAT.
     if cfg['dest'] == 'SAT':
@@ -211,7 +215,7 @@ for cfg in cases:
     except subprocess.TimeoutExpired:
         # kill the still‑running solver and mark as timeout
         proc = subprocess.CompletedProcess(args=[], returncode=-9)
-        print(f"[TIMEOUT] {tag} exceeded {cfg['T']+2}s, skipping …",
+        print(f"[TIMEOUT] {tag} exceeded {cfg['T']+SAFE_MARGIN}s, skipping …",
               file=sys.stderr)
     elapsed = time.time() - start
     if proc.returncode != 0:

@@ -16,7 +16,7 @@ This software is an advanced version and a superset of MAPF-LNS (https://github.
 
 ## Build & Run
 
-Below we give **two** concise build recipes – one for **macOS** (Home‑brew + CMake) and one for **Linux** (APT + Ninja).  
+Below we give **two** concise build recipes – one for **macOS** (Home‑brew+CMake) and one for **Linux** (APT+Ninja).  
 Both assume you already cloned the repository **after** the library folders have been split into  
 `libs-macos/` and `libs-linux/` as described in the build notes.
 
@@ -71,16 +71,16 @@ build-linux/lns \
 
 ### Command‑line options
 
-- `-m` : map file (MovingAI format)  
-- `-a` : scenario file  
-- `-o` : prefix for output files (no extension)  
-- `-k` : number of agents to load from the scenario  
-- `-t` : runtime limit in seconds  
-- `--outputPaths` : file to which the final paths are written  
-- `--destoryStrategy` / `--maxIterations` : algorithmic parameters  
-- `--satHeuristic` : strategy for choosing the SAT sub‑map (`adaptive`, `random`, …)
+- `-m`: map file (MovingAI format)  
+- `-a`: scenario file  
+- `-o`: prefix for output files (no extension)  
+- `-k`: number of agents to load from the scenario  
+- `-t`: runtime limit in seconds
+- `outputPaths`: the output file that contains the paths
 
 Run `./lns --help` to see the full list and defaults.
+
+We provide example instance files "random-32-32-20.map" and "random-32-32-20-random-1.scen" in the repo. More instances can be download from the [MAPF benchmark](https://movingai.com/benchmarks/mapf/index.html). All the experiments in the paper used in instances from the benchmark except for Experiment 5, for which the instances are in folder "instances". In particular, the format of the scen files is explained [here](https://movingai.com/benchmarks/formats.html). For a given number of agents k, the first k rows of the scen file are used to generate the k pairs of start and target locations.
 
 ---
 

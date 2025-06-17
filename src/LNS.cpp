@@ -468,6 +468,9 @@ bool LNS::runSAT()
         return true;
     } else {
         SAT_DBG("[INFO] New SAT solution is worse, reverting.");
+
+        // could possibly be replaces with rollback method
+
         for (int i = 0; i < (int)neighbor.agents.size(); i++) {
             int a = neighbor.agents[i];
             agents[a].path = neighbor.old_paths[i];

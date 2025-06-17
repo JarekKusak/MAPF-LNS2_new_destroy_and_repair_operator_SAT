@@ -26,14 +26,14 @@ import matplotlib.pyplot as plt
 import shutil
 
 # CONFIGURATION MATRIX
-MAPS = {"random-32-32-20", "room-64-64-16", "warehouse-20-40-10-2-1"}
-        #"It_gallowstemplar_n", "Paris_1_256"}
+MAPS = {"random-32-32-20", "room-64-64-16", "warehouse-20-40-10-2-1",
+        "It_gallowstemplar_n", "Paris_1_256"}
 #MAPS= {"random-32-32-20"}
-INSTANCES_PER_MAP = 1
+INSTANCES_PER_MAP = 10
 AGENT_COUNTS      = [100, 300] #[100, 500, 1000] # rozdělit na malé a velké mapy
 TIMEOUTS          = [30]
 SUBMAP_SIDES      = [5] 
-MIX_PROBS         = [50]#[50, 20] # 0 a 100 jsou generovány mimo MIX
+MIX_PROBS         = [50, 20]# 0 and 100 is generated outside the MIX
 PURE_REPLANS     = ["PP"]  # pure replanners to test
 SAT_HEURISTICS    = ["adaptive"]
 FALLBACK_DESTS    = ["Adaptive"]
@@ -57,7 +57,7 @@ def wall_clock_limit(T):
     Soft deadline is enforced by solver; hard kill only catches infinite loops."""
     return T + SAFE_MARGIN
 
-LNS_BIN     = "./lns"          # path to compiled solver
+LNS_BIN     = "./lns" # path to compiled solver
 RESULTS_DIR = Path("results").absolute()
 RESULTS_DIR.mkdir(exist_ok=True)
 

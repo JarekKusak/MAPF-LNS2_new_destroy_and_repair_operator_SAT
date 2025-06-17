@@ -58,7 +58,8 @@ target_include_directories(lns PRIVATE ${GMP_INCLUDE})
 # (libmapf.a, libpb.a, libkissat.a, libmonosat.a)
 foreach(lib IN ITEMS mapf pb kissat monosat)
     if(NOT TARGET ${lib}_lib)
-        add_library(${lib}_lib STATIC IMPORTED)
+        add_library(${lib}_lib STATIC IMPORTED
+                inc/RunStats.h)
         set_target_properties(${lib}_lib PROPERTIES
             IMPORTED_LOCATION "${LNS_LIBDIR}/lib${lib}.a")
         # Static libs-macos first → they *use* the symbols from the system libs-macos

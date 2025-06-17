@@ -19,6 +19,7 @@
 #include "../include/MAPF.hpp"
 #include "BasicLNS.h"
 #include "InitLNS.h"
+#include "RunStats.h"
 
 namespace SATUtils {
 
@@ -65,7 +66,8 @@ namespace SATUtils {
             const std::vector<int>& agents_to_replan,
             const std::vector<std::vector<int>>& submap,
             int T_sync,
-            std::vector<Agent>& agents);
+            std::vector<Agent>& agents,
+            RunStats& stats);
 }
 
 #endif // SATUTILS_H

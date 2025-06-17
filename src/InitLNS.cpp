@@ -262,7 +262,7 @@ bool InitLNS::runSAT()
     auto local_paths = SATUtils::findLocalPaths(agents_to_replan, submap, submap_set, global_to_local, T_sync, agents);
 
     // Voláme SATUtils::solveWithSAT – přeplánujeme lokální cesty
-    bool success = SATUtils::solveWithSAT(map, local_paths, agents_to_replan, submap, T_sync, agents);
+    bool success = SATUtils::solveWithSAT(map, local_paths, agents_to_replan, submap, T_sync, agents, dummy);
 
     if (!success) {
         cout << "[WARN] SAT solver failed to find a valid solution." << endl;
@@ -506,9 +506,9 @@ bool InitLNS::run(bool skip_initial_solution)
                 }
                 opSuccess = sat_success;
             } else {
-                cout << "[DEBUG] Random chance did not select SAT operator (r=" << r << "), defaulting to non-SAT operator." << endl;
+                SAT_DBG("Random chance did not select SAT operator (r=" << r << "), defaulting to non-SAT operator.");
                 int strategy = TARGET_BASED; // defaultní strategie – například TARGET_BASED
-                cout << "[DEBUG] Používám výchozí neighbor a repair strategii na řešení konfliktů: " << strategy << endl;
+                SAT_DBG("Používám výchozí neighbor a repair strategii na řešení konfliktů: " << strategy);
                 switch (strategy)
                 {
                     case TARGET_BASED:
@@ -541,7 +541,7 @@ bool InitLNS::run(bool skip_initial_solution)
             }
         } else {
             int strategy = init_destroy_strategy; // non-SAT based
-            cout << "[DEBUG] Using default neighbor generation strategy for conflicts: " << strategy << endl;
+            SAT_DBG("Using default neighbor generation strategy for conflicts: " << strategy);
             switch (strategy)
             {
                 case TARGET_BASED:

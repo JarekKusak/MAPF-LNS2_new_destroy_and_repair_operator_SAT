@@ -28,10 +28,10 @@ import shutil
 # CONFIGURATION MATRIX
 #MAPS = {"random-32-32-20" (max 409), "room-64-64-16", "warehouse-20-40-10-2-1",
 #        "lt_gallowstemplar_n", "Paris_1_256"}
-MAPS= {"Paris_1_256"}
+MAPS= {"random-32-32-20"}
 INSTANCES_PER_MAP = 1
-AGENT_COUNTS      = [300] #[100, 500, 1000] # rozdělit na malé a velké mapy
-TIMEOUTS          = [30]
+AGENT_COUNTS      = [150] #[100, 500, 1000] # rozdělit na malé a velké mapy
+TIMEOUTS          = [5]
 SUBMAP_SIDES      = [5] 
 MIX_PROBS         = [20]#[50, 20] # 0 a 100 jsou generovány mimo MIX
 PURE_REPLANS     = ["PP"]  # pure replanners to test
@@ -71,6 +71,17 @@ RE_SAT_RT  = re.compile(
     r"\[STAT\]\s+SAT total runtime\s*=\s*([\d\.eE+-]+)\s+s")
 RE_OTH_RT  = re.compile(
     r"\[STAT\]\s+Other operators runtime\s*=\s*([\d\.eE+-]+)\s+s")
+RE_RS = re.compile(
+    r"\[STAT\]\s*wall_runtime\s*=\s*([\d\.eE+-]+).*?"
+    r"sat_time\s*=\s*([\d\.eE+-]+).*?"
+    r"other_time\s*=\s*([\d\.eE+-]+).*?"
+    r"overhead\s*=\s*([\d\.eE+-]+).*?"
+    r"sat_calls\s*=\s*(\d+).*?"
+    r"sat_ok\s*=\s*(\d+).*?"
+    r"sat_fail\s*=\s*(\d+).*?"
+    r"final_soc\s*=\s*(\d+).*?"
+    r"initial_soc\s*=\s*(\d+)"
+)
 RE_SOC_POST = re.compile(r"\[STAT\] sum_of_costs after recomputation: (\d+)")
 
 # CASE GENERATION
@@ -161,6 +172,20 @@ def parse_log(log_path: Path) -> tuple[dict, list[int]]:
                 stats["sat_runtime"] = float(m[1])
             elif m := RE_OTH_RT.search(line):
                 stats["other_runtime"] = float(m[1])
+            elif m := RE_RS.search(line):
+                (stats["runtime"],
+                 stats["sat_runtime"],
+                 stats["other_runtime"],
+                 stats["overhead_runtime"],
+                 stats["sat_calls"],
+                 stats["sat_ok"],
+                 stats["sat_fail"],
+                 stats["final_soc"],
+                 stats["initial_soc"]) = (
+                    float(m[1]), float(m[2]), float(m[3]), float(m[4]),
+                    int(m[5]), int(m[6]), int(m[7]),
+                    int(m[8]), int(m[9])
+                )
             elif m := RE_SOC_POST.search(line):
                 curve.append(int(m[1]))
 
@@ -168,6 +193,7 @@ def parse_log(log_path: Path) -> tuple[dict, list[int]]:
     stats.setdefault("sat_runtime", 0.0)
     stats.setdefault("other_runtime", 0.0)
     stats.setdefault("runtime", 0.0)   # total wall‑clock time of the run
+    stats.setdefault("overhead_runtime", 0.0)
 
     # Derived fields:
     # (1) Share of SAT time *within all operator time* (SAT + “other” LNS ops)

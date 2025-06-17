@@ -10,6 +10,9 @@
 #include "pibt.h"
 #include "pps.h"
 #include "winpibt.h"
+#include "RunStats.h"
+
+
 
 #include <random>
 
@@ -161,4 +164,6 @@ private:
     std::vector<std::vector<PathEntry>>  iter_backup_paths;   // velikost = agents.size()
     int                       iter_backup_soc;
     bool                      iter_backup_valid;    // flag
+
+    std::shared_ptr<RunStats> stats_;
 };

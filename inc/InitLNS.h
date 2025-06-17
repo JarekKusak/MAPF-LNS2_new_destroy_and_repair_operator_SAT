@@ -1,5 +1,6 @@
 #pragma once
 #include "BasicLNS.h"
+#include "RunStats.h"
 
 enum init_destroy_heuristic { TARGET_BASED, COLLISION_BASED, RANDOM_BASED, INIT_COUNT, SAT_BASED };
 
@@ -58,6 +59,7 @@ private:
 
     pair<int,int> findConflictAgent();
     bool generateNeighborBySAT(); // new destroy operator
+    RunStats dummy; // dummy!
     bool runSAT(); // new repair operator
     pair<vector<vector<int>>, vector<int>> getSubmapAndAgents(int agent_id, int submap_size, int agent_location, int timestep); // helper function for getting sub-map
     void prepareOldNeighborInfo();

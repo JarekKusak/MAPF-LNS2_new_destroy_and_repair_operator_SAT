@@ -284,7 +284,8 @@ namespace SATUtils {
             const std::vector<int>& agents_to_replan,
             const std::vector<std::vector<int>>& submap,
             int T_sync,
-            std::vector<Agent>& agents) {
+            std::vector<Agent>& agents,
+            RunStats& stats) {
 
         SAT_DBG("Checking input data for SAT solver:");
         SAT_DBG("  - Number of agents to replan: " << agents_to_replan.size());
@@ -335,12 +336,16 @@ namespace SATUtils {
         log->NewInstance((int)start_positions.size());
 
         int result = solver->Solve((int)start_positions.size(), 0, true, true);
-        SAT_STAT("Solver returned: " << result);
+        stats.sat_calls++;
+        SAT_DBG("Solver returned: " << result);
 
         if (result != 0) {
             SAT_DBG("SAT solver failed.");
+            stats.sat_fail++;
             return false;
         }
+        stats.sat_ok++;
+
 
         vector<vector<int>> plan = solver->GetPlan();
 

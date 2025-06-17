@@ -587,6 +587,8 @@ bool LNS::run()
     for (const auto & agent : agents)
         sum_of_distances += agent.path_planner->my_heuristic[agent.path_planner->start_location];
 
+    // --------------- INITIAL SOLUTION COMPUTATION ---------------
+
     initial_solution_runtime = 0;
     start_time = Time::now();
     bool succ = getInitialSolution();
@@ -627,7 +629,6 @@ bool LNS::run()
 
     stats_->initial_soc = initial_sum_of_costs;
     stats_->other_time_total += initial_solution_runtime;
-
     runtime = initial_solution_runtime;
     if (!succ) {
         std::cout << "[ERROR] Failed to find an initial solution in "
@@ -635,8 +636,9 @@ bool LNS::run()
         return false;
     }
 
-    bool needConflictRepair = false;
+    // --------------- END OF INITIAL SOLUTION COMPUTATION ---------------
 
+    bool needConflictRepair = false;
     size_t sat_iter_count        = 0;     // how many times the SAT actually ran
     double last_sat_iter_runtime = 0.0;   // length of the last SAT iteration
     double last_other_iter_runtime = 0.0;
@@ -650,14 +652,16 @@ bool LNS::run()
     outer iteration (i.e. before we successfully complete it
     or "continue" returns control to the beginning of the loop).
      ------------------------------------------------------ */
-    bool decision_taken = false;   // Have we already drawn?
+    bool decision_taken = false;   // have we already drawn?
     bool SATchosenIter  = false;   // was SAT chosen for this iteration?
 
-    // Optimization loop
+    // --------------- OPTIMIZED SOLUTION COMPUTATION ---------------
     while (runtime < time_limit && iteration_stats.size() <= num_of_iterations) {
         current_iter = static_cast<int>(iteration_stats.size());
+        SAT_DBG("Iteration " << current_iter);
         // --- stats: new outer iteration ---
         stats_->outer_iterations++;
+
         bool this_iter_is_sat = false;   // helper flag
         auto iter_begin_TS = Time::now(); // framework overhead runtime
         selected_neighbor = -1;
@@ -671,7 +675,6 @@ bool LNS::run()
             decision_taken = true;
         }
 
-        SAT_DBG("Iteration " << current_iter);
         std::cout.flush();
         runtime = ((fsec)(Time::now() - start_time)).count();
 
@@ -761,7 +764,7 @@ bool LNS::run()
                     – and then everything works as it should in the code.
                  */
                 chooseDestroyHeuristicbyALNS();
-                DEFAULT_DESTROY_STRATEGY = destroy_strategy;   // value from ALNS
+                DEFAULT_DESTROY_STRATEGY = destroy_strategy; // value from ALNS
                 destroy_strategy = saved_destroy_strategy;
                 SAT_DBG("ALNS picked destroy = " << DEFAULT_DESTROY_STRATEGY);
             }
@@ -831,7 +834,7 @@ bool LNS::run()
             stats_->overhead_total += iter_total;
             continue;
         }
-        else succ = opSuccess;// opSuccess = true => runSAT completed
+        else succ = opSuccess; // opSuccess = true => runSAT completed
 
         if (!succ)
             continue;
@@ -881,7 +884,8 @@ bool LNS::run()
             try {
                 validateSolution();
                 SAT_DBG("No problems after SAT replan.");
-            } catch (const ValidationException& e) {
+            }
+            catch (const ValidationException& e) {
                 std::cout << "[WARNING] Problem after SAT: " << e.what() << std::endl;
                 // unify
                 doInitLNSRepair("because problem occurred after SAT (should be applied only for conflicts...)");
@@ -906,7 +910,9 @@ bool LNS::run()
         decision_taken = false;
         SATchosenIter  = false;
     }
+    // --------------- END OF OPTIMIZED SOLUTION COMPUTATION ---------------
 
+    // --------------- CALCULATION AND PRINTING OF STATISTICS ---------------
     average_group_size = -iteration_stats.front().num_of_agents;
     for (const auto& data : iteration_stats)
         average_group_size += data.num_of_agents;
@@ -946,6 +952,9 @@ bool LNS::run()
                                        << " sat_fail="           << stats_->sat_fail
                                        << " final_soc="          << stats_->final_soc
                                        << " initial_soc="        << stats_->initial_soc );
+
+    // --------------- END OF CALCULATION AND PRINTING OF STATISTICS ---------------
+
     //std::cout.rdbuf(coutbuf);
     return true;
 }

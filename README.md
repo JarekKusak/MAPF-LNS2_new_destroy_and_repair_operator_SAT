@@ -8,6 +8,10 @@ MAPF-LNS2: Fast Repairing for Multi-Agent Path Finding via Large Neighborhood Se
 MAPF-LNS2 is an efficient algorithm for solving Multi-Agent Path Finding (MAPF). 
 More details can be found in our paper at AAAI 2022 [1].
 
+**What’s new in this fork?**  
+In addition to the original LNS repairs (PP / CBS / EECBS / PIBT), this version introduces a **SAT‑based destroy‑and‑repair operator** powered by Kissat and the MAPF‑encodings toolkit.  
+The operator can be mixed with classic heuristics or run exclusively (`--destoryStrategy=SAT`) and comes with an adaptive weighting scheme for selecting key agents and sub‑maps.
+
 This software is an advanced version and a superset of MAPF-LNS (https://github.com/Jiaoyang-Li/MAPF-LNS); that is, it also contains Anytime Multi-Agent Path Finding via Large Neighborhood Search [2]. 
 
 ## Build & Run
@@ -73,7 +77,8 @@ build-linux/lns \
 - `-k` : number of agents to load from the scenario  
 - `-t` : runtime limit in seconds  
 - `--outputPaths` : file to which the final paths are written  
-- `--destoryStrategy` / `--maxIterations` : algorithmic parameters
+- `--destoryStrategy` / `--maxIterations` : algorithmic parameters  
+- `--satHeuristic` : strategy for choosing the SAT sub‑map (`adaptive`, `random`, …)
 
 Run `./lns --help` to see the full list and defaults.
 

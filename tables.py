@@ -26,14 +26,14 @@ import matplotlib.pyplot as plt
 import shutil
 
 # CONFIGURATION MATRIX
-#MAPS = {"random-32-32-20" (max 409), "room-64-64-16", "warehouse-20-40-10-2-1",
-#        "lt_gallowstemplar_n", "Paris_1_256"}
-MAPS= {"random-32-32-20"}
+MAPS = {"random-32-32-20", "room-64-64-16", "warehouse-20-40-10-2-1"}
+        #"It_gallowstemplar_n", "Paris_1_256"}
+#MAPS= {"random-32-32-20"}
 INSTANCES_PER_MAP = 1
-AGENT_COUNTS      = [150] #[100, 500, 1000] # rozdělit na malé a velké mapy
-TIMEOUTS          = [5]
+AGENT_COUNTS      = [100, 300] #[100, 500, 1000] # rozdělit na malé a velké mapy
+TIMEOUTS          = [30]
 SUBMAP_SIDES      = [5] 
-MIX_PROBS         = [20]#[50, 20] # 0 a 100 jsou generovány mimo MIX
+MIX_PROBS         = [50]#[50, 20] # 0 a 100 jsou generovány mimo MIX
 PURE_REPLANS     = ["PP"]  # pure replanners to test
 SAT_HEURISTICS    = ["adaptive"]
 FALLBACK_DESTS    = ["Adaptive"]

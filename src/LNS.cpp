@@ -578,9 +578,9 @@ bool LNS::run()
     auto dt = [&](auto t){ return ((fsec)(Time::now() - t)).count(); };
 
     // Open file for logging output
-    //std::ofstream out("log.txt");
-    //std::streambuf* coutbuf = std::cout.rdbuf();
-    //std::cout.rdbuf(out.rdbuf());
+    std::ofstream out("log.txt");
+    std::streambuf* coutbuf = std::cout.rdbuf();
+    std::cout.rdbuf(out.rdbuf());
 
     double sat_time_total   = 0.0;   // jen čistý běh SAT-operátoru
     double other_time_total = 0.0;   // PP / CBS / InitLNS / validátor …
@@ -703,10 +703,12 @@ bool LNS::run()
                 for (int i = 0; i < agents.size(); ++i)
                     iter_backup_paths[i] = agents[i].path; // full deep-copy - INEFFECTIVE - lot of consumption memory and time
 
-                // New SAT trial loop with global time check
-                for (int sat_trials = 0; !opSuccess && sat_trials < MAX_SAT_TRIALS &&
-                 ((fsec)(Time::now() - start_time)).count() < time_limit;
-                    ++sat_trials) {
+                // --- SAT replan loop ------------------------------------------------
+                int sat_trials = 0;
+                while (!opSuccess && sat_trials < MAX_SAT_TRIALS &&
+                       dt(start_time) < time_limit)
+                {
+                    // 1) Zkus vyrobit sousedství.  Neúspěch se NEpočítá do limitu.
                     if (!generateNeighborBySAT())
                         continue;
 
@@ -720,8 +722,11 @@ bool LNS::run()
                         neighbor.old_sum_of_costs += (int)agents[a].path.size() - 1;
                     }
 
+                    // 2) Spusť SAT a započti pokus
                     opSuccess = runSAT();
+                    ++sat_trials;
                 }
+                // --------------------------------------------------------------------
 
                 sat_elapsed = dt(sat_begin_ts);
                 sat_time_total += sat_elapsed;
@@ -816,6 +821,19 @@ bool LNS::run()
         }
         else if (!opSuccess && SATchosenIter)
         {
+
+            // --- Penalizuj aktuální sousedství ---
+            for (int a : neighbor.agents) {
+                ignored_agents_with_timestep.insert({a, neighbor.T_sync});   // odsun na později
+                agents[a].stats.failed_replans++;                            // inkrementuj čítač
+            }
+
+            /*
+            // Lehký decay nej-problémovějšího agenta
+            if (neighbor.key_agent_id >= 0) {
+                auto& st = agents[neighbor.key_agent_id].stats;
+                st.delay_max = std::max(0, st.delay_max - 1);
+            }*/
             // SAT was the chosen operator but didn’t find a solution within the limits:
             // account overhead and continue with next outer iteration
 
@@ -942,7 +960,7 @@ bool LNS::run()
 
     // --------------- END OF CALCULATION AND PRINTING OF STATISTICS ---------------
 
-    //std::cout.rdbuf(coutbuf);
+    std::cout.rdbuf(coutbuf);
     return true;
 }
 

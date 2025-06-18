@@ -72,6 +72,7 @@ struct Agent
     }
 
     struct AgentStats {
+        int failed_replans = 0;
         int prev_delay_max = 0;
         int prev_conflict_cnt = 0;
         double prev_stretch_ratio = 0;

@@ -254,6 +254,8 @@ pair<int,int> LNS::findBestAgentAndTime()
     double best_score = -1;
 
     for (const auto& ag : agents) {
+        if (ag.stats.failed_replans > SAT_RETRY_LIMIT)
+            continue;
         double s = agentScore(ag);
         if (s < 0) continue;  // (could be deleted)
 
@@ -383,6 +385,9 @@ bool LNS::runSAT()
         return false;
     }
     else { // if succesful replan, add current_iter to agents' stats (for adaptive heur)
+        for (auto a : agents_to_replan)
+            agents[a].stats.failed_replans = 0;      // vynuluj čítač
+
         for (auto a: agents_to_replan)
             agents[a].stats.last_replanned = current_iter;
     }
@@ -708,7 +713,6 @@ bool LNS::run()
                 while (!opSuccess && sat_trials < MAX_SAT_TRIALS &&
                        dt(start_time) < time_limit)
                 {
-                    // 1) Zkus vyrobit sousedství.  Neúspěch se NEpočítá do limitu.
                     if (!generateNeighborBySAT())
                         continue;
 
@@ -722,7 +726,6 @@ bool LNS::run()
                         neighbor.old_sum_of_costs += (int)agents[a].path.size() - 1;
                     }
 
-                    // 2) Spusť SAT a započti pokus
                     opSuccess = runSAT();
                     ++sat_trials;
                 }
@@ -797,7 +800,7 @@ bool LNS::run()
             }
 
             if (!opSuccess) {
-                // (removed: overhead timing/statistics)
+                overhead_total += dt(iter_begin_ts);
                 continue;
             }
 
@@ -821,21 +824,21 @@ bool LNS::run()
         }
         else if (!opSuccess && SATchosenIter)
         {
+            // TODO: rozhodnout, zda to má smysl
 
-            // --- Penalizuj aktuální sousedství ---
+            // --- penalize neighborhood ---
             for (int a : neighbor.agents) {
                 ignored_agents_with_timestep.insert({a, neighbor.T_sync});   // odsun na později
                 agents[a].stats.failed_replans++;                            // inkrementuj čítač
             }
 
-            /*
-            // Lehký decay nej-problémovějšího agenta
+            // slight decay for toxic agent
             if (neighbor.key_agent_id >= 0) {
                 auto& st = agents[neighbor.key_agent_id].stats;
                 st.delay_max = std::max(0, st.delay_max - 1);
-            }*/
+            }
             // SAT was the chosen operator but didn’t find a solution within the limits:
-            // account overhead and continue with next outer iteration
+            // account overhead and continue with next outer iteration*/
 
             double iter_total = dt(iter_begin_ts);
             double accounted  = sat_elapsed + other_elapsed;

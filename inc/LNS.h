@@ -166,4 +166,5 @@ private:
     bool                      iter_backup_valid;    // flag
 
     std::shared_ptr<RunStats> stats_;
+    const int SAT_RETRY_LIMIT = 5;
 };

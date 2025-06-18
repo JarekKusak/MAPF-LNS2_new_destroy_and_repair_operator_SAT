@@ -586,10 +586,9 @@ bool LNS::run()
     std::streambuf* coutbuf = std::cout.rdbuf();
     std::cout.rdbuf(out.rdbuf());
 
-    // TODO: english
-    double sat_time_total   = 0.0;   // jen čistý běh SAT-operátoru
-    double other_time_total = 0.0;   // PP / CBS / InitLNS / validátor …
-    double overhead_total   = 0.0;   // „lepidlo“ okolo (výběry, ALNS, kopírování, RNG…)
+    double sat_time_total   = 0.0;   // pure SAT run
+    double other_time_total = 0.0;   // PP / CBS / InitLNS / validator …
+    double overhead_total   = 0.0;   // overhead of framework (everything else)
 
     sum_of_distances = 0;
     for (const auto & agent : agents)

@@ -575,7 +575,6 @@ void LNS::doInitLNSRepair(const string& debug_reason) {
         std::cout << "[ERROR] Could not repair solution right after SAT." << std::endl;
         rollbackNeighbor();
     }
-    // (timing code removed)
 }
 
 bool LNS::run()
@@ -587,6 +586,7 @@ bool LNS::run()
     std::streambuf* coutbuf = std::cout.rdbuf();
     std::cout.rdbuf(out.rdbuf());
 
+    // TODO: english
     double sat_time_total   = 0.0;   // jen čistý běh SAT-operátoru
     double other_time_total = 0.0;   // PP / CBS / InitLNS / validátor …
     double overhead_total   = 0.0;   // „lepidlo“ okolo (výběry, ALNS, kopírování, RNG…)
@@ -894,8 +894,8 @@ bool LNS::run()
                 auto other_begin_ts = Time::now();
                 doInitLNSRepair("because problem occurred after SAT (should be applied only for conflicts...)");
                 double repair_elapsed = dt(other_begin_ts);
-                other_elapsed   += repair_elapsed;   // počítej do this-iter
-                other_time_total += repair_elapsed;  // a jen jednou do globálu
+                other_elapsed   += repair_elapsed;
+                other_time_total += repair_elapsed;
             }
         } else sum_of_costs += neighbor.sum_of_costs - neighbor.old_sum_of_costs;
 
@@ -914,7 +914,7 @@ bool LNS::run()
         }
 
         double iter_total = dt(iter_begin_ts);
-        double accounted = sat_elapsed + other_elapsed;      // místo podmínky
+        double accounted = sat_elapsed + other_elapsed;
         overhead_total  += std::max(0.0, iter_total - accounted);
 
         iteration_stats.emplace_back(neighbor.agents.size(), sum_of_costs, runtime, replan_algo_name);

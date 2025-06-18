@@ -33,11 +33,12 @@ cmake -B build-macos -DCMAKE_BUILD_TYPE=Release
 cmake --build build-macos -j$(sysctl -n hw.ncpu)
 
 # Example run
-build-macos/lns \
-  -m random-32-32-20.map \
-  -a random-32-32-20-random-1.scen \
+build-macos/lns \                                                                                                                                                ─╯
+  -m maps/random-32-32-20.map \
+  -a instances/random-32-32-20-instances/random-32-32-20-random-1.scen \
   -o test -k 150 --outputPaths=paths.txt \
-  --destoryStrategy=SAT --maxIterations 20
+  --destoryStrategy=SAT --maxIterations 10000 \
+  --satDebug=0 -t 15
 ```
 
 ---
@@ -57,8 +58,8 @@ cmake --build build-linux
 
 # Example run
 build-linux/lns \
-  -m random-32-32-20.map \
-  -a random-32-32-20-random-1.scen \
+  -m maps/random-32-32-20.map \
+  -a instances/random-32-32-20-instances/random-32-32-20-random-1.scen \
   -o test -k 150 --outputPaths=paths.txt \
   --destoryStrategy=SAT --maxIterations 20
 ```

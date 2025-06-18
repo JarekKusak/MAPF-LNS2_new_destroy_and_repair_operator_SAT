@@ -1,9 +1,17 @@
-.idea
 analysis
 bin
+.idea
+build*/
 cmake*
+CMakeFiles/
+CMakeCache.txt
+Makefile
+cmake_install.cmake
+lns
 exp*
 debug
-.venv/
-venv/
+
+# logs / temporary outputs
+*.csv
+*.txt
 results/

@@ -520,8 +520,6 @@ void LNS::rollbackNeighbor()
 // Helper function for immediate conflict repair via init_lns
 // ============================================
 void LNS::doInitLNSRepair(const string& debug_reason) {
-    auto repair_start = Time::now();
-
     SAT_DBG("Attempting immediate repair via init_lns " << debug_reason << ".");
     // if there is no time left, we add 100 ms for the possibility of corrections so that the program does not fail validation
     //double repl_budget = std::max(0.1, time_limit - runtime);
@@ -572,21 +570,21 @@ void LNS::doInitLNSRepair(const string& debug_reason) {
         std::cout << "[ERROR] Could not repair solution right after SAT." << std::endl;
         rollbackNeighbor();
     }
-    other_runtime_total += ((fsec)(Time::now() - repair_start)).count();
-    if (stats_ != nullptr)
-        stats_->other_time_total += ((fsec)(Time::now() - repair_start)).count();
+    // (timing code removed)
 }
 
 bool LNS::run()
 {
+    auto dt = [&](auto t){ return ((fsec)(Time::now() - t)).count(); };
+
     // Open file for logging output
     //std::ofstream out("log.txt");
     //std::streambuf* coutbuf = std::cout.rdbuf();
     //std::cout.rdbuf(out.rdbuf());
 
-    sat_runtime_total   = 0.0;
-    other_runtime_total = 0.0;
-    overhead_runtime_total = 0.0;
+    double sat_time_total   = 0.0;   // jen čistý běh SAT-operátoru
+    double other_time_total = 0.0;   // PP / CBS / InitLNS / validátor …
+    double overhead_total   = 0.0;   // „lepidlo“ okolo (výběry, ALNS, kopírování, RNG…)
 
     sum_of_distances = 0;
     for (const auto & agent : agents)
@@ -634,7 +632,9 @@ bool LNS::run()
 
     stats_->initial_soc = initial_sum_of_costs;
     stats_->other_time_total += initial_solution_runtime;
+    other_time_total += initial_solution_runtime;
     runtime = initial_solution_runtime;
+
     if (!succ) {
         std::cout << "[ERROR] Failed to find an initial solution in "
                   << runtime << " seconds after  " << restart_times << " restarts" << std::endl;
@@ -644,10 +644,6 @@ bool LNS::run()
     // --------------- END OF INITIAL SOLUTION COMPUTATION ---------------
 
     bool needConflictRepair = false;
-    size_t sat_iter_count        = 0;     // how many times the SAT actually ran
-    double last_sat_iter_runtime = 0.0;   // length of the last SAT iteration
-    double last_other_iter_runtime = 0.0;
-    double max_sat_iter_runtime  = 0.0;   // longest SAT iteration
 
     // Maximum SAT attempts per outer iteration
     const int MAX_SAT_TRIALS = 8;   // maximum SAT attempts within one outer iteration
@@ -662,15 +658,19 @@ bool LNS::run()
 
     // --------------- OPTIMIZED SOLUTION COMPUTATION ---------------
     while (runtime < time_limit && iteration_stats.size() <= num_of_iterations) {
+        auto iter_begin_ts = Time::now();
+
+        double sat_elapsed   = 0.0;
+        double other_elapsed = 0.0;
+        bool   usedSAT       = false;
+
         current_iter = static_cast<int>(iteration_stats.size());
         SAT_DBG("Iteration " << current_iter);
         // --- stats: new outer iteration ---
         stats_->outer_iterations++;
 
-        bool this_iter_is_sat = false;   // helper flag
         auto iter_begin_TS = Time::now(); // framework overhead runtime
         selected_neighbor = -1;
-        last_other_iter_runtime = 0.0;
 
         // one-time SAT x fallback selection for this iteration
         if (!decision_taken) {
@@ -687,17 +687,14 @@ bool LNS::run()
             chooseDestroyHeuristicbyALNS();
 
         bool opSuccess = false;
-        bool SATchosen = false;
 
         updateAllStats(current_iter);
 
         if (destroy_strategy == SAT) { // SAT is destroy operator merged with replan operator
             if (SATchosenIter) {
-                SATchosen = true;
-                this_iter_is_sat = true;
+                auto sat_begin_ts = Time::now();
+                usedSAT = true;
                 SAT_DBG("Using SAT operator (destroy+repair SAT).");
-
-                auto sat_start = Time::now();
 
                 // backup snapshot
                 iter_backup_soc   = sum_of_costs;
@@ -726,26 +723,18 @@ bool LNS::run()
                     opSuccess = runSAT();
                 }
 
-                double sat_iter_runtime =
-                        ((fsec)(Time::now() - sat_start)).count();
-
-                // --- stats collectors for SAT ---
-                stats_->sat_time_total += sat_iter_runtime;
-
-                sat_runtime_total += sat_iter_runtime;
-                last_sat_iter_runtime = sat_iter_runtime;
-                if (sat_iter_runtime > max_sat_iter_runtime)
-                    max_sat_iter_runtime = sat_iter_runtime;
-                ++sat_iter_count;
+                sat_elapsed = dt(sat_begin_ts);
+                sat_time_total += sat_elapsed;
+                stats_->sat_iters++;
             }
             else SAT_DBG("Random chance did not select SAT operator, using default destroy strategy " << fallback_destroy_strategy << " with replan algo " << fallback_replan_algo);
             SAT_DBG("opSuccess value: " << opSuccess);
         }
 
         // Fallback and SAT-failed guards
-        if (!opSuccess && !SATchosen)
+        if (!opSuccess && !SATchosenIter)
         {
-            auto other_start = Time::now();
+            auto other_begin_ts = Time::now();
             // fallback neighbor generation
             int DEFAULT_DESTROY_STRATEGY;
             std::string DEFAULT_REPLAN_ALGO;
@@ -803,10 +792,7 @@ bool LNS::run()
             }
 
             if (!opSuccess) {
-                double iter_total     = ((fsec)(Time::now() - iter_begin_TS)).count();
-                double iter_accounted = SATchosen ? last_sat_iter_runtime : 0.0;   // re-plan neběžel
-                overhead_runtime_total += std::max(0.0, iter_total - iter_accounted);
-                stats_->overhead_total += std::max(0.0, iter_total - iter_accounted);
+                // (removed: overhead timing/statistics)
                 continue;
             }
 
@@ -825,18 +811,18 @@ bool LNS::run()
             else if (DEFAULT_REPLAN_ALGO == "EECBS") succ = runEECBS();
             else { std::cerr << "Wrong replanning strategy " << std::endl; exit(-1); }
 
-            auto other_iter_runtime = ((fsec)(Time::now() - other_start)).count();
-            other_runtime_total += other_iter_runtime;
-            stats_->other_time_total += other_iter_runtime;
-            last_other_iter_runtime = other_iter_runtime;
+            other_elapsed = dt(other_begin_ts);
+            other_time_total += other_elapsed;
         }
-        else if (!opSuccess && SATchosen)
+        else if (!opSuccess && SATchosenIter)
         {
             // SAT was the chosen operator but didn’t find a solution within the limits:
             // account overhead and continue with next outer iteration
-            double iter_total = ((fsec)(Time::now() - iter_begin_TS)).count();
-            overhead_runtime_total += iter_total;
-            stats_->overhead_total += iter_total;
+
+            double iter_total = dt(iter_begin_ts);
+            double accounted  = sat_elapsed + other_elapsed;
+            overhead_total   += std::max(0.0, iter_total - accounted);
+
             continue;
         }
         else succ = opSuccess; // opSuccess = true => runSAT completed
@@ -856,11 +842,6 @@ bool LNS::run()
                         (1 - decay_factor) * destroy_weights[selected_neighbor];
         }
 
-        // remember if SAT picked for this iteration
-        if (this_iter_is_sat) stats_->sat_iters++;
-
-        runtime = ((fsec)(Time::now() - start_time)).count();
-
         SAT_DBG("neighbor.sum_of_costs before recomputation: " << neighbor.sum_of_costs);
         SAT_DBG("neighbor.old_sum_of_costs before recomputation: " << neighbor.old_sum_of_costs);
         SAT_DBG("sum_of_costs before recomputation: " << sum_of_costs);
@@ -868,7 +849,7 @@ bool LNS::run()
         // ------------------------------------------------
         // After SAT => validation and possible conflict repair
         // ------------------------------------------------
-        if (destroy_strategy == SAT && opSuccess && SATchosen)
+        if (destroy_strategy == SAT && opSuccess && SATchosenIter)
         {
             /* ---  synchronize global sum_of_costs *before* validation  ---
                runSAT has just changed the paths of selected agents and filled
@@ -883,25 +864,21 @@ bool LNS::run()
             SAT_DBG("Validate solution immediately after SAT success.");
 
             try {
-                auto val_ts = Time::now();
                 validateSolution();
                 SAT_DBG("No problems after SAT replan.");
-                double val_rt = ((fsec)(Time::now() - val_ts)).count();
-                overhead_runtime_total += val_rt;
-                stats_->overhead_total  += val_rt;
             }
             catch (const ValidationException& e) {
                 std::cout << "[WARNING] Problem after SAT: " << e.what() << std::endl;
                 // unify
+                auto other_begin_ts = Time::now();
                 doInitLNSRepair("because problem occurred after SAT (should be applied only for conflicts...)");
-
-                auto val_ts = Time::now();
-                validateSolution();
-                double val_rt = ((fsec)(Time::now() - val_ts)).count();
-                overhead_runtime_total += val_rt;
-                stats_->overhead_total  += val_rt;
+                double repair_elapsed = dt(other_begin_ts);
+                other_elapsed   += repair_elapsed;   // počítej do this-iter
+                other_time_total += repair_elapsed;  // a jen jednou do globálu
             }
         } else sum_of_costs += neighbor.sum_of_costs - neighbor.old_sum_of_costs;
+
+        runtime = ((fsec)(Time::now() - start_time)).count();
 
         SAT_DBG("Recomputing sum_of_cost by dividing neighbor.sum_of_costs and neighbor.old_sum_of_costs");
         SAT_STAT("sum_of_costs after recomputation: " << sum_of_costs);
@@ -915,11 +892,9 @@ bool LNS::run()
                  << std::endl;
         }
 
-        double iter_total     = ((fsec)(Time::now() - iter_begin_TS)).count();
-        double iter_accounted = (this_iter_is_sat ? last_sat_iter_runtime
-                                                  : last_other_iter_runtime);
-        overhead_runtime_total += std::max(0.0, iter_total - iter_accounted);
-        stats_->overhead_total  += std::max(0.0, iter_total - iter_accounted);
+        double iter_total = dt(iter_begin_ts);
+        double accounted = sat_elapsed + other_elapsed;      // místo podmínky
+        overhead_total  += std::max(0.0, iter_total - accounted);
 
         iteration_stats.emplace_back(neighbor.agents.size(), sum_of_costs, runtime, replan_algo_name);
 
@@ -930,6 +905,8 @@ bool LNS::run()
     // --------------- END OF OPTIMIZED SOLUTION COMPUTATION ---------------
 
     // --------------- CALCULATION AND PRINTING OF STATISTICS ---------------
+    runtime = ((fsec)(Time::now() - start_time)).count();
+
     average_group_size = -iteration_stats.front().num_of_agents;
     for (const auto& data : iteration_stats)
         average_group_size += data.num_of_agents;
@@ -944,20 +921,10 @@ bool LNS::run()
          << ", failed iterations = " << num_of_failures
          << std::endl;
 
-    SAT_DBG("SAT total runtime       = " << sat_runtime_total      << " s");
-    SAT_DBG("Other operators runtime = " << other_runtime_total    << " s");
-    SAT_DBG("Framework overhead      = " << overhead_runtime_total << " s");
-
-    double recog = sat_runtime_total + other_runtime_total + overhead_runtime_total;
-    SAT_DBG("Sanity check - sum      = " << recog
-                                          << " s  (whole run: " << runtime << " s)");
-    if (runtime > 0)
-        SAT_DBG("SAT runtime ratio    = "
-                         << 100.0 * sat_runtime_total / runtime << " %");
-
-    stats_->wall_runtime       = runtime;
-    stats_->final_soc          = sum_of_costs;
-    stats_->failed_iterations  = num_of_failures;
+    stats_->wall_runtime   = runtime;
+    stats_->sat_time_total = sat_time_total;
+    stats_->other_time_total = other_time_total;
+    stats_->overhead_total = overhead_total;
 
     // Debug / final log (you can overwrite with classic SAT_DBG or save to file)
     SAT_STAT("wall_runtime="  << stats_->wall_runtime
@@ -969,7 +936,7 @@ bool LNS::run()
                                        << " sat_fail="           << stats_->sat_fail
                                        << " final_soc="          << stats_->final_soc
                                        << " initial_soc="        << stats_->initial_soc );
-    double diff = runtime - (stats_->sat_time_total + stats_->other_time_total + stats_->overhead_total);
+    double diff = runtime - (sat_time_total + other_time_total + overhead_total);
     if (fabs(diff) > 1e-3)
         SAT_DBG("[TIME] missing " << diff << " s  (should be ~0)");
 

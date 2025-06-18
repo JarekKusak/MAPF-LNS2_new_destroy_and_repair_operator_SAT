@@ -33,7 +33,7 @@ cmake -B build-macos -DCMAKE_BUILD_TYPE=Release
 cmake --build build-macos -j$(sysctl -n hw.ncpu)
 
 # Example run
-build-macos/lns \                                                                                                                                                ─╯
+build-macos/lns \
   -m maps/random-32-32-20.map \
   -a instances/random-32-32-20-instances/random-32-32-20-random-1.scen \
   -o test -k 150 --outputPaths=paths.txt \

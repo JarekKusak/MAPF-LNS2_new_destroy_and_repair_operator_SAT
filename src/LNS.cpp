@@ -582,9 +582,9 @@ bool LNS::run()
     auto dt = [&](auto t){ return ((fsec)(Time::now() - t)).count(); };
 
     // Open file for logging output
-    std::ofstream out("log.txt");
-    std::streambuf* coutbuf = std::cout.rdbuf();
-    std::cout.rdbuf(out.rdbuf());
+    //std::ofstream out("log.txt");
+    //std::streambuf* coutbuf = std::cout.rdbuf();
+    //std::cout.rdbuf(out.rdbuf());
 
     double sat_time_total   = 0.0;   // pure SAT run
     double other_time_total = 0.0;   // PP / CBS / InitLNS / validator …
@@ -650,7 +650,8 @@ bool LNS::run()
     bool needConflictRepair = false;
 
     // Maximum SAT attempts per outer iteration
-    const int MAX_SAT_TRIALS = 8;   // maximum SAT attempts within one outer iteration
+    // TODO: idk
+    const int MAX_SAT_TRIALS = 10;   // maximum SAT attempts within one outer iteration
 
     /* ------------------------------------------------------
     Flags fixing the choice of operator for the current
@@ -825,6 +826,7 @@ bool LNS::run()
         {
             // TODO: rozhodnout, zda to má smysl
 
+
             // --- penalize neighborhood ---
             for (int a : neighbor.agents) {
                 ignored_agents_with_timestep.insert({a, neighbor.T_sync});   // odsun na později
@@ -842,6 +844,8 @@ bool LNS::run()
             double iter_total = dt(iter_begin_ts);
             double accounted  = sat_elapsed + other_elapsed;
             overhead_total   += std::max(0.0, iter_total - accounted);
+
+            num_of_failures++;
 
             continue;
         }
@@ -888,7 +892,7 @@ bool LNS::run()
                 SAT_DBG("No problems after SAT replan.");
             }
             catch (const ValidationException& e) {
-                std::cout << "[WARNING] Problem after SAT: " << e.what() << std::endl;
+                SAT_DBG("Problem after SAT: " << e.what());
                 // unify
                 auto other_begin_ts = Time::now();
                 doInitLNSRepair("because problem occurred after SAT (should be applied only for conflicts...)");
@@ -945,6 +949,7 @@ bool LNS::run()
     stats_->sat_time_total = sat_time_total;
     stats_->other_time_total = other_time_total;
     stats_->overhead_total = overhead_total;
+    stats_->final_soc = sum_of_costs;
 
     // Debug / final log (you can overwrite with classic SAT_DBG or save to file)
     SAT_STAT("wall_runtime="  << stats_->wall_runtime
@@ -962,7 +967,7 @@ bool LNS::run()
 
     // --------------- END OF CALCULATION AND PRINTING OF STATISTICS ---------------
 
-    std::cout.rdbuf(coutbuf);
+    //std::cout.rdbuf(coutbuf);
     return true;
 }
 

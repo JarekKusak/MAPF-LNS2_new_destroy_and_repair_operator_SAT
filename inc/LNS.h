@@ -121,7 +121,7 @@ private:
     };
 
     double adaptive_heuristics_reaction_factor = 0.01;
-    double adaptive_heuristics_decay_factor = 0.02;
+    double adaptive_heuristics_decay_factor = 0.002;
 
     pair<int,int> roundRobin();
     pair<int, int> findMostDelayedAgentAndTime();

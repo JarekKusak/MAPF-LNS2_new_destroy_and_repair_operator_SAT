@@ -650,7 +650,7 @@ bool LNS::run()
     bool needConflictRepair = false;
 
     // Maximum SAT attempts per outer iteration
-    const int MAX_SAT_TRIALS = 10;   // maximum SAT attempts within one outer iteration
+    const int MAX_SAT_TRIALS = 1;   // maximum SAT attempts within one outer iteration
 
     /* ------------------------------------------------------
     Flags fixing the choice of operator for the current
@@ -709,8 +709,6 @@ bool LNS::run()
 
                 // --- SAT replan loop ------------------------------------------------
                 int sat_trials = 0;
-                int delta = 0;
-
                 while (!opSuccess && sat_trials < MAX_SAT_TRIALS &&
                        dt(start_time) < time_limit) {
                     if (!generateNeighborBySAT())
@@ -728,7 +726,6 @@ bool LNS::run()
 
                     opSuccess = runSAT();
                     ++sat_trials;
-                    ++delta;
                 }
                 // --------------------------------------------------------------------
 

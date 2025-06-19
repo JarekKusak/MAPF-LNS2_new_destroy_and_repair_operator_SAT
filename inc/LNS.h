@@ -167,4 +167,5 @@ private:
 
     std::shared_ptr<RunStats> stats_;
     const int SAT_RETRY_LIMIT = 5;
+    std::vector<int> soc_curve;
 };

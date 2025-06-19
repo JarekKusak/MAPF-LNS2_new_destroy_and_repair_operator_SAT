@@ -1379,14 +1379,15 @@ void InitLNS::printResult()
 
     int initial_cost_to_print = iteration_stats.front().sum_of_costs;
 
-    cout << "\t" << getSolverName() << ": "
+    // overwritten from "std::cout <<"
+    SAT_DBG("\t" << getSolverName() << ": "
          << "runtime = " << runtime << ", "
          << "iterations = " << iteration_stats.size() << ", "
          << "colliding pairs = " << num_of_colliding_pairs << ", "
          << "initial colliding pairs = " << iteration_stats.front().num_of_colliding_pairs << ", "
          << "solution cost = " << sum_of_costs << ", "
          << "initial solution cost = " << initial_cost_to_print << ", "
-         << "failed iterations = " << num_of_failures << endl;
+         << "failed iterations = " << num_of_failures);
 }
 
 void InitLNS::clear()

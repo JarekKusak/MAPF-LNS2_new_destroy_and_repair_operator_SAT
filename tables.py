@@ -26,14 +26,14 @@ import matplotlib.pyplot as plt
 import shutil
 
 # CONFIGURATION MATRIX
-MAPS = {"warehouse-20-40-10-2-1", "Paris_1_256"}#, "random-32-32-20"}#, ,
+MAPS = {"warehouse-20-40-10-2-1"}#, "Paris_1_256"}#, "random-32-32-20"}#, ,
         #"It_gallowstemplar_n", "room-64-64-16"}
 #MAPS= {"random-32-32-20"}
-INSTANCES_PER_MAP = 10
-AGENT_COUNTS      = [100, 200, 300, 400] #[100, 500, 1000] # rozdělit na malé a velké mapy (maximálně 15 s pro initial solution)
+INSTANCES_PER_MAP = 1#10
+AGENT_COUNTS      = [100]#, 200, 300, 400] #[100, 500, 1000] # rozdělit na malé a velké mapy (maximálně 15 s pro initial solution)
 TIMEOUTS          = [30]
 SUBMAP_SIDES      = [5]
-MIX_PROBS         = [80, 50, 20]# 0 and 100 is generated outside the MIX
+MIX_PROBS         = [50]#[80, 50, 20]# 0 and 100 is generated outside the MIX
 PURE_REPLANS     = ["PP"]  # pure replanners to test
 SAT_HEURISTICS    = ["adaptive"]
 FALLBACK_DESTS    = ["Adaptive"]
@@ -84,6 +84,8 @@ RE_RS = re.compile(
     r"initial_soc\s*=\s*(\d+)"
 )
 RE_SOC_POST = re.compile(r"\[STAT\] sum_of_costs after recomputation: (\d+)")
+
+RE_SOC_INLINE = re.compile(r"\[SOC\]\s+(\d+)")
 
 # CASE GENERATION
 
@@ -187,7 +189,7 @@ def parse_log(log_path: Path) -> tuple[dict, list[int]]:
                     int(m[5]), int(m[6]), int(m[7]),
                     int(m[8]), int(m[9])
                 )
-            elif m := RE_SOC_POST.search(line):
+            elif m := RE_SOC_INLINE.search(line):
                 curve.append(int(m[1]))
 
     # defaults
@@ -197,11 +199,13 @@ def parse_log(log_path: Path) -> tuple[dict, list[int]]:
     stats.setdefault("overhead_runtime", 0.0)
 
     # Derived fields:
-    # (1) Share of SAT time *within all operator time* (SAT + “other” LNS ops)
-    total_ops = stats["sat_runtime"] + stats["other_runtime"]
-    stats["sat_ratio_ops"] = 100.0 * stats["sat_runtime"] / total_ops if total_ops else 0.0
+    # (1) Share of **successful SAT operator calls** among all SAT calls
+    stats["sat_ratio_ops"] = (
+        100.0 * stats["sat_runtime"] /
+        (stats["sat_runtime"] + stats["other_runtime"])
+        if (stats["sat_runtime"] + stats["other_runtime"]) else 0.0
+    )
 
-    # (2) Share of SAT time w.r.t. the entire wall‑time reported by the solver
     stats["sat_ratio"] = (
         100.0 * stats["sat_runtime"] / stats["runtime"]
         if stats["runtime"] else 0.0

@@ -844,8 +844,12 @@ bool LNS::run()
         }
         else succ = opSuccess; // opSuccess = true => runSAT completed
 
-        if (!succ)
+        if (!succ) {
+            double iter_total = dt(iter_begin_ts);
+            double accounted  = sat_elapsed + other_elapsed;
+            overhead_total   += std::max(0.0, iter_total - accounted);
             continue;
+        }
 
         // ALNS evaluation
         if (ALNS && selected_neighbor >= 0)
@@ -898,7 +902,8 @@ bool LNS::run()
         runtime = ((fsec)(Time::now() - start_time)).count();
 
         SAT_DBG("Recomputing sum_of_cost by dividing neighbor.sum_of_costs and neighbor.old_sum_of_costs");
-        SAT_STAT("sum_of_costs after recomputation: " << sum_of_costs);
+        SAT_DBG("sum_of_costs after recomputation: " << sum_of_costs);
+        soc_curve.push_back(sum_of_costs);
 
         if (screen >= 1)
         {
@@ -959,6 +964,9 @@ bool LNS::run()
         SAT_DBG("[TIME] missing " << diff << " s  (should be ~0)");
 
     // --------------- END OF CALCULATION AND PRINTING OF STATISTICS ---------------
+
+    for (int v : soc_curve)
+        std::cout << "[SOC] " << v << '\n';
 
     //std::cout.rdbuf(coutbuf);
     return true;

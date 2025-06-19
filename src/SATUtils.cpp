@@ -346,7 +346,6 @@ namespace SATUtils {
         }
         stats.sat_ok++;
 
-
         vector<vector<int>> plan = solver->GetPlan();
 
         for (size_t a = 0; a < plan.size(); ++a)

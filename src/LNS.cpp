@@ -586,9 +586,9 @@ bool LNS::run()
     //std::streambuf* coutbuf = std::cout.rdbuf();
     //std::cout.rdbuf(out.rdbuf());
 
-    double sat_time_total   = 0.0;   // pure SAT run
-    double other_time_total = 0.0;   // PP / CBS / InitLNS / validator …
-    double overhead_total   = 0.0;   // overhead of framework (everything else)
+    double sat_time_total   = 0.0; // pure SAT run
+    double other_time_total = 0.0; // PP / CBS / InitLNS / validator
+    double overhead_total   = 0.0; // overhead of framework (everything else)
 
     sum_of_distances = 0;
     for (const auto & agent : agents)
@@ -650,7 +650,6 @@ bool LNS::run()
     bool needConflictRepair = false;
 
     // Maximum SAT attempts per outer iteration
-    // TODO: idk
     const int MAX_SAT_TRIALS = 10;   // maximum SAT attempts within one outer iteration
 
     /* ------------------------------------------------------
@@ -710,9 +709,10 @@ bool LNS::run()
 
                 // --- SAT replan loop ------------------------------------------------
                 int sat_trials = 0;
+                int delta = 0;
+
                 while (!opSuccess && sat_trials < MAX_SAT_TRIALS &&
-                       dt(start_time) < time_limit)
-                {
+                       dt(start_time) < time_limit) {
                     if (!generateNeighborBySAT())
                         continue;
 
@@ -728,6 +728,7 @@ bool LNS::run()
 
                     opSuccess = runSAT();
                     ++sat_trials;
+                    ++delta;
                 }
                 // --------------------------------------------------------------------
 
@@ -758,8 +759,7 @@ bool LNS::run()
 
             // --- fallback neighbour generation ---------------------------------
             auto saved_destroy_strategy = destroy_strategy;   // SAT
-            if (DEFAULT_DESTROY_STRATEGY == NONE)
-            {
+            if (DEFAULT_DESTROY_STRATEGY == NONE) {
                 /*  Adaptive fallback:
                     – let ALNS choose the destruction heuristic,
                     – save it in DEFAULT_DESTROY_STRATEGY,
@@ -822,15 +822,11 @@ bool LNS::run()
             other_elapsed = dt(other_begin_ts);
             other_time_total += other_elapsed;
         }
-        else if (!opSuccess && SATchosenIter)
-        {
-            // TODO: rozhodnout, zda to má smysl
-
-
+        else if (!opSuccess && SATchosenIter) {
             // --- penalize neighborhood ---
             for (int a : neighbor.agents) {
-                ignored_agents_with_timestep.insert({a, neighbor.T_sync});   // odsun na později
-                agents[a].stats.failed_replans++;                            // inkrementuj čítač
+                ignored_agents_with_timestep.insert({a, neighbor.T_sync});   // postpone
+                agents[a].stats.failed_replans++;                            // increment
             }
 
             // slight decay for toxic agent

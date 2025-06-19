@@ -335,7 +335,7 @@ namespace SATUtils {
         inst->SetAgents((int)start_positions.size());
         log->NewInstance((int)start_positions.size());
 
-        int result = solver->Solve((int)start_positions.size(), 0, true, true);
+        int result = solver->Solve((int)start_positions.size(), 0, true, true); // try to increment delta (instead of 0)
         stats.sat_calls++;
         SAT_DBG("Solver returned: " << result);
 

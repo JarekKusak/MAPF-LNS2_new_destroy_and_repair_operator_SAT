@@ -55,7 +55,7 @@ LNS::LNS(const Instance& instance, double time_limit, const string & init_algo_n
 
     if (fallback_destroy_strategy == NONE)
     {
-        SAT_DBG("ALNS set as fallback destroy strategy.");
+        //SAT_DBG("ALNS set as fallback destroy strategy.");
         ALNS = true;
         destroy_weights.assign(DESTORY_COUNT, 1);
         decay_factor     = 0.01;
@@ -700,17 +700,18 @@ bool LNS::run()
                 usedSAT = true;
                 SAT_DBG("Using SAT operator (destroy+repair SAT).");
 
-                // backup snapshot
-                iter_backup_soc   = sum_of_costs;
-                iter_backup_valid = true;
-                iter_backup_paths.resize(agents.size());
-                for (int i = 0; i < agents.size(); ++i)
-                    iter_backup_paths[i] = agents[i].path; // full deep-copy - INEFFECTIVE - lot of consumption memory and time
+                if (time_limit - runtime < 1) { // save snapshot backup only when few time is left
+                    // backup snapshot
+                    iter_backup_soc = sum_of_costs;
+                    iter_backup_valid = true;
+                    iter_backup_paths.resize(agents.size());
+                    for (int i = 0; i < agents.size(); ++i)
+                        iter_backup_paths[i] = agents[i].path; // full deep-copy - INEFFECTIVE - lot of consumption memory and time
+                }
 
                 // --- SAT replan loop ------------------------------------------------
                 int sat_trials = 0;
-                while (!opSuccess && sat_trials < MAX_SAT_TRIALS &&
-                       dt(start_time) < time_limit) {
+                while (!opSuccess && sat_trials < MAX_SAT_TRIALS && dt(start_time) < time_limit) {
                     if (!generateNeighborBySAT())
                         continue;
 
@@ -884,19 +885,23 @@ bool LNS::run()
 
             SAT_DBG("Validate solution immediately after SAT success.");
 
+            auto other_begin_ts = Time::now();
             try {
-                validateSolution();
+                auto val_ts = Time::now();
+                validateSolution(); // takes a lot of time...
                 SAT_DBG("No problems after SAT replan.");
             }
             catch (const ValidationException& e) {
                 SAT_DBG("Problem after SAT: " << e.what());
                 // unify
-                auto other_begin_ts = Time::now();
+
                 doInitLNSRepair("because problem occurred after SAT (should be applied only for conflicts...)");
-                double repair_elapsed = dt(other_begin_ts);
-                other_elapsed   += repair_elapsed;
-                other_time_total += repair_elapsed;
             }
+
+            double repair_elapsed = dt(other_begin_ts);
+            other_elapsed   += repair_elapsed;
+            other_time_total += repair_elapsed;
+
         } else sum_of_costs += neighbor.sum_of_costs - neighbor.old_sum_of_costs;
 
         runtime = ((fsec)(Time::now() - start_time)).count();
@@ -972,8 +977,7 @@ bool LNS::run()
     return true;
 }
 
-bool LNS::getInitialSolution()
-{
+bool LNS::getInitialSolution() {
     neighbor.agents.resize(agents.size());
     for (int i = 0; i < (int)agents.size(); i++)
         neighbor.agents[i] = i;

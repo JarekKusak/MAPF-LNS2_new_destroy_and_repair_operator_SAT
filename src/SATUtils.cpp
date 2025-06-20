@@ -331,7 +331,7 @@ namespace SATUtils {
 
         SAT_DBG("SAT instance and solver created.");
 
-        solver->SetData(inst.get(), log.get(), 300, "", false, true);
+        solver->SetData(inst.get(), log.get(), 300, "", true, true);
         inst->SetAgents((int)start_positions.size());
         log->NewInstance((int)start_positions.size());
 

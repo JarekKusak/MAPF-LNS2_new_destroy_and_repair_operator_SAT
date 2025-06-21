@@ -28,15 +28,15 @@ import shutil
 # CONFIGURATION MATRIX
 MAPS = {"random-32-32-20", "Paris_1_256", "warehouse-20-40-10-2-1", "It_gallowstemplar_n", "room-64-64-16"}
 INSTANCES_PER_MAP = 10
-AGENT_COUNTS      = [100, 200, 300,400]#, 200, 300, 400] #[100, 500, 1000] # rozdělit na malé a velké mapy (maximálně 15 s pro initial solution)
-TIMEOUTS          = [30]#[30]
+AGENT_COUNTS      = [100, 200, 300, 400]#, 200, 300, 400] #[100, 500, 1000] # rozdělit na malé a velké mapy (maximálně 15 s pro initial solution)
+TIMEOUTS          = [30] 
 SUBMAP_SIDES      = [5]
 MIX_PROBS         = [80, 50, 20] # 0 and 100 is generated outside the MIX
 PURE_REPLANS     = ["PP"]  # pure replanners to test
 SAT_HEURISTICS    = ["adaptive"]
 FALLBACK_DESTS    = ["Adaptive"]
 FALLBACK_ALGOS    = ["PP"]
-MAX_ITERS         = [100_000_000] # arbitrary long
+MAX_ITERS         = [1_000_000] # arbitrary long
 INCLUDE_PURE_SAT  = True
 
 # ──────────────────────────────────────────────────────────────────────────────

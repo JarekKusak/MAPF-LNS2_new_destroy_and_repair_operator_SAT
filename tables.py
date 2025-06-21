@@ -87,40 +87,88 @@ RE_SOC_INLINE = re.compile(r"\[SOC\]\s+(\d+)")
 
 # CASE GENERATION
 
-cases: list[dict] = []
+def main():
+    cases: list[dict] = []
 
-# T1 ─ pure strategies (PP / CBS / optional pure SAT)
-for m, scen_i, k, T, iters, sub in product(
-        MAPS, range(1, INSTANCES_PER_MAP + 1),
-        AGENT_COUNTS, TIMEOUTS, MAX_ITERS, SUBMAP_SIDES):
-    for repl in PURE_REPLANS:
-        cases.append(dict(kind="PURE", algo=repl, satProb=0,
-                          dest="Adaptive",   # any non-SAT strategy
+    # T1 ─ pure strategies (PP / CBS / optional pure SAT)
+    for m, scen_i, k, T, iters, sub in product(
+            MAPS, range(1, INSTANCES_PER_MAP + 1),
+            AGENT_COUNTS, TIMEOUTS, MAX_ITERS, SUBMAP_SIDES):
+        for repl in PURE_REPLANS:
+            cases.append(dict(kind="PURE", algo=repl, satProb=0,
+                              dest="Adaptive",   # any non-SAT strategy
+                              map=m, inst=scen_i, k=k, T=T, iters=iters, sub=sub))
+        if INCLUDE_PURE_SAT:
+            cases.append(dict(kind="PURE", algo="PP", satProb=100,
+                              dest="SAT", satHeur="adaptive",
+                              map=m, inst=scen_i, k=k, T=T, iters=iters, sub=sub))
+
+    # T2 ─ PP + SAT mixes
+    for m, scen_i, k, T, iters, sub, prob, heur, fb_dest, fb_algo in product(
+            MAPS, range(1, INSTANCES_PER_MAP + 1), AGENT_COUNTS,
+            TIMEOUTS, MAX_ITERS, SUBMAP_SIDES,
+            MIX_PROBS, SAT_HEURISTICS,
+            FALLBACK_DESTS, FALLBACK_ALGOS):
+        # skip degenerate mixes – 0 % >>> žádný SAT, 100 % >>> čistý SAT už máme v "PURE"
+        if prob in (0, 100):
+            continue
+        cases.append(dict(kind="MIX",
+                          algo="PP", # primary non‑SAT replanner (internal)
+                          satProb=prob,
+                          dest="SAT",
+                          satHeur=heur,
+                          destFallback=fb_dest,
+                          algoFallback=fb_algo,
                           map=m, inst=scen_i, k=k, T=T, iters=iters, sub=sub))
-    if INCLUDE_PURE_SAT:
-        cases.append(dict(kind="PURE", algo="PP", satProb=100,
-                          dest="SAT", satHeur="adaptive",
-                          map=m, inst=scen_i, k=k, T=T, iters=iters, sub=sub))
 
-# T2 ─ PP + SAT mixes
-for m, scen_i, k, T, iters, sub, prob, heur, fb_dest, fb_algo in product(
-        MAPS, range(1, INSTANCES_PER_MAP + 1), AGENT_COUNTS,
-        TIMEOUTS, MAX_ITERS, SUBMAP_SIDES,
-        MIX_PROBS, SAT_HEURISTICS,
-        FALLBACK_DESTS, FALLBACK_ALGOS):
-    # skip degenerate mixes – 0 % >>> žádný SAT, 100 % >>> čistý SAT už máme v "PURE"
-    if prob in (0, 100):
-        continue
-    cases.append(dict(kind="MIX",
-                      algo="PP", # primary non‑SAT replanner (internal)
-                      satProb=prob,
-                      dest="SAT",
-                      satHeur=heur,
-                      destFallback=fb_dest,
-                      algoFallback=fb_algo,
-                      map=m, inst=scen_i, k=k, T=T, iters=iters, sub=sub))
+    # MAIN LOOP
 
-# LAUNCH / PARSE HELPERS
+    # --- parallel execution -------------------------------------------------
+    import os
+    from concurrent.futures import ProcessPoolExecutor, as_completed
+
+    MAX_PARALLEL = max(1, os.cpu_count() - 2)   # keep some cores free
+
+    print(f"Running {len(cases)} cases with up to {MAX_PARALLEL} workers …",
+          file=sys.stderr)
+
+    records: list[dict] = []
+    with ProcessPoolExecutor(max_workers=MAX_PARALLEL) as pool:
+        future_to_cfg = {pool.submit(run_case, cfg): cfg for cfg in cases}
+        for fut in as_completed(future_to_cfg):
+            rec = fut.result()
+            records.append(rec)
+            print("[DONE]", rec["run_id"], file=sys.stderr)
+
+    # quick SOC plots per run
+    for rec in records:
+        soc_path = RESULTS_DIR / rec["run_id"] / "soc.csv"
+        if soc_path.exists():
+            curve = pd.read_csv(soc_path, header=None).squeeze("columns")
+            plt.figure()
+            plt.plot(curve)
+            plt.xlabel("Iteration")
+            plt.ylabel("Sum of Costs")
+            plt.title(f"{rec['run_id']}: SOC vs. iteration")
+            plt.tight_layout()
+            plt.savefig(soc_path.with_suffix('.png'))
+            plt.close()
+
+    # CSV EXPORT 
+
+    df = pd.DataFrame(records)
+    df.to_csv(RESULTS_DIR / "results_all.csv", index=False)
+    df[df.kind == "PURE"].to_csv(RESULTS_DIR / "results_T1_pure.csv", index=False)
+    df[df.kind == "MIX" ].to_csv(RESULTS_DIR / "results_T2_mix.csv",  index=False)
+
+    df_runtime = df[[
+        "map", "inst", "k",
+        "algo", "satProb", "destFallback", "algoFallback",
+        "sat_runtime", "other_runtime", "sat_ratio_ops", "sat_ratio"
+    ]]
+    df_runtime.to_csv(RESULTS_DIR / "results_T3_runtime.csv", index=False)
+
+    print("CSV files written to", RESULTS_DIR)
 
 def build_cmd(cfg: dict, out_dir: Path) -> list[str]:
     """Build command-line for a single solver run."""
@@ -217,79 +265,49 @@ def parse_log(log_path: Path) -> tuple[dict, list[int]]:
 
     return stats, curve
 
-# MAIN LOOP
-
-records = []
-for cfg in cases:
+# ----------------------------------------------------------------------
+# PARALLEL EXECUTION ----------------------------------------------------
+def run_case(cfg: dict) -> dict:
+    """
+    Execute one solver run in its own working directory and
+    return the record that will later be appended to the CSV.
+    Designed to be picklable for ProcessPoolExecutor.
+    """
     tag = (f"{cfg['map']}-i{cfg['inst']}-k{cfg['k']}-t{cfg['T']}"
            f"-sub{cfg['sub']}-p{cfg['satProb']}"
-           f"-{cfg.get('satHeur','')}")
-    # add fallback info only for MIX cases (keys present)
+           f"-{cfg.get('satHeur', '')}")
     if cfg.get("destFallback"):
         tag += f"-fb{cfg['algoFallback']}-{cfg['destFallback']}"
+
     out_dir = RESULTS_DIR / tag
     if out_dir.exists():
-        shutil.rmtree(out_dir)   # ensure fresh directory for each run
-    out_dir.mkdir(exist_ok=True)
+        shutil.rmtree(out_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
+
     log_file = out_dir / "log.txt"
 
-    start = time.time()
     try:
-        proc = subprocess.run(
+        subprocess.run(
             build_cmd(cfg, out_dir),
             stdout=log_file.open("w"),
             stderr=subprocess.STDOUT,
             timeout=wall_clock_limit(cfg["T"]),
+            check=False,
         )
     except subprocess.TimeoutExpired:
-        # kill the still‑running solver and mark as timeout
-        proc = subprocess.CompletedProcess(args=[], returncode=-9)
-        print(f"[TIMEOUT] {tag} exceeded {cfg['T']+SAFE_MARGIN}s, skipping …",
-              file=sys.stderr)
-    elapsed = time.time() - start
-    if proc.returncode != 0:
-        print(f"[WARN] {tag} exited with code {proc.returncode}", file=sys.stderr)
+        return {**cfg, "run_id": tag, "state": "timeout"}
 
     stats, curve = parse_log(log_file)
 
-    # detect solver that reported runtime > allocated T (overtime)
-    overtime = False
-    if proc.returncode == 0 and stats.get("runtime", 0) > cfg["T"]:
-        overtime = True
-
-    # save SoC curve and create a PNG plot
+    # store SoC curve for later plotting
     if curve:
         (out_dir / "soc.csv").write_text("\n".join(map(str, curve)))
-        # quick line chart
-        plt.figure()
-        plt.plot(curve)
-        plt.xlabel("Iteration")
-        plt.ylabel("Sum of Costs")
-        plt.title(f"{tag}: SOC vs. iteration")
-        plt.tight_layout()
-        plt.savefig(out_dir / "soc.png")
-        plt.close()
 
-    # The algo column in the CSV shows "SAT" whenever dest=="SAT". However, internally it remains --replanAlgo=PP so the binary doesn't run with an invalid value
     csv_algo = "SAT" if cfg["dest"] == "SAT" else cfg["algo"]
-    records.append({**cfg, "algo": csv_algo, "run_id": tag,
-                    "state": ("timeout" if proc.returncode == -9 else
-                              "overtime" if overtime else "OK"),
-                    **stats})
-    print(f"[INFO] {tag:<70} {elapsed:5.1f}s")
+    return {**cfg, "algo": csv_algo, "run_id": tag, "state": "OK", **stats}
 
-# CSV EXPORT 
-
-df = pd.DataFrame(records)
-df.to_csv(RESULTS_DIR / "results_all.csv", index=False)
-df[df.kind == "PURE"].to_csv(RESULTS_DIR / "results_T1_pure.csv", index=False)
-df[df.kind == "MIX" ].to_csv(RESULTS_DIR / "results_T2_mix.csv",  index=False)
-
-df_runtime = df[[
-    "map", "inst", "k",
-    "algo", "satProb", "destFallback", "algoFallback",
-    "sat_runtime", "other_runtime", "sat_ratio_ops", "sat_ratio"
-]]
-df_runtime.to_csv(RESULTS_DIR / "results_T3_runtime.csv", index=False)
-
-print("CSV files written to", RESULTS_DIR)
+# Standard multiprocessing guard for Windows compatibility
+if __name__ == "__main__":
+    import multiprocessing as mp
+    mp.freeze_support()   # for Windows; no‑op elsewhere
+    main()

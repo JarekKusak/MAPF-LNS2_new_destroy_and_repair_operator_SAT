@@ -252,6 +252,8 @@ def parse_log(log_path: Path) -> tuple[dict, list[int]]:
     stats.setdefault("outer_iterations", 0)
     stats.setdefault("failed_iterations", 0)
     stats.setdefault("succesful_iterations", 0)
+    stats.setdefault("sat_ok", 0)
+    stats.setdefault("sat_repairs", 0)
 
     # Derived fields:
     # the proportion of time spent in SAT operators to the time spent in (SAT + other) operators
@@ -274,9 +276,9 @@ def parse_log(log_path: Path) -> tuple[dict, list[int]]:
         stats["soc_improvement_pct"] = 0.0
 
     # number of SAT repairs performed
-    stats["sat_success_with_repair_pct"] = (
-        100.0 * stats["sat_repairs"] / stats["sat_ok"] if stats["sat_ok"] else 0
-    )
+    sat_ok      = stats.get("sat_ok", 0)
+    sat_repairs = stats.get("sat_repairs", 0)
+    stats["sat_success_with_repair_pct"] = 100.0 * sat_repairs / sat_ok if sat_ok else 0.0
 
     return stats, curve
 

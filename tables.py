@@ -27,9 +27,9 @@ import shutil
 
 # CONFIGURATION MATRIX
 MAPS = {"Paris_1_256"}#, "random-32-32-20",  "warehouse-20-40-10-2-1", "lt_gallowstemplar_n", "room-64-64-16"}
-INSTANCES_PER_MAP = 10
+INSTANCES_PER_MAP = 1
 AGENT_COUNTS      = [100]#, 200, 300, 400]#, 200, 300, 400] #[100, 500, 1000] # rozdělit na malé a velké mapy (maximálně 15 s pro initial solution)
-TIMEOUTS          = [30] 
+TIMEOUTS          = [5] 
 SUBMAP_SIDES      = [5]
 MIX_PROBS         = [50]#[80, 50, 20] # 0 and 100 is generated outside the MIX
 PURE_REPLANS     = ["PP"]  # pure replanners to test
@@ -78,6 +78,7 @@ RE_RS = re.compile(
     r"final_soc\s*=\s*(\d+).*?"
     r"initial_soc\s*=\s*(\d+).*?"
     r"failed_iterations\s*=\s*(\d+).*?"
+    r"succesful_iterations\s*=\s*(\d+).*?"
     r"outer_iterations\s*=\s*(\d+)"
 )
 RE_SOC_POST = re.compile(r"\[STAT\] sum_of_costs after recomputation: (\d+)")
@@ -226,10 +227,12 @@ def parse_log(log_path: Path) -> tuple[dict, list[int]]:
                  stats["final_soc"],
                  stats["initial_soc"],
                  stats["failed_iterations"],
+                 stats["succesful_iterations"],
                  stats["outer_iterations"]) = (
                     float(m[1]), float(m[2]), float(m[3]), float(m[4]),
                     int(m[5]), int(m[6]), int(m[7]), int(m[8]),
-                    int(m[9]), int(m[10]), int(m[11]), int(m[12])
+                    int(m[9]), int(m[10]), int(m[11]),
+                    int(m[12]), int(m[13])
                 )
             elif m := RE_SOC_INLINE.search(line):
                 curve.append(int(m[1]))
@@ -242,6 +245,8 @@ def parse_log(log_path: Path) -> tuple[dict, list[int]]:
     stats.setdefault("sat_iters", 0)
     stats.setdefault("outer_iterations", 0)
     stats.setdefault("failed_iterations", 0)
+    stats.setdefault("succesful_iterations", 0)
+
 
     # Derived fields:
     # (1) Share of **successful SAT operator calls** among all SAT calls

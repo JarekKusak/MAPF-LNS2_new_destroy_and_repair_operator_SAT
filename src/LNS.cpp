@@ -582,9 +582,9 @@ bool LNS::run()
     auto dt = [&](auto t){ return ((fsec)(Time::now() - t)).count(); };
 
     // Open file for logging output
-    std::ofstream out("log.txt");
-    std::streambuf* coutbuf = std::cout.rdbuf();
-    std::cout.rdbuf(out.rdbuf());
+    //std::ofstream out("log.txt");
+    //std::streambuf* coutbuf = std::cout.rdbuf();
+    //std::cout.rdbuf(out.rdbuf());
 
     double sat_time_total   = 0.0; // pure SAT run
     double other_time_total = 0.0; // PP / CBS / InitLNS / validator
@@ -1000,7 +1000,7 @@ bool LNS::run()
 
     // --------------- END OF CALCULATION AND PRINTING OF STATISTICS ---------------
 
-    std::cout.rdbuf(coutbuf);
+    //std::cout.rdbuf(coutbuf);
     return true;
 }
 

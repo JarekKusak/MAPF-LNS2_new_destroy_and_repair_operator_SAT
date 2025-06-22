@@ -29,9 +29,9 @@ import shutil
 MAPS = {"Paris_1_256"}#, "random-32-32-20",  "warehouse-20-40-10-2-1", "lt_gallowstemplar_n", "room-64-64-16"}
 INSTANCES_PER_MAP = 1
 AGENT_COUNTS      = [100]#, 200, 300, 400]#, 200, 300, 400] #[100, 500, 1000] # rozdělit na malé a velké mapy (maximálně 15 s pro initial solution)
-TIMEOUTS          = [5] 
+TIMEOUTS          = [15] 
 SUBMAP_SIDES      = [5]
-MIX_PROBS         = [50]#[80, 50, 20] # 0 and 100 is generated outside the MIX
+MIX_PROBS         = [80]#, 50, 20] # 0 and 100 is generated outside the MIX
 PURE_REPLANS     = ["PP"]  # pure replanners to test
 SAT_HEURISTICS    = ["adaptive"]
 FALLBACK_DESTS    = ["Adaptive"]
@@ -79,7 +79,8 @@ RE_RS = re.compile(
     r"initial_soc\s*=\s*(\d+).*?"
     r"failed_iterations\s*=\s*(\d+).*?"
     r"succesful_iterations\s*=\s*(\d+).*?"
-    r"outer_iterations\s*=\s*(\d+)"
+    r"outer_iterations\s*=\s*(\d+).*?"
+    r"sat_repairs\s*=\s*(\d+)"
 )
 RE_SOC_POST = re.compile(r"\[STAT\] sum_of_costs after recomputation: (\d+)")
 
@@ -228,11 +229,12 @@ def parse_log(log_path: Path) -> tuple[dict, list[int]]:
                  stats["initial_soc"],
                  stats["failed_iterations"],
                  stats["succesful_iterations"],
-                 stats["outer_iterations"]) = (
+                 stats["outer_iterations"],
+                 stats["sat_repairs"]) = (
                     float(m[1]), float(m[2]), float(m[3]), float(m[4]),
                     int(m[5]), int(m[6]), int(m[7]), int(m[8]),
                     int(m[9]), int(m[10]), int(m[11]),
-                    int(m[12]), int(m[13])
+                    int(m[12]), int(m[13]), int(m[14])
                 )
             elif m := RE_SOC_INLINE.search(line):
                 curve.append(int(m[1]))
@@ -246,26 +248,34 @@ def parse_log(log_path: Path) -> tuple[dict, list[int]]:
     stats.setdefault("outer_iterations", 0)
     stats.setdefault("failed_iterations", 0)
     stats.setdefault("succesful_iterations", 0)
+    stats.setdefault("sat_repairs", 0)
 
 
     # Derived fields:
-    # (1) Share of **successful SAT operator calls** among all SAT calls
+    # the proportion of time spent in SAT operators to the time spent in (SAT + other) operators
     stats["sat_ratio_ops"] = (
         100.0 * stats["sat_runtime"] /
         (stats["sat_runtime"] + stats["other_runtime"])
         if (stats["sat_runtime"] + stats["other_runtime"]) else 0.0
     )
 
+    # share of SAT operators' time in the total runtime
     stats["sat_ratio"] = (
         100.0 * stats["sat_runtime"] / stats["runtime"]
         if stats["runtime"] else 0.0
     )
 
-    # (3) Percentage improvement of final SoC vs. initial SoC (positive = better)
+    # percentage improvement of final SoC vs. initial SoC (positive = better)
     if "initial_soc" in stats and stats["initial_soc"]:
         stats["soc_improvement_pct"] = 100.0 * (stats["initial_soc"] - stats["final_soc"]) / stats["initial_soc"]
     else:
         stats["soc_improvement_pct"] = 0.0
+
+    # number of SAT repairs performed
+    if stats.get("sat_ok", 0):
+        stats["sat_success_with_repair_pct"] = 100.0 * stats["sat_repairs"] / stats["sat_ok"]
+    else:
+        stats["sat_success_with_repair_pct"] = 0.0
 
     return stats, curve
 

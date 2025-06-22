@@ -636,7 +636,6 @@ bool LNS::run()
 
     stats_->initial_soc = initial_sum_of_costs;
     stats_->other_time_total += initial_solution_runtime;
-    stats_->other_iters++;
     other_time_total += initial_solution_runtime;
     runtime = initial_solution_runtime;
 
@@ -693,7 +692,7 @@ bool LNS::run()
         bool opSuccess = false;
 
         updateAllStats(current_iter);
-
+        succ = false;
         if (destroy_strategy == SAT) { // SAT is destroy operator merged with replan operator
             if (SATchosenIter) {
                 auto sat_begin_ts = Time::now();
@@ -711,8 +710,9 @@ bool LNS::run()
 
                 // --- SAT replan loop ------------------------------------------------
                 int sat_trials = 0;
-                while (!opSuccess && sat_trials < MAX_SAT_TRIALS && dt(start_time) < time_limit) {
-                    if (!generateNeighborBySAT())
+                while (!succ && sat_trials < MAX_SAT_TRIALS && dt(start_time) < time_limit) {
+                    opSuccess = generateNeighborBySAT();
+                    if (!opSuccess)
                         continue;
 
                     /* --------- backup old paths and empty path_table --------- */
@@ -725,21 +725,36 @@ bool LNS::run()
                         neighbor.old_sum_of_costs += (int)agents[a].path.size() - 1;
                     }
 
-                    opSuccess = runSAT();
+                    succ = runSAT();
                     ++sat_trials;
                 }
                 // --------------------------------------------------------------------
+
+                if (!succ) { // if SAT failed to replan, penalize neighborhood
+                    // --- penalize neighborhood ---
+                    for (int a : neighbor.agents) {
+                        ignored_agents_with_timestep.insert({a, neighbor.T_sync});   // postpone
+                        agents[a].stats.failed_replans++;                            // increment
+                    }
+
+                    // slight decay for toxic agent
+                    if (neighbor.key_agent_id >= 0) {
+                        auto& st = agents[neighbor.key_agent_id].stats;
+                        st.delay_max = std::max(0, st.delay_max - 1);
+                    }
+                    num_of_failures++;
+                }
 
                 sat_elapsed = dt(sat_begin_ts);
                 sat_time_total += sat_elapsed;
                 stats_->sat_iters++;
             }
             else SAT_DBG("Random chance did not select SAT operator, using default destroy strategy " << fallback_destroy_strategy << " with replan algo " << fallback_replan_algo);
-            SAT_DBG("opSuccess value: " << opSuccess);
+
+            SAT_DBG("succ value: " << succ);
         }
 
-        // Fallback and SAT-failed guards
-        if (!opSuccess && !SATchosenIter)
+        if (!succ && !SATchosenIter) // Fallback and SAT-failed guards
         {
             auto other_begin_ts = Time::now();
             // fallback neighbor generation
@@ -797,15 +812,10 @@ bool LNS::run()
                     exit(-1);
             }
 
-            if (!opSuccess) {
-                // započítáme neúspěšný pokus do statistik,
-                // aby iteration_stats.size() odráželo skutečný počet iterací
+            if (!opSuccess) { // if destroy operator failed, don't count the iteration
                 runtime = ((fsec)(Time::now() - start_time)).count();
-                iteration_stats.emplace_back(neighbor.agents.size(),
-                                             sum_of_costs, runtime, replan_algo_name);
-                num_of_failures++;
                 other_time_total += dt(iter_begin_ts);
-                continue;   // na další iteraci
+                continue;
             }
 
             neighbor.old_paths.resize(neighbor.agents.size());
@@ -827,35 +837,12 @@ bool LNS::run()
             other_time_total += other_elapsed;
             stats_->other_iters++;
         }
-        else if (!opSuccess && SATchosenIter) {
-            // --- penalize neighborhood ---
-            for (int a : neighbor.agents) {
-                ignored_agents_with_timestep.insert({a, neighbor.T_sync});   // postpone
-                agents[a].stats.failed_replans++;                            // increment
-            }
 
-            // slight decay for toxic agent
-            if (neighbor.key_agent_id >= 0) {
-                auto& st = agents[neighbor.key_agent_id].stats;
-                st.delay_max = std::max(0, st.delay_max - 1);
-            }
-            // SAT was the chosen operator but didn’t find a solution within the limits:
-            // account overhead and continue with next outer iteration*/
-
+        if (!succ) { // if non above succeeded
             double iter_total = dt(iter_begin_ts);
             double accounted  = sat_elapsed + other_elapsed;
             overhead_total   += std::max(0.0, iter_total - accounted);
-
-            num_of_failures++;
-
-            continue;
-        }
-        else succ = opSuccess; // opSuccess = true => runSAT completed
-
-        if (!succ) {
-            double iter_total = dt(iter_begin_ts);
-            double accounted  = sat_elapsed + other_elapsed;
-            overhead_total   += std::max(0.0, iter_total - accounted);
+            iteration_stats.emplace_back(neighbor.agents.size(), sum_of_costs, runtime, replan_algo_name);
             continue;
         }
 
@@ -967,7 +954,7 @@ bool LNS::run()
     stats_->overhead_total = overhead_total;
     stats_->final_soc = sum_of_costs;
     stats_->failed_iterations = num_of_failures;
-    stats_->outer_iterations = iteration_stats.size();           // total attempts
+    stats_->outer_iterations = iteration_stats.size(); // total attempts
 
     // Debug / final log (you can overwrite with classic SAT_DBG or save to file)
     SAT_STAT("wall_runtime="  << stats_->wall_runtime

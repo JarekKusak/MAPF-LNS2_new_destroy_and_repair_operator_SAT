@@ -362,8 +362,8 @@ void LNS::updateComponentWeights(int metric_index, double delta) {
 // --------------------------------------------------------
 bool LNS::runSAT()
 {
-    SAT_DBG("[REPAIR] SAT destroy operator called.");
-    SAT_DBG("[REPAIR] SAT operator – launching subproblem FOR OPTIMIZATION.");
+    SAT_DBG("SAT destroy operator called.");
+    SAT_DBG("SAT operator – launching subproblem FOR OPTIMIZATION.");
 
     const auto& agents_to_replan = neighbor.agents;
     const auto& submap           = neighbor.submap;
@@ -880,25 +880,18 @@ bool LNS::run()
 
             SAT_DBG("Validate solution immediately after SAT success.");
 
-            auto val_begin = Time::now();
-            bool valid = true;
+
             try {
-                validateSolution();
-            } catch (const ValidationException& e) {
-                valid = false; // repair
+                //auto val_begin = Time::now();
+                validateSolution(); // takes a lot of time...
+                SAT_DBG("No problems after SAT replan.");
             }
-            double val_elapsed = dt(val_begin);
-            overhead_total   += val_elapsed;     // overhead
-
-            if (!valid) {
-                auto rep_begin = Time::now();
-                doInitLNSRepair("after SAT validation failure");
+            catch (const ValidationException& e) {
+                SAT_DBG("Problem after SAT: " << e.what());
+                // unify
+                doInitLNSRepair("because problem occurred after SAT (should be applied only for conflicts...)");
                 stats_->sat_repairs++;
-                double rep_elapsed = dt(rep_begin);
-                other_elapsed   += rep_elapsed;  // other operator runtime
-                other_time_total += rep_elapsed;
             }
-
         } else sum_of_costs += neighbor.sum_of_costs - neighbor.old_sum_of_costs;
 
         runtime = ((fsec)(Time::now() - start_time)).count();
@@ -975,7 +968,9 @@ bool LNS::run()
                                        << " succesful_iterations=" << stats_->outer_iterations - stats_->failed_iterations
                                        << " outer_iterations="     << stats_->outer_iterations
                                        << " sat_repairs="          << stats_->sat_repairs);
-    double diff = runtime - (sat_time_total + other_time_total + overhead_total);
+    double diff = runtime - (sat_time_total
+                             + other_time_total
+                             + overhead_total);
     if (fabs(diff) > 1e-3)
         SAT_DBG("[TIME] missing " << diff << " s  (should be ~0)");
 

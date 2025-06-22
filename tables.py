@@ -26,12 +26,12 @@ import matplotlib.pyplot as plt
 import shutil
 
 # CONFIGURATION MATRIX
-MAPS = {"Paris_1_256"}#, "random-32-32-20",  "warehouse-20-40-10-2-1", "lt_gallowstemplar_n", "room-64-64-16"}
-INSTANCES_PER_MAP = 1
-AGENT_COUNTS      = [100]#, 200, 300, 400]#, 200, 300, 400] #[100, 500, 1000] # rozdělit na malé a velké mapy (maximálně 15 s pro initial solution)
-TIMEOUTS          = [15] 
+MAPS = {"Paris_1_256", "random-32-32-20",  "warehouse-20-40-10-2-1", "lt_gallowstemplar_n", "room-64-64-16"}
+INSTANCES_PER_MAP = 10
+AGENT_COUNTS      = [100, 200, 300, 400]#, 200, 300, 400] #[100, 500, 1000] # rozdělit na malé a velké mapy (maximálně 15 s pro initial solution)
+TIMEOUTS          = [30] 
 SUBMAP_SIDES      = [5]
-MIX_PROBS         = [80]#, 50, 20] # 0 and 100 is generated outside the MIX
+MIX_PROBS         = [80, 50, 20] # 0 and 100 is generated outside the MIX
 PURE_REPLANS     = ["PP"]  # pure replanners to test
 SAT_HEURISTICS    = ["adaptive"]
 FALLBACK_DESTS    = ["Adaptive"]
@@ -73,6 +73,7 @@ RE_RS = re.compile(
     r"overhead\s*=\s*([\d\.eE+-]+).*?"
     r"sat_calls\s*=\s*(\d+).*?"
     r"sat_iters\s*=\s*(\d+).*?"
+    r"other_iters\s*=\s*(\d+).*?"
     r"sat_ok\s*=\s*(\d+).*?"
     r"sat_fail\s*=\s*(\d+).*?"
     r"final_soc\s*=\s*(\d+).*?"
@@ -82,6 +83,7 @@ RE_RS = re.compile(
     r"outer_iterations\s*=\s*(\d+).*?"
     r"sat_repairs\s*=\s*(\d+)"
 )
+
 RE_SOC_POST = re.compile(r"\[STAT\] sum_of_costs after recomputation: (\d+)")
 
 RE_SOC_INLINE = re.compile(r"\[SOC\]\s+(\d+)")
@@ -165,7 +167,8 @@ def main():
     df_runtime = df[[
         "map", "inst", "k",
         "algo", "satProb", "destFallback", "algoFallback",
-        "sat_runtime", "other_runtime", "sat_ratio_ops", "sat_ratio"
+        "sat_runtime", "other_runtime",
+        "sat_ratio_ops", "sat_ratio"
     ]]
     df_runtime.to_csv(RESULTS_DIR / "results_T3_runtime.csv", index=False)
 
@@ -218,23 +221,24 @@ def parse_log(log_path: Path) -> tuple[dict, list[int]]:
                 stats["other_runtime"] = float(m[1])
             elif m := RE_RS.search(line):
                 (stats["runtime"],
-                 stats["sat_runtime"],
-                 stats["other_runtime"],
-                 stats["overhead_runtime"],
-                 stats["sat_calls"],
-                 stats["sat_iters"],
-                 stats["sat_ok"],
-                 stats["sat_fail"],
-                 stats["final_soc"],
-                 stats["initial_soc"],
-                 stats["failed_iterations"],
-                 stats["succesful_iterations"],
-                 stats["outer_iterations"],
-                 stats["sat_repairs"]) = (
+                stats["sat_runtime"],
+                stats["other_runtime"],
+                stats["overhead_runtime"],
+                stats["sat_calls"],
+                stats["sat_iters"],
+                stats["other_iters"],
+                stats["sat_ok"],
+                stats["sat_fail"],
+                stats["final_soc"],
+                stats["initial_soc"],
+                stats["failed_iterations"],
+                stats["succesful_iterations"],
+                stats["outer_iterations"],
+                stats["sat_repairs"]) = (
                     float(m[1]), float(m[2]), float(m[3]), float(m[4]),
-                    int(m[5]), int(m[6]), int(m[7]), int(m[8]),
-                    int(m[9]), int(m[10]), int(m[11]),
-                    int(m[12]), int(m[13]), int(m[14])
+                    int(m[5]), int(m[6]), int(m[7]), int(m[8]), int(m[9]),
+                    int(m[10]), int(m[11]), int(m[12]), int(m[13]),
+                    int(m[14]), int(m[15])
                 )
             elif m := RE_SOC_INLINE.search(line):
                 curve.append(int(m[1]))
@@ -248,8 +252,6 @@ def parse_log(log_path: Path) -> tuple[dict, list[int]]:
     stats.setdefault("outer_iterations", 0)
     stats.setdefault("failed_iterations", 0)
     stats.setdefault("succesful_iterations", 0)
-    stats.setdefault("sat_repairs", 0)
-
 
     # Derived fields:
     # the proportion of time spent in SAT operators to the time spent in (SAT + other) operators
@@ -272,10 +274,9 @@ def parse_log(log_path: Path) -> tuple[dict, list[int]]:
         stats["soc_improvement_pct"] = 0.0
 
     # number of SAT repairs performed
-    if stats.get("sat_ok", 0):
-        stats["sat_success_with_repair_pct"] = 100.0 * stats["sat_repairs"] / stats["sat_ok"]
-    else:
-        stats["sat_success_with_repair_pct"] = 0.0
+    stats["sat_success_with_repair_pct"] = (
+        100.0 * stats["sat_repairs"] / stats["sat_ok"] if stats["sat_ok"] else 0
+    )
 
     return stats, curve
 

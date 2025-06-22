@@ -7,6 +7,7 @@ struct RunStats
     double sat_time_total   = 0.0;   // celkový čas strávený v SAT solveru
     double other_time_total = 0.0;   // re-plan (PP/CBS/…) + init-solution
     double overhead_total   = 0.0;   // rámcový “overhead”
+    double validation_time_total = 0.0;
     double sat_ratio_ops    = 0.0;
     double sat_ratio        = 0.0;
 

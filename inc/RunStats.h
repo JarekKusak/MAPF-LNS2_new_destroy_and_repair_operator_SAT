@@ -12,6 +12,7 @@ struct RunStats
 
     // --- počty volání / iterací ---
     std::size_t outer_iterations = 0; // vnější (LNS) iterace
+    std::size_t other_iters      = 0;
     std::size_t sat_iters        = 0; // kolikrát byl jako operátor zvolen SAT
     std::size_t sat_calls        = 0; // kolikrát se SAT skutečně spustil
     std::size_t sat_ok           = 0; // úspěšné řešení od SAT

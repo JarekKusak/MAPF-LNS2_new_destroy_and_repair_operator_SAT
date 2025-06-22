@@ -636,19 +636,9 @@ bool LNS::run()
 
     stats_->initial_soc = initial_sum_of_costs;
     stats_->other_time_total += initial_solution_runtime;
+    stats_->other_iters++;
     other_time_total += initial_solution_runtime;
     runtime = initial_solution_runtime;
-    // ------------------------------------------------------------
-    // Iteration counters (outer iterations = all attempts,
-    // incl. the initial solution that is already stored in
-    // iteration_stats).  We start at 1 to account for the
-    // initial solution that has just been pushed to
-    // iteration_stats.
-    // ------------------------------------------------------------
-    size_t outer_iters = 1;
-    size_t succ_iters = 1;
-    num_of_failures = 0;
-    const size_t max_outer = num_of_iterations;     // same semantics as original code
 
     if (!succ) {
         std::cout << "[ERROR] Failed to find an initial solution in "
@@ -672,7 +662,7 @@ bool LNS::run()
     bool SATchosenIter  = false;   // was SAT chosen for this iteration?
 
     // --------------- OPTIMIZED SOLUTION COMPUTATION ---------------
-    while (runtime < time_limit && outer_iters <= max_outer) {
+    while (runtime < time_limit && iteration_stats.size() <= num_of_iterations) {
         auto iter_begin_ts = Time::now();
 
         double sat_elapsed   = 0.0;
@@ -808,10 +798,14 @@ bool LNS::run()
             }
 
             if (!opSuccess) {
+                // započítáme neúspěšný pokus do statistik,
+                // aby iteration_stats.size() odráželo skutečný počet iterací
+                runtime = ((fsec)(Time::now() - start_time)).count();
+                iteration_stats.emplace_back(neighbor.agents.size(),
+                                             sum_of_costs, runtime, replan_algo_name);
+                num_of_failures++;
                 other_time_total += dt(iter_begin_ts);
-                iteration_stats.emplace_back(neighbor.agents.size(), sum_of_costs, runtime, replan_algo_name);
-                outer_iters++;
-                continue;
+                continue;   // na další iteraci
             }
 
             neighbor.old_paths.resize(neighbor.agents.size());
@@ -831,6 +825,7 @@ bool LNS::run()
 
             other_elapsed = dt(other_begin_ts);
             other_time_total += other_elapsed;
+            stats_->other_iters++;
         }
         else if (!opSuccess && SATchosenIter) {
             // --- penalize neighborhood ---
@@ -853,8 +848,6 @@ bool LNS::run()
 
             num_of_failures++;
 
-            outer_iters++;
-            iteration_stats.emplace_back(neighbor.agents.size(), sum_of_costs, runtime, replan_algo_name);
             continue;
         }
         else succ = opSuccess; // opSuccess = true => runSAT completed
@@ -863,8 +856,6 @@ bool LNS::run()
             double iter_total = dt(iter_begin_ts);
             double accounted  = sat_elapsed + other_elapsed;
             overhead_total   += std::max(0.0, iter_total - accounted);
-            outer_iters++;
-            iteration_stats.emplace_back(neighbor.agents.size(), sum_of_costs, runtime, replan_algo_name);
             continue;
         }
 
@@ -941,9 +932,7 @@ bool LNS::run()
 
         iteration_stats.emplace_back(neighbor.agents.size(), sum_of_costs, runtime, replan_algo_name);
 
-        succ_iters++;
         // prepare another outer iteration – we will draw again
-        outer_iters++;   // count this completed outer iteration
         decision_taken = false;
         SATchosenIter  = false;
     }
@@ -978,7 +967,7 @@ bool LNS::run()
     stats_->overhead_total = overhead_total;
     stats_->final_soc = sum_of_costs;
     stats_->failed_iterations = num_of_failures;
-    stats_->outer_iterations = outer_iters; // iteration_stats.size();           // total attempts
+    stats_->outer_iterations = iteration_stats.size();           // total attempts
 
     // Debug / final log (you can overwrite with classic SAT_DBG or save to file)
     SAT_STAT("wall_runtime="  << stats_->wall_runtime
@@ -987,12 +976,13 @@ bool LNS::run()
                                        << " overhead="           << stats_->overhead_total
                                        << " sat_calls="          << stats_->sat_calls
                                        << " sat_iters="          << stats_->sat_iters
+                                       << " other_iters="        << stats_->other_iters
                                        << " sat_ok="             << stats_->sat_ok
                                        << " sat_fail="           << stats_->sat_fail
                                        << " final_soc="          << stats_->final_soc
                                        << " initial_soc="        << stats_->initial_soc
                                        << " failed_iterations="  << stats_->failed_iterations
-                                       << " succesful_iterations=" << succ_iters
+                                       << " succesful_iterations=" << stats_->outer_iterations - stats_->failed_iterations
                                        << " outer_iterations="     << stats_->outer_iterations);
     double diff = runtime - (sat_time_total + other_time_total + overhead_total);
     if (fabs(diff) > 1e-3)

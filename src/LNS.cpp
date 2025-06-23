@@ -452,7 +452,7 @@ bool LNS::runSAT()
         double c_delta = double(st.prev_conflict_cnt - st.conflict_cnt);
         double s_delta =         st.prev_stretch_ratio - st.stretch_ratio; // drop  ==> positive
         // this ensures that the recency component gets a positive number only when the agent moves forward
-        double l_delta = (delta>0) ? (st.last_replanned - st.prev_last_replanned) : 0; // only if SoC dropped
+        double l_delta = (delta > 0) ? (st.last_replanned - st.prev_last_replanned) : 0; // only if SoC dropped
 
         // find the index of the component with the largest *relative* contribution (>0)
         std::array<double,4> deltas = {d_delta, c_delta, s_delta, l_delta};

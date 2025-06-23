@@ -700,7 +700,7 @@ bool LNS::run()
                 usedSAT = true;
                 SAT_DBG("Using SAT operator (destroy+repair SAT).");
 
-                if (time_limit - runtime < 1) { // save snapshot backup only when few time is left
+                if (time_limit - runtime < 3) { // save snapshot backup only when few time is left
                     // backup snapshot
                     iter_backup_soc = sum_of_costs;
                     iter_backup_valid = true;

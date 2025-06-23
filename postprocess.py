@@ -123,6 +123,18 @@ sig = (df.groupby(["map", "k"])
          .reset_index())
 sig.to_csv(RES / "significance.csv", index=False)
 
+# ===========================
+# Kontrola, proč chybí p-values
+# ===========================
+missing = sig[sig["p"].isna()]
+if not missing.empty:
+    print("\nKontrola map a k bez p-value (možná shodné final_soc):")
+    for _, row in missing.iterrows():
+        map_name, k_val = row["map"], row["k"]
+        data_pp = df[(df["map"] == map_name) & (df["k"] == k_val) & (df["algo"] == "PP") & (df["satProb"] == 0)]["final_soc"]
+        data_sat = df[(df["map"] == map_name) & (df["k"] == k_val) & (df["algo"] == "SAT") & (df["satProb"] == 100)]["final_soc"]
+        print(f"  {map_name}, k={k_val}: PP instances={len(data_pp)}, SAT instances={len(data_sat)}. Final SOC PP: {data_pp.unique()}, SAT: {data_sat.unique()}")
+
 
 print("Post-processing dokončeno ✔")
 

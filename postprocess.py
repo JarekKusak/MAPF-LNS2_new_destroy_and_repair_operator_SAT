@@ -36,7 +36,7 @@ agg = (
       .agg(mean_runtime      = ("runtime", "mean"),
            std_runtime       = ("runtime", "std"),
            mean_impr_pct     = ("soc_improvement_pct", "mean"),
-           mean_sat_ratio    = ("sat_ratio_ops", "mean"),
+           mean_sat_ratio_ops    = ("sat_ratio_ops", "mean"),
            mean_repairs_pct  = ("sat_success_with_repair_pct", "mean"),
            mean_sat_succ_rate = ("sat_succ_rate_run", "mean"),
            mean_iter_succ_rate = ("iter_succ_rate_run", "mean"),
@@ -44,7 +44,8 @@ agg = (
       .reset_index()
 )
 
-agg.to_csv(RES / "summary.csv", index=False)
+agg.to_csv(RES / "results_compact.csv", index=False)   # hlavní tabulka do práce
+agg.to_csv(RES / "summary.csv", index=False)           # zpětná kompatibilita
 
 # ---------------- grafy -------------------
 # ------------------------------------------------------------------
@@ -115,13 +116,19 @@ def sig_test(sub):
     pp  = sub[(sub.algo == "PP")  & (sub.satProb == 0)]["final_soc"]
     sat = sub[(sub.algo == "SAT") & (sub.satProb == 100)]["final_soc"]
     # Wilcoxon požaduje shodný počet pozorování –- jinak vrátíme NaN
-    return wilcoxon(pp, sat).pvalue if len(pp) == len(sat) and len(pp) >= 3 else np.nan
+    if len(pp) == len(sat) and len(pp) >= 3:
+        return pd.Series({
+            "p": wilcoxon(pp, sat).pvalue,
+            "n_pairs": len(pp)
+        })
+    else:
+        return pd.Series({"p": np.nan, "n_pairs": len(pp)})
 
 sig = (df.groupby(["map", "k"])
          .apply(sig_test)
-         .rename("p")
          .reset_index())
-sig.to_csv(RES / "significance.csv", index=False)
+# sig.to_csv(RES / "significance.csv", index=False)  # removed to avoid duplicate files
+sig.to_csv(RES / "signif_pp_vs_sat.csv", index=False)
 
 # ===========================
 # Kontrola, proč chybí p-values
@@ -232,7 +239,7 @@ def _k_vs_metric_profile(df: pd.DataFrame, metric: str, map_name: str = "all_map
 
     ax.set_xlabel("Počet agentů k")
     ax.set_ylabel(PROFILE_METRICS.get(metric, {"label": metric}).get("label", metric))
-    ax.set_title(f"{map_name}: trend {metric} vs k (profilový styl)") 
+    ax.set_title(f"{map_name}: trend {metric} vs k") 
     ax.legend(title="konfigurace", bbox_to_anchor=(1.02, 1))
     stem = f"profile_{metric}_vs_k_{map_name}"
     _save(fig, stem)
@@ -241,3 +248,50 @@ def _k_vs_metric_profile(df: pd.DataFrame, metric: str, map_name: str = "all_map
 all_maps_agg = agg.groupby(["k", "algo", "satProb"])["mean_impr_pct"].mean().reset_index()
 for metric in ["mean_impr_pct"]:
     _k_vs_metric_profile(all_maps_agg, metric, "all_maps")
+
+
+
+# ================================================================
+# Agregovaný profil (průměr přes mapy) – pouze 10 bodů na ose X
+# ================================================================
+
+KS_TO_PLOT = [100, 200, 300, 400]
+
+def _profile_mean_over_maps(k_value: int):
+    """Průměrné %-zlepšení SoC přes všechny mapy.
+    X-ová osa = index instance 1..10 (shodná numerace napříč mapami)."""
+    sub = df[df["k"] == k_value]
+    if sub.empty:
+        return
+
+    # vynechat duplicitní „SAT 0 %“
+    sub = sub[~((sub["algo"] == "SAT") & (sub["satProb"] == 0))]
+
+    # Vypočítat průměr přes mapy pro každou instanci a konfiguraci
+    mean_per_inst = (
+        sub.groupby(["inst", "algo", "satProb"])["soc_improvement_pct"]
+           .mean()
+           .reset_index()
+    )
+
+    fig, ax = plt.subplots(figsize=(6, 4))
+
+    for (algo, p), grp in mean_per_inst.groupby(["algo", "satProb"]):
+        # řadíme podle hodnoty metriky (vzestupně) – stejně jako u profilů jednotlivých map
+        grp_sorted = grp.sort_values("soc_improvement_pct")
+        x = np.arange(1, len(grp_sorted) + 1)
+        y = grp_sorted["soc_improvement_pct"]
+        label = f"{algo} / {p}%" if algo == "SAT" else "PP"
+        linestyle = "--" if algo == "SAT" else "-"
+        ax.plot(x, y, linestyle=linestyle, marker="o", label=label)
+
+    ax.set_xlabel("Index instance (1-10)")
+    ax.set_ylabel("%-zlepšení SoC (průměr přes mapy)")
+    ax.set_title(f"Agregovaný profil všech map, k={k_value}")
+    ax.legend(title="konfigurace", bbox_to_anchor=(1.02, 1))
+
+    stem = f"profilekagg_soc_improvement_pct_allmaps_k{k_value}"
+    _save(fig, stem)
+
+for k_val in KS_TO_PLOT:
+    _profile_mean_over_maps(k_val)

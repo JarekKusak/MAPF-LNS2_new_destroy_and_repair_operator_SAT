@@ -381,7 +381,6 @@ bool LNS::runSAT()
         for (auto a : agents_to_replan)
             path_table.insertPath(agents[a].id, agents[a].path); // return old paths of agents
 
-        std::cout << "SAT solver failed to find a valid solution." << std::endl;
         return false;
     }
     else { // if succesful replan, add current_iter to agents' stats (for adaptive heur)
@@ -700,7 +699,7 @@ bool LNS::run()
                 usedSAT = true;
                 SAT_DBG("Using SAT operator (destroy+repair SAT).");
 
-                if (time_limit - runtime < 3) { // save snapshot backup only when few time is left
+                if (time_limit - runtime < 10) { // save snapshot backup only when few time is left
                     // backup snapshot
                     iter_backup_soc = sum_of_costs;
                     iter_backup_valid = true;
@@ -866,7 +865,7 @@ bool LNS::run()
         // ------------------------------------------------
         // After SAT => validation and possible conflict repair
         // ------------------------------------------------
-        if (destroy_strategy == SAT && opSuccess && SATchosenIter)
+        if (destroy_strategy == SAT && succ && SATchosenIter)
         {
             /* ---  synchronize global sum_of_costs *before* validation  ---
                runSAT has just changed the paths of selected agents and filled
@@ -889,7 +888,13 @@ bool LNS::run()
             catch (const ValidationException& e) {
                 SAT_DBG("Problem after SAT: " << e.what());
                 // unify
+                auto repair_begin_ts = Time::now();
                 doInitLNSRepair("because problem occurred after SAT (should be applied only for conflicts...)");
+                double repair_elapsed = ((fsec)(Time::now() - repair_begin_ts)).count();
+                other_elapsed   += repair_elapsed;      // account in‑iteration
+                other_time_total += repair_elapsed;     // global bucket
+                stats_->other_time_total += repair_elapsed;
+                stats_->other_iters++;                  // count as one "other" op
                 stats_->sat_repairs++;
             }
         } else sum_of_costs += neighbor.sum_of_costs - neighbor.old_sum_of_costs;
@@ -899,6 +904,11 @@ bool LNS::run()
         SAT_DBG("Recomputing sum_of_cost by dividing neighbor.sum_of_costs and neighbor.old_sum_of_costs");
         SAT_DBG("sum_of_costs after recomputation: " << sum_of_costs);
         soc_curve.push_back(sum_of_costs);
+
+        if (sum_of_costs == prev_iter_sum_of_costs && SATchosenIter && succ) // TODO: zkontrolovat
+            stats_->sat_no_improve++;
+
+        prev_iter_sum_of_costs = sum_of_costs;
 
         if (screen >= 1)
         {
@@ -967,7 +977,8 @@ bool LNS::run()
                                        << " failed_iterations="  << stats_->failed_iterations
                                        << " succesful_iterations=" << stats_->outer_iterations - stats_->failed_iterations
                                        << " outer_iterations="     << stats_->outer_iterations
-                                       << " sat_repairs="          << stats_->sat_repairs);
+                                       << " sat_repairs="          << stats_->sat_repairs
+                                       << " sat_no_improve="       << stats_->sat_no_improve);
     double diff = runtime - (sat_time_total
                              + other_time_total
                              + overhead_total);
@@ -1557,6 +1568,78 @@ void LNS::randomWalk(int agent_id, int start_location, int start_timestep,
         if (next_locs.empty() || conflicting_agents.size() >= neighbor_size)
             break;
     }
+}
+
+// ---------------------------------------------------------------------------
+// validateSolutionFast ‒ O(Σ|Pi|) místo O(N·Σ|Pi|).
+// Zkontroluje pouze (a) strukturální korektnost každé cesty,
+//                 (b) vrcholové a hranné konflikty,
+//                 (c) konflikt v cílovém vrcholu
+// a (d) součet nákladů.  Používá pomocné hash-tabulky.
+// ---------------------------------------------------------------------------
+void LNS::validateSolutionFast() const
+{
+    auto edgeKey = [](int u, int v) -> uint64_t
+    { return (uint64_t)u << 32 | (uint32_t)v; };
+
+    int makespan = 0;
+    for (const auto& ag : agents)
+        makespan = std::max(makespan, (int)ag.path.size() - 1);
+
+    // pro každý časový krok hash-tabulka obsazených vrcholů / hran
+    std::vector<std::unordered_map<int,int>>      V(makespan + 1);
+    std::vector<std::unordered_map<uint64_t,int>> E(makespan + 1);
+
+    size_t cost_check = 0;
+
+    for (const auto& ag : agents)
+    {
+        if (ag.path.empty())
+            throw ValidationException("Empty path of agent " + std::to_string(ag.id));
+
+        if (ag.path.front().location != ag.path_planner->start_location ||
+            ag.path.back().location  != ag.path_planner->goal_location)
+            throw ValidationException("Start/goal mismatch of agent " + std::to_string(ag.id));
+
+        // 1 – lokální validMove
+        for (int t = 1; t < (int)ag.path.size(); ++t)
+            if (!instance.validMove(ag.path[t-1].location, ag.path[t].location))
+                throw ValidationException("Invalid move of agent " + std::to_string(ag.id));
+
+        // 2 – globální konflikty
+        for (int t = 0; t < (int)ag.path.size(); ++t)
+        {
+            int v = ag.path[t].location;
+            auto [it,ins] = V[t].emplace(v, ag.id);
+            if (!ins)   // vrcholový konflikt
+                throw ValidationException("Vertex conflict a" +
+                                          std::to_string(it->second) + "/a" +
+                                          std::to_string(ag.id) + " @" +
+                                          std::to_string(v) + " t=" + std::to_string(t));
+
+            if (t)
+            {
+                uint64_t rev = edgeKey(v, ag.path[t-1].location);
+                if (E[t-1].count(rev))      // hranný (swap) konflikt
+                    throw ValidationException("Edge conflict a" +
+                                              std::to_string(E[t-1][rev]) + "/a" +
+                                              std::to_string(ag.id) + " t=" + std::to_string(t));
+                E[t].emplace(edgeKey(ag.path[t-1].location, v), ag.id);
+            }
+        }
+
+        // 3 – konflikt v cíli (jiný agent vstoupí na cíl po skončení první cesty)
+        int goal = ag.path.back().location;
+        for (int t = (int)ag.path.size(); t <= makespan; ++t)
+            if (V[t].count(goal) && V[t][goal] != ag.id)
+                throw ValidationException("Target conflict at " + std::to_string(goal));
+
+        cost_check += ag.path.size() - 1;
+    }
+
+    // 4 – sum of costs
+    if (cost_check != (size_t)sum_of_costs)
+        throw ValidationException("SoC mismatch fast validator");
 }
 
 void LNS::validateSolution() const

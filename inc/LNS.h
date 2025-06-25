@@ -168,5 +168,6 @@ private:
     std::shared_ptr<RunStats> stats_;
     const int SAT_RETRY_LIMIT = 5;
     std::vector<int> soc_curve;
-    void validateConflicts() const;
+    void validateSolutionFast() const;
+    int prev_iter_sum_of_costs = 0;
 };

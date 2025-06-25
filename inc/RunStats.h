@@ -24,6 +24,7 @@ struct RunStats
     int final_soc        = -1;
     int failed_iterations = 0;
     int sat_repairs         = 0;
+    int sat_no_improve     = 0;
 
     // --- celkový wall-time ---
     double wall_runtime = 0.0;

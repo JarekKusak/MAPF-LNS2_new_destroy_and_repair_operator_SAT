@@ -26,12 +26,12 @@ import matplotlib.pyplot as plt
 import shutil
 
 # CONFIGURATION MATRIX
-MAPS = {"Paris_1_256", "random-32-32-20",  "warehouse-20-40-10-2-1", "lt_gallowstemplar_n", "room-64-64-16"}
+MAPS = {"random-32-32-20", "room-64-64-16", "Paris_1_256",   "warehouse-20-40-10-2-1", "lt_gallowstemplar_n" }
 INSTANCES_PER_MAP = 10
-AGENT_COUNTS      = [100, 200, 300, 400]#, 200, 300, 400] #[100, 500, 1000] # rozdělit na malé a velké mapy (maximálně 15 s pro initial solution)
+AGENT_COUNTS      = [100, 200, 300, 400] #[100, 500, 1000] # rozdělit na malé a velké mapy (maximálně 15 s pro initial solution)
 TIMEOUTS          = [30] 
 SUBMAP_SIDES      = [5]
-MIX_PROBS         = [80, 50, 20] # 0 and 100 is generated outside the MIX
+MIX_PROBS         = [20, 50, 80] # 0 and 100 is generated outside the MIX
 PURE_REPLANS     = ["PP"]  # pure replanners to test
 SAT_HEURISTICS    = ["adaptive"]
 FALLBACK_DESTS    = ["Adaptive"]
@@ -81,7 +81,8 @@ RE_RS = re.compile(
     r"failed_iterations\s*=\s*(\d+).*?"
     r"succesful_iterations\s*=\s*(\d+).*?"
     r"outer_iterations\s*=\s*(\d+).*?"
-    r"sat_repairs\s*=\s*(\d+)"
+    r"sat_repairs\s*=\s*(\d+).*?"
+    r"sat_no_improve\s*=\s*(\d+)"
 )
 
 RE_SOC_POST = re.compile(r"\[STAT\] sum_of_costs after recomputation: (\d+)")
@@ -160,6 +161,13 @@ def main():
     # CSV EXPORT 
 
     df = pd.DataFrame(records)
+
+    # Ensure optional columns are present so that the column selection below
+    # never fails (pure runs do not define these keys).
+    for col in ("destFallback", "algoFallback"):
+        if col not in df.columns:
+            df[col] = pd.NA
+
     df.to_csv(RESULTS_DIR / "results_all.csv", index=False)
     df[df.kind == "PURE"].to_csv(RESULTS_DIR / "results_T1_pure.csv", index=False)
     df[df.kind == "MIX" ].to_csv(RESULTS_DIR / "results_T2_mix.csv",  index=False)
@@ -234,11 +242,13 @@ def parse_log(log_path: Path) -> tuple[dict, list[int]]:
                 stats["failed_iterations"],
                 stats["succesful_iterations"],
                 stats["outer_iterations"],
-                stats["sat_repairs"]) = (
+                stats["sat_repairs"],
+                stats["sat_no_improve"]) = (
                     float(m[1]), float(m[2]), float(m[3]), float(m[4]),
                     int(m[5]), int(m[6]), int(m[7]), int(m[8]), int(m[9]),
                     int(m[10]), int(m[11]), int(m[12]), int(m[13]),
-                    int(m[14]), int(m[15])
+                    int(m[14]), int(m[15]),
+                    int(m[16])
                 )
             elif m := RE_SOC_INLINE.search(line):
                 curve.append(int(m[1]))
@@ -254,6 +264,7 @@ def parse_log(log_path: Path) -> tuple[dict, list[int]]:
     stats.setdefault("succesful_iterations", 0)
     stats.setdefault("sat_ok", 0)
     stats.setdefault("sat_repairs", 0)
+    stats.setdefault("sat_no_improve", 0)
 
     # Derived fields:
     # the proportion of time spent in SAT operators to the time spent in (SAT + other) operators
@@ -279,6 +290,9 @@ def parse_log(log_path: Path) -> tuple[dict, list[int]]:
     sat_ok      = stats.get("sat_ok", 0)
     sat_repairs = stats.get("sat_repairs", 0)
     stats["sat_success_with_repair_pct"] = 100.0 * sat_repairs / sat_ok if sat_ok else 0.0
+    stats["sat_no_improve_pct"] = (
+        100.0 * stats["sat_no_improve"] / sat_ok if sat_ok else 0.0
+    )
 
     return stats, curve
 

@@ -10,6 +10,7 @@ cmake_install.cmake
 lns
 exp*
 debug
+.DS_Store
 
 # logs / temporary outputs
 *.csv

@@ -29,7 +29,17 @@ df["sat_success_with_repair_pct"] = df.apply(
     lambda r: 100.0 * r.sat_repairs / r.sat_ok if r.sat_ok else np.nan,
     axis=1)
 
+# --- nový ukazatel: zda běh s voláním SAT nic nezlepšil -------------
+df["no_improvement_run"] = (
+    (df["sat_ok"] > 0) & (df["soc_improvement_pct"] == 0)
+)
+
 # ---------------- agregace ----------------
+# mean_runtime: průměr runtime
+# mean_impr_pct: průměr %-zlepšení SoC
+# mean_sat_ratio_ops: průměr podílu SAT v operacích
+# mean_repairs_pct: Prům. % SAT oprav
+# mean_no_improv: Podíl běhů, kdy SAT nic nezlepšil
 grp = ["map", "k", "algo", "satProb"]
 agg = (
     df.groupby(grp)
@@ -37,6 +47,7 @@ agg = (
            std_runtime       = ("runtime", "std"),
            mean_impr_pct     = ("soc_improvement_pct", "mean"),
            mean_sat_ratio_ops    = ("sat_ratio_ops", "mean"),
+           mean_no_improv   = ("no_improvement_run", "mean"),
            mean_repairs_pct  = ("sat_success_with_repair_pct", "mean"),
            mean_sat_succ_rate = ("sat_succ_rate_run", "mean"),
            mean_iter_succ_rate = ("iter_succ_rate_run", "mean"),

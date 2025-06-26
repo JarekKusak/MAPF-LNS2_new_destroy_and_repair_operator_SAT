@@ -25,6 +25,24 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import shutil
 
+
+# CONFIGURATION MATRIX  – pre-test
+MAPS             = {"Paris_1_256", "warehouse-20-40-10-2-1", "random-32-32-20"}
+INSTANCES_PER_MAP= 10
+AGENT_COUNTS     = [400]
+TIMEOUTS         = [30]
+SUBMAP_SIDES     = [3, 5, 7, 9]
+MIX_PROBS        = []
+PURE_REPLANS     = [] 
+SAT_HEURISTICS   = ["mostDelayed",
+                    "roundRobin",
+                    "adaptive"]
+FALLBACK_DESTS   = ["Adaptive"]
+FALLBACK_ALGOS   = ["PP"]
+MAX_ITERS        = [1_000_000]
+INCLUDE_PURE_SAT = True
+
+'''
 # CONFIGURATION MATRIX
 MAPS = {"random-32-32-20", "room-64-64-16", "Paris_1_256",   "warehouse-20-40-10-2-1", "lt_gallowstemplar_n" }
 INSTANCES_PER_MAP = 10
@@ -38,6 +56,7 @@ FALLBACK_DESTS    = ["Adaptive"]
 FALLBACK_ALGOS    = ["PP"]
 MAX_ITERS         = [1_000_000] # arbitrary long
 INCLUDE_PURE_SAT  = True
+'''
 
 # ──────────────────────────────────────────────────────────────────────────────
 # Runtime limits

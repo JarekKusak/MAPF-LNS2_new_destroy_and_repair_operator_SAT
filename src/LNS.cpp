@@ -699,14 +699,12 @@ bool LNS::run()
                 usedSAT = true;
                 SAT_DBG("Using SAT operator (destroy+repair SAT).");
 
-                if (time_limit - runtime < 10) { // save snapshot backup only when few time is left
-                    // backup snapshot
-                    iter_backup_soc = sum_of_costs;
-                    iter_backup_valid = true;
-                    iter_backup_paths.resize(agents.size());
-                    for (int i = 0; i < agents.size(); ++i)
-                        iter_backup_paths[i] = agents[i].path; // full deep-copy - INEFFECTIVE - lot of consumption memory and time
-                }
+                // backup snapshot
+                iter_backup_soc = sum_of_costs;
+                iter_backup_valid = true;
+                iter_backup_paths.resize(agents.size());
+                for (int i = 0; i < agents.size(); ++i)
+                    iter_backup_paths[i] = agents[i].path; // full deep-copy - INEFFECTIVE - lot of consumption memory and time
 
                 // --- SAT replan loop ------------------------------------------------
                 int sat_trials = 0;

@@ -66,15 +66,16 @@ OUT_PNG = True        # přepni na False, když chceš jen PDF
 
 def _save(fig: plt.Figure, stem: str):
     """Uloží figuru do results/{category}/png a results/{category}/pdf (bez okrajů)."""
-    category = stem.split('_')[0]
+    category = stem.split('_')[0]           # prvni část slouží jako složka
     png_dir = RES / category / "png"
     pdf_dir = RES / category / "pdf"
     png_dir.mkdir(parents=True, exist_ok=True)
     pdf_dir.mkdir(parents=True, exist_ok=True)
 
+    safe_stem = stem.replace("/", "_")      # nevkládat lomítka do názvu souboru
     if OUT_PNG:
-        fig.savefig(png_dir / f"{stem}.png", dpi=300, bbox_inches="tight")
-    fig.savefig(pdf_dir / f"{stem}.pdf", bbox_inches="tight")
+        fig.savefig(png_dir / f"{safe_stem}.png", dpi=300, bbox_inches="tight")
+    fig.savefig(pdf_dir / f"{safe_stem}.pdf", bbox_inches="tight")
     plt.close(fig)
 # ------------------------------------------------------------------
 
@@ -311,26 +312,75 @@ for metric in PROFILE_METRICS:
 # =========================
 # Agregovaný průměr soc_improvement_pct vs k
 # =========================
-def _average_improvement_plot(df: pd.DataFrame, map_name: str):
-    """Vykreslí průměr soc_improvement_pct pro všechny instance a konfigurace
-    na dané mapě v závislosti na k."""
-    fig, ax = plt.subplots(figsize=(6, 4))
-    for (algo, sat_prob), grp in df.groupby(["algo", "satProb"]):
-        ax.plot(grp["k"], grp["mean_impr_pct"],
-                marker="o",
-                linestyle="--" if algo == "SAT" else "-",
-                label=f"{algo} / {sat_prob}%" if algo == "SAT" else "PP")
+def _average_improvement_plot(map_name: str):
+    """Generate three avg‑improvement‑vs‑k plots for *map_name*:
+       1) plain means                → avg_plain_improvement_vs_k_<map>
+       2) means ± SD error‑bars      → avg_sd_improvement_vs_k_<map>
+       3) means ± SD + scatter points→ avg_sdpts_improvement_vs_k_<map>"""
+    df_map = df[(df["map"] == map_name) & (df["state"] == "OK")]
+    df_map = df_map[~((df_map["algo"] == "SAT") & (df_map["satProb"] == 0))]
 
-    ax.set_xlabel("Počet agentů k")
-    ax.set_ylabel("Průměrné zlepšení SoC (%)")
-    ax.set_title(f"{map_name}: Průměrné zlepšení SoC vs k")
-    ax.legend(title="konfigurace", bbox_to_anchor=(1.02, 1))
-    stem = f"avg_improvement_vs_k_{map_name}"
-    _save(fig, stem)
+    # jednotná legenda
+    df_map = df_map.copy()
+    df_map["config"] = df_map.apply(
+        lambda r: "PP" if r.algo == "PP" else f"SAT {r.satProb}%", axis=1
+    )
+
+    def _make_plot(kind: str):
+        """kind: 'plain', 'sd', 'sdpts'"""
+        with_sd   = kind != "plain"
+        add_pts   = kind == "sdpts"
+
+        fig, ax = plt.subplots(figsize=(6, 4))
+        sns.lineplot(
+            data=df_map,
+            x="k",
+            y="soc_improvement_pct",
+            hue="config",
+            markers=True,
+            estimator="mean",
+            errorbar=("sd") if with_sd else None,
+            err_style="bars",
+            dashes=False,
+            ax=ax,
+        )
+        if add_pts:
+            # explicit scatter for the mean values
+            means = (
+                df_map.groupby(["config", "k"])["soc_improvement_pct"]
+                      .mean()
+                      .reset_index()
+            )
+            sns.scatterplot(
+                data=means,
+                x="k",
+                y="soc_improvement_pct",
+                hue="config",
+                legend=False,
+                ax=ax,
+                zorder=5,
+            )
+
+        ax.set_xticks(sorted(df_map["k"].unique()))
+        ax.set_xlabel("Number of agents k")
+        ax.set_ylabel("Average %-improvement of SoC")
+        title_extra = {"plain": "",
+                       "sd":    " (± SD)",
+                       "sdpts": " (± SD, points)"}[kind]
+        ax.set_title(f"{map_name}: Average improvement vs k{title_extra}")
+        ax.legend(title="configuration", bbox_to_anchor=(1.02, 1))
+
+        stem = f"avg_{kind}_improvement_vs_k_{map_name}"
+        _save(fig, stem)
+
+    # create all three variants
+    _make_plot("plain")
+    _make_plot("sd")
+    _make_plot("sdpts")
 
 # Vytvoříme průměry pro všechny mapy
-for map_name, sub in agg.groupby("map"):
-    _average_improvement_plot(sub, map_name)
+for map_name in sorted(df["map"].unique()):
+    _average_improvement_plot(map_name)
 
 # =========================
 # Profilový styl trend mean_impr_pct vs k
@@ -347,10 +397,10 @@ def _k_vs_metric_profile(df: pd.DataFrame, metric: str, map_name: str = "all_map
         linestyle = "--" if algo == "SAT" else "-"
         ax.plot(x, y, linestyle=linestyle, marker="o", label=label)
 
-    ax.set_xlabel("Počet agentů k")
+    ax.set_xlabel("Number of agents k")
     ax.set_ylabel(PROFILE_METRICS.get(metric, {"label": metric}).get("label", metric))
     ax.set_title(f"{map_name}: trend {metric} vs k") 
-    ax.legend(title="konfigurace", bbox_to_anchor=(1.02, 1))
+    ax.legend(title="configuration", bbox_to_anchor=(1.02, 1))
     stem = f"profile_{metric}_vs_k_{map_name}"
     _save(fig, stem)
 
@@ -434,7 +484,7 @@ def _sat100_by_submap(df_map: pd.DataFrame, map_name: str):
     ax.set_xlabel("Sub-map size (side length)")
     ax.set_ylabel("%-improvement of SoC (SAT 100%)")
     ax.set_title(f"{map_name}: SAT 100 % – influence of sub-map size")
-    ax.legend(title="Počet agentů k", bbox_to_anchor=(1.02, 1))
+    ax.legend(title="Number of agents k", bbox_to_anchor=(1.02, 1))
     _save(fig, f"bar_impr_sat_submap_{map_name}")
 
 def _sat100_by_heur(df_map: pd.DataFrame, map_name: str):
@@ -468,3 +518,35 @@ def _sat100_by_heur(df_map: pd.DataFrame, map_name: str):
 for map_name, sub_df in df.groupby("map"):
     _sat100_by_submap(sub_df, map_name)
     _sat100_by_heur(sub_df, map_name)
+
+    # ================================================================
+#  Export performance table (mean_impr_pct per satProb)
+# ================================================================
+# ================================================================
+#  Export performance table (mean_impr_pct per satProb)
+# ================================================================
+print("Exporting summary table …")
+tables_dir = RES / "tables"      # store inside results/
+tables_dir.mkdir(exist_ok=True)
+
+cols = ["map", "k", "satProb", "mean_impr_pct", "std_runtime"]
+perf_df = (
+    pd.read_csv(RES / "summary.csv")[cols]
+      .pivot_table(index=["map", "k"],
+                   columns="satProb",
+                   values="mean_impr_pct")
+      .round(2)
+)
+
+try:
+    # pandas >=2.2 uses Styler which needs jinja2; basic export avoids it
+    perf_df.to_latex(tables_dir / "sat_performance.tex",
+                     index=True,
+                     na_rep="",
+                     # if available in your pandas:  method="basic"
+                     )
+    print("LaTeX table written to tables/sat_performance.tex")
+except ImportError:
+    # Fallback: write CSV instead and notify the user
+    perf_df.to_csv(tables_dir / "sat_performance.csv")
+    print("Jinja2 missing → wrote tables/sat_performance.csv instead.")

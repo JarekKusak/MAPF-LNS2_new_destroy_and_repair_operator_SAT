@@ -25,30 +25,28 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import shutil
 
-
+'''
 # CONFIGURATION MATRIX  – pre-test
-MAPS             = {"Paris_1_256", "warehouse-20-40-10-2-1", "random-32-32-20"}
+MAPS = {"random-32-32-20", "room-64-64-16", "Paris_1_256", "warehouse-20-40-10-2-1", "lt_gallowstemplar_n" }
 INSTANCES_PER_MAP= 10
 AGENT_COUNTS     = [400]
 TIMEOUTS         = [30]
 SUBMAP_SIDES     = [3, 5, 7, 9]
 MIX_PROBS        = []
 PURE_REPLANS     = [] 
-SAT_HEURISTICS   = ["mostDelayed",
-                    "roundRobin",
-                    "adaptive"]
+SAT_HEURISTICS   = ["mostDelayed","roundRobin","adaptive"]
 FALLBACK_DESTS   = ["Adaptive"]
 FALLBACK_ALGOS   = ["PP"]
 MAX_ITERS        = [1_000_000]
 INCLUDE_PURE_SAT = True
-
 '''
+
 # CONFIGURATION MATRIX
 MAPS = {"random-32-32-20", "room-64-64-16", "Paris_1_256",   "warehouse-20-40-10-2-1", "lt_gallowstemplar_n" }
 INSTANCES_PER_MAP = 10
 AGENT_COUNTS      = [100, 200, 300, 400] #[100, 500, 1000] # rozdělit na malé a velké mapy (maximálně 15 s pro initial solution)
-TIMEOUTS          = [30] 
-SUBMAP_SIDES      = [5]
+TIMEOUTS          = [30]
+SUBMAP_SIDES      = [9]
 MIX_PROBS         = [20, 50, 80] # 0 and 100 is generated outside the MIX
 PURE_REPLANS     = ["PP"]  # pure replanners to test
 SAT_HEURISTICS    = ["adaptive"]
@@ -56,7 +54,7 @@ FALLBACK_DESTS    = ["Adaptive"]
 FALLBACK_ALGOS    = ["PP"]
 MAX_ITERS         = [1_000_000] # arbitrary long
 INCLUDE_PURE_SAT  = True
-'''
+
 
 # ──────────────────────────────────────────────────────────────────────────────
 # Runtime limits
@@ -122,9 +120,10 @@ def main():
                               dest="Adaptive",   # any non-SAT strategy
                               map=m, inst=scen_i, k=k, T=T, iters=iters, sub=sub))
         if INCLUDE_PURE_SAT:
-            cases.append(dict(kind="PURE", algo="PP", satProb=100,
-                              dest="SAT", satHeur="adaptive",
-                              map=m, inst=scen_i, k=k, T=T, iters=iters, sub=sub))
+            for heur in SAT_HEURISTICS:
+                cases.append(dict(kind="PURE", algo="PP", satProb=100,
+                                  dest="SAT", satHeur=heur,
+                                  map=m, inst=scen_i, k=k, T=T, iters=iters, sub=sub))
 
     # T2 ─ PP + SAT mixes
     for m, scen_i, k, T, iters, sub, prob, heur, fb_dest, fb_algo in product(

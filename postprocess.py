@@ -47,6 +47,7 @@ agg = (
            std_runtime       = ("runtime", "std"),
            mean_impr_pct     = ("soc_improvement_pct", "mean"),
            mean_sat_ratio_ops    = ("sat_ratio_ops", "mean"),
+           mean_sat_ratio    = ("sat_ratio",      "mean"),
            mean_no_improv   = ("no_improvement_run", "mean"),
            mean_repairs_pct  = ("sat_success_with_repair_pct", "mean"),
            mean_sat_succ_rate = ("sat_succ_rate_run", "mean"),
@@ -84,7 +85,7 @@ sns.lineplot(data=agg, x="k", y=METRIC,
              hue="algo", style="satProb",
              marker="o", ax=ax)
 ax.set_ylabel(METRIC.replace("_", " "))
-ax.set_title(f"{METRIC.replace('_', ' ')} v závislosti na počtu agentů k")
+ax.set_title(f"{METRIC.replace('_', ' ')} depending on the number of agents k")
 ax.legend(title="algo / satProb", bbox_to_anchor=(1.02, 1))
 _save(fig, "fig_k_vs_metric")
 
@@ -116,11 +117,109 @@ sns.scatterplot(
     ax=ax,
 )
 
-ax.set_xlabel("podíl SAT v runtime (%)")
-ax.set_ylabel("% zlepšení SoC")
-ax.set_title("Zlepšení SoC vs. využití SATu")
+ax.set_xlabel("SAT share in runtime (%)")
+ax.set_ylabel("% SoC improvement")
+ax.set_title("SoC improvement vs. SAT usage")
 ax.legend(title="satProb / algo", bbox_to_anchor=(1.02, 1))
+
 _save(fig, "fig_satshare_vs_impr")
+
+# ================================================================
+#  A) Agregovaný bar‑plot napříč všemi mapami – velikost sub‑mapy
+# ================================================================
+df_sat100 = df[(df["algo"] == "SAT") & (df["satProb"] == 100)]
+
+agg_sub = (
+    df_sat100
+      .groupby("sub")["soc_improvement_pct"]
+      .agg(mean="mean", std="std")
+      .reset_index()
+)
+
+fig, ax = plt.subplots(figsize=(4, 3))
+sns.barplot(
+    data=agg_sub,
+    x="sub",
+    y="mean",
+    errorbar=("sd"),
+    ax=ax,
+)
+ax.set_xlabel("Sub-map size (side length)")
+ax.set_ylabel("Average SoC improvement (%)")
+ax.set_title("Influence of sub-map size – aggregation of all maps")
+_save(fig, "bar_submap_allmaps")
+
+# ================================================================
+#  B) Agregovaný bar‑plot napříč všemi mapami – destroy heuristika
+# ================================================================
+agg_heur = (
+    df_sat100
+      .groupby("satHeur")["soc_improvement_pct"]
+      .agg(mean="mean", std="std")
+      .reset_index()
+)
+
+fig, ax = plt.subplots(figsize=(4, 3))
+sns.barplot(
+    data=agg_heur,
+    x="satHeur",
+    y="mean",
+    errorbar=("sd"),
+    ax=ax,
+)
+ax.set_xlabel("Destroy heuristic")
+ax.set_ylabel("Average SoC improvement (%)")
+ax.set_title("Influence of destroy heuristics – aggregation of all maps")
+_save(fig, "bar_heur_allmaps")
+
+# ================================================================
+#  C) Párové Wilcoxonovy testy (9×9 vs ostatní; adaptive vs ostatní)
+#     a export přehledové tabulky
+# ================================================================
+from scipy.stats import wilcoxon
+
+wilcoxon_rows = []
+
+# --- sub‑mapy ----------------------------------------------------
+baseline_9 = df_sat100[df_sat100["sub"] == 9].sort_values(["map", "inst"]).reset_index(drop=True)
+
+for sub_size in sorted(df_sat100["sub"].unique()):
+    if sub_size == 9:
+        continue
+    test_set = df_sat100[df_sat100["sub"] == sub_size].sort_values(["map", "inst"]).reset_index(drop=True)
+    if len(baseline_9) == len(test_set):
+        stat, pval = wilcoxon(baseline_9["soc_improvement_pct"], test_set["soc_improvement_pct"])
+        wilcoxon_rows.append({
+            "category": "submap",
+            "baseline": "9",
+            "comparison": str(sub_size),
+            "p_value": pval,
+            "n_pairs": len(baseline_9)
+        })
+
+# --- heuristiky ---------------------------------------------------
+baseline_adapt = df_sat100[df_sat100["satHeur"] == "adaptive"].sort_values(["map", "inst"]).reset_index(drop=True)
+
+for heur in df_sat100["satHeur"].unique():
+    if heur == "adaptive":
+        continue
+    test_set = df_sat100[df_sat100["satHeur"] == heur].sort_values(["map", "inst"]).reset_index(drop=True)
+    if len(baseline_adapt) == len(test_set):
+        stat, pval = wilcoxon(baseline_adapt["soc_improvement_pct"], test_set["soc_improvement_pct"])
+        wilcoxon_rows.append({
+            "category": "heuristic",
+            "baseline": "adaptive",
+            "comparison": heur,
+            "p_value": pval,
+            "n_pairs": len(baseline_adapt)
+        })
+
+wilcoxon_df = pd.DataFrame(wilcoxon_rows)
+wilcoxon_df.to_csv(RES / "wilcoxon_summary.csv", index=False)
+
+# Také uložíme agregovanou tabulku sub‑map & heuristiky
+agg_sub.to_csv(RES / "submap_summary.csv", index=False)
+agg_heur.to_csv(RES / "heuristic_summary.csv", index=False)
 
 # ---------------- významnost PP vs. čistý SAT -------------
 def sig_test(sub):
@@ -260,8 +359,6 @@ all_maps_agg = agg.groupby(["k", "algo", "satProb"])["mean_impr_pct"].mean().res
 for metric in ["mean_impr_pct"]:
     _k_vs_metric_profile(all_maps_agg, metric, "all_maps")
 
-
-
 # ================================================================
 # Agregovaný profil (průměr přes mapy) – pouze 10 bodů na ose X
 # ================================================================
@@ -296,13 +393,78 @@ def _profile_mean_over_maps(k_value: int):
         linestyle = "--" if algo == "SAT" else "-"
         ax.plot(x, y, linestyle=linestyle, marker="o", label=label)
 
-    ax.set_xlabel("Index instance (1-10)")
-    ax.set_ylabel("%-zlepšení SoC (průměr přes mapy)")
-    ax.set_title(f"Agregovaný profil všech map, k={k_value}")
-    ax.legend(title="konfigurace", bbox_to_anchor=(1.02, 1))
+    ax.set_xlabel("Index of instance (1-10)")
+    ax.set_ylabel("%-improvement of SoC (average across maps)")
+    ax.set_title(f"Aggregated profile of all maps, k={k_value}")
+    ax.legend(title="configuration", bbox_to_anchor=(1.02, 1))
 
     stem = f"profilekagg_soc_improvement_pct_allmaps_k{k_value}"
     _save(fig, stem)
 
 for k_val in KS_TO_PLOT:
     _profile_mean_over_maps(k_val)
+
+# ================================================================
+#  SAT‑100 % — průměrné zlepšení SoC podle velikosti sub‑mapy
+#               a podle destroy‑heuristiky
+# ================================================================
+
+def _sat100_by_submap(df_map: pd.DataFrame, map_name: str):
+    """Bar-plot: sub × mean_impr_pct   (hue = k)."""
+    df_sat100 = df_map[(df_map["algo"] == "SAT") & (df_map["satProb"] == 100)]
+    if df_sat100.empty or "sub" not in df_sat100.columns:
+        return
+    # agregace
+    data = (df_sat100
+            .groupby(["sub", "k"])["soc_improvement_pct"]
+            .mean()
+            .reset_index()
+            .rename(columns={"soc_improvement_pct": "mean_impr_pct"}))
+
+    fig, ax = plt.subplots(figsize=(6, 4))
+    # Sloupcový graf: X = velikost sub‑mapy, Y = průměrné zlepšení, hue = k
+    sns.barplot(
+        data=data,
+        x="sub",
+        y="mean_impr_pct",
+        hue="k",
+        errorbar=("ci", 95),
+        ax=ax,
+    )
+    ax.set_xlabel("Sub-map size (side length)")
+    ax.set_ylabel("%-improvement of SoC (SAT 100%)")
+    ax.set_title(f"{map_name}: SAT 100 % – influence of sub-map size")
+    ax.legend(title="Počet agentů k", bbox_to_anchor=(1.02, 1))
+    _save(fig, f"bar_impr_sat_submap_{map_name}")
+
+def _sat100_by_heur(df_map: pd.DataFrame, map_name: str):
+    """Bar-plot: satHeur × mean_impr_pct   (hue = k)."""
+    df_sat100 = df_map[(df_map["algo"] == "SAT") & (df_map["satProb"] == 100)]
+    if df_sat100.empty or "satHeur" not in df_sat100.columns:
+        return
+    data = (df_sat100
+            .groupby(["satHeur", "k"])["soc_improvement_pct"]
+            .mean()
+            .reset_index()
+            .rename(columns={"soc_improvement_pct": "mean_impr_pct"}))
+
+    fig, ax = plt.subplots(figsize=(6, 4))
+    # Sloupcový graf: X = heuristika, Y = průměrné zlepšení, hue = k
+    sns.barplot(
+        data=data,
+        x="satHeur",
+        y="mean_impr_pct",
+        hue="k",
+        errorbar=("ci", 95),
+        ax=ax,
+    )
+    ax.set_xlabel("Destroy heuristic")
+    ax.set_ylabel("%-improvement of SoC (SAT 100%)")
+    ax.set_title(f"{map_name}: SAT 100 % – influence of heuristics")
+    ax.legend(title="Number of agents k", bbox_to_anchor=(1.02, 1))
+    _save(fig, f"bar_impr_sat_heur_{map_name}")
+
+# --- generování grafů pro každou mapu ---------------------------
+for map_name, sub_df in df.groupby("map"):
+    _sat100_by_submap(sub_df, map_name)
+    _sat100_by_heur(sub_df, map_name)

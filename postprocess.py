@@ -519,9 +519,6 @@ for map_name, sub_df in df.groupby("map"):
     _sat100_by_submap(sub_df, map_name)
     _sat100_by_heur(sub_df, map_name)
 
-    # ================================================================
-#  Export performance table (mean_impr_pct per satProb)
-# ================================================================
 # ================================================================
 #  Export performance table (mean_impr_pct per satProb)
 # ================================================================

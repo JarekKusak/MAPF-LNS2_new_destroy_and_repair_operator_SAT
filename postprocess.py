@@ -535,6 +535,7 @@ perf_df = (
       .round(2)
 )
 
+
 try:
     # pandas >=2.2 uses Styler which needs jinja2; basic export avoids it
     perf_df.to_latex(tables_dir / "sat_performance.tex",
@@ -547,3 +548,130 @@ except ImportError:
     # Fallback: write CSV instead and notify the user
     perf_df.to_csv(tables_dir / "sat_performance.csv")
     print("Jinja2 missing → wrote tables/sat_performance.csv instead.")
+
+# ================================================================
+#  ALNS‑specific post‑processing (satProb = 0 % vs 100 %)
+# ================================================================
+print("ALNS post‑processing …")
+df_alns = df[df["kind"] == "ALNS"].copy()
+if not df_alns.empty:
+    # podíl iterací, v nichž ruletka vybrala SAT
+    df_alns["sat_iter_pct"] = 100.0 * df_alns["sat_calls"] / df_alns["outer_iterations"]
+
+    # souhrnná tabulka pro kapitolu C
+    alns_summary = (
+        df_alns.groupby(["map", "k", "satProb"])
+               .agg(mean_impr_pct=("soc_improvement_pct", "mean"),
+                    sd_impr_pct=("soc_improvement_pct", "std"),
+                    mean_sat_iter=("sat_iter_pct", "mean"),
+                    mean_sat_ratio_ops=("sat_ratio_ops", "mean"))
+               .reset_index()
+    )
+    alns_summary.to_csv(RES / "alns_summary.csv", index=False)
+
+    # ---------- Figure C.1  SoC gain vs SAT‑usage -----------------
+    fig, ax = plt.subplots(figsize=(6, 4))
+    sns.regplot(
+        data=df_alns,
+        x="sat_iter_pct",
+        y="soc_improvement_pct",
+        scatter=False,
+        color="grey",
+        line_kws={"linewidth": 1},
+        ax=ax,
+    )
+    sns.scatterplot(
+        data=df_alns,
+        x="sat_iter_pct",
+        y="soc_improvement_pct",
+        hue="map",
+        style="k",
+        alpha=.9,
+        ax=ax,
+    )
+    ax.set_xlabel("% iterations that used SAT")
+    ax.set_ylabel("% SoC improvement")
+    ax.set_title("ALNS: SoC gain vs SAT usage")
+    ax.legend(title="map / k", bbox_to_anchor=(1.02, 1))
+    _save(fig, "alns_satshare_vs_impr")
+
+    # ---------- Figure C.2  mean_impr_pct vs k (0 % vs 100 %) ----
+    alns_k = (
+        df_alns.groupby(["map", "k", "satProb"])["soc_improvement_pct"]
+               .mean()
+               .reset_index()
+    )
+    fig, ax = plt.subplots(figsize=(6, 4))
+    sns.lineplot(
+        data=alns_k,
+        x="k",
+        y="soc_improvement_pct",
+        hue="satProb",
+        style="map",
+        markers=True,
+        dashes=False,
+        ax=ax,
+    )
+    ax.set_xlabel("Number of agents k")
+    ax.set_ylabel("Average %-improvement of SoC")
+    ax.set_title("ALNS: impact of k (SAT 0 % vs 100 %)")
+    ax.legend(title="satProb / map", bbox_to_anchor=(1.02, 1))
+    _save(fig, "alns_improvement_vs_k")
+
+    # ---------- Figure C.3  per‑map sd+points (satProb 0 vs 100) ----
+    def _alns_sdpts_plot(map_name: str):
+        sub = df_alns[df_alns["map"] == map_name]
+        if sub.empty:
+            return
+
+        # data already has satProb 0 & 100; vytvoříme sjednocený popisek
+        sub = sub.copy()
+        sub["config"] = sub["satProb"].astype(str) + " %"
+
+        fig, ax = plt.subplots(figsize=(6, 4))
+        sns.lineplot(
+            data=sub,
+            x="k",
+            y="soc_improvement_pct",
+            hue="config",
+            markers=True,
+            estimator="mean",
+            errorbar=("sd"),
+            err_style="bars",
+            dashes=False,
+            ax=ax,
+        )
+
+        # explicit scatter (střední hodnoty), stejné barvy
+        means = (
+            sub.groupby(["config", "k"])["soc_improvement_pct"]
+               .mean()
+               .reset_index()
+        )
+        sns.scatterplot(
+            data=means,
+            x="k",
+            y="soc_improvement_pct",
+            hue="config",
+            legend=False,
+            ax=ax,
+            zorder=5,
+        )
+
+        ax.set_xticks(sorted(sub["k"].unique()))
+        ax.set_xlabel("Number of agents k")
+        ax.set_ylabel("Average %-improvement of SoC")
+        ax.set_title(f"{map_name}: ALNS SAT 0 % vs 100 % (± SD, points)")
+        ax.legend(title="satProb", bbox_to_anchor=(1.02, 1))
+
+        stem = f"alns_sdpts_improvement_vs_k_{map_name}"
+        _save(fig, stem)
+
+    # vytvoříme grafy pro každou mapu
+    for map_name in sorted(df_alns["map"].unique()):
+        _alns_sdpts_plot(map_name)
+
+else:
+    print("No ALNS runs found – skipping ALNS post‑processing.")
+
+    

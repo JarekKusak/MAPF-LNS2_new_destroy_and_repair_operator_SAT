@@ -39,7 +39,7 @@ FALLBACK_DESTS   = ["Adaptive"]
 FALLBACK_ALGOS   = ["PP"]
 MAX_ITERS        = [1_000_000]
 INCLUDE_PURE_SAT = True
-'''
+
 
 # CONFIGURATION MATRIX
 MAPS = {"random-32-32-20", "room-64-64-16", "Paris_1_256",   "warehouse-20-40-10-2-1", "lt_gallowstemplar_n" }
@@ -54,6 +54,25 @@ FALLBACK_DESTS    = ["Adaptive"]
 FALLBACK_ALGOS    = ["PP"]
 MAX_ITERS         = [1_000_000] # arbitrary long
 INCLUDE_PURE_SAT  = True
+'''
+
+# -------------- ALNS SAT-study --------------
+MAPS              = {"random-32-32-20", "room-64-64-16",
+                     "Paris_1_256", "warehouse-20-40-10-2-1",
+                     "lt_gallowstemplar_n"}
+INSTANCES_PER_MAP = 10
+AGENT_COUNTS      = [100, 200, 300, 400]
+TIMEOUTS          = [30]
+SUBMAP_SIDES      = [9]                 # pevná sub-mapa
+SAT_HEURISTICS    = ["adaptive"]        # interní heuristika SATu
+PURE_REPLANS      = []                  # čisté PP ani SAT teď netestujeme
+ALNS_PROBS        = [0, 100]            # 0 % → ALNS-PP, 100 % → ALNS-SAT
+MAX_ITERS         = [1_000_000]
+# non used
+FALLBACK_DESTS    = ["Adaptive"]
+FALLBACK_ALGOS    = ["PP"]
+MIX_PROBS         = []                  # no mixes in this study
+INCLUDE_PURE_SAT  = False               # no pure SAT runs in this study
 
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -141,6 +160,16 @@ def main():
                           satHeur=heur,
                           destFallback=fb_dest,
                           algoFallback=fb_algo,
+                          map=m, inst=scen_i, k=k, T=T, iters=iters, sub=sub))
+        # T3 – ALNS study (Adaptive destroy + PP replan)
+    for m, scen_i, k, T, iters, sub, prob in product(
+            MAPS, range(1, INSTANCES_PER_MAP + 1), AGENT_COUNTS,
+            TIMEOUTS, MAX_ITERS, SUBMAP_SIDES, ALNS_PROBS):
+        cases.append(dict(kind="ALNS",
+                          algo="PP",          # replanner pro ne-SAT iterace
+                          satProb=prob,       # 0 nebo 100
+                          dest="Adaptive",    # zapíná ALNS
+                          satHeur="adaptive",
                           map=m, inst=scen_i, k=k, T=T, iters=iters, sub=sub))
 
     # MAIN LOOP

@@ -686,7 +686,7 @@ bool LNS::run()
         std::cout.flush();
         runtime = ((fsec)(Time::now() - start_time)).count();
 
-        if (ALNS && destroy_strategy != SAT)
+        if (ALNS)
             chooseDestroyHeuristicbyALNS();
 
         bool opSuccess = false;
@@ -1335,6 +1335,7 @@ void LNS::chooseDestroyHeuristicbyALNS()
         case 0 : destroy_strategy = RANDOMWALK; break;
         case 1 : destroy_strategy = INTERSECTION; break;
         case 2 : destroy_strategy = RANDOMAGENTS; break;
+        case 3 : destroy_strategy = SAT;          break;
         default : cerr << "ERROR" << endl; exit(-1);
     }
 }

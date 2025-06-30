@@ -11,11 +11,11 @@ for col in ("sat_ok", "sat_repairs"):
     if col not in df.columns:
         df[col] = 0
 
-# jen doběhnuté případy
+# only finished runs
 df = df[df.state == "OK"].copy()
 
-# ---------------- doplňkové sloupce ----------------
-# NaN pokud SAT nevolal –- potom se ve skupinovém průměru ignoruje
+# ---------------- additional columns ----------------
+# NaN if SAT did not call –- then ignored in group average
 df["sat_succ_rate_run"] = df.apply(
     lambda r: r.sat_ok / r.sat_calls if r.sat_calls > 0 else np.nan,
     axis=1)
@@ -31,38 +31,48 @@ df["sat_success_with_repair_pct"] = df.apply(
 
 # --- nový ukazatel: zda běh s voláním SAT nic nezlepšil -------------
 df["no_improvement_run"] = (
-    (df["sat_ok"] > 0) & (df["soc_improvement_pct"] == 0)
+        (df["sat_ok"] > 0) & (df["soc_improvement_pct"] == 0)
 )
 
-# ---------------- agregace ----------------
-# mean_runtime: průměr runtime
-# mean_impr_pct: průměr %-zlepšení SoC
-# mean_sat_ratio_ops: průměr podílu SAT v operacích
-# mean_repairs_pct: Prům. % SAT oprav
-# mean_no_improv: Podíl běhů, kdy SAT nic nezlepšil
+# ---------------- agreggation ----------------
+# mean_runtime: average runtime
+# std_runtime: standard deviation of runtime
+# mean_impr_pct: average % improvement of SoC
+# mean_sat_ratio_ops: average ratio of SAT runtime to total runtime in operations
+# mean_sat_ratio: average ratio of SAT runtime to total runtime
+# mean_no_improv: average number of runs with no improvement
+# mean_repairs_pct: average percentage of SAT calls that were repaired
+# mean_sat_succ_rate: average success rate of SAT calls
+# mean_iter_succ_rate: average success rate of iterations
+# n_runs: number of runs in the group
+
+# map: name of the map
+# k: number of agents
+# satHeur: destroy heuristic used (adaptive, random, etc.)
+# satProb: probability of SAT calls (0, 50, 100)
+
 grp = ["map", "k", "algo", "satProb"]
 agg = (
     df.groupby(grp)
-      .agg(mean_runtime      = ("runtime", "mean"),
-           std_runtime       = ("runtime", "std"),
-           mean_impr_pct     = ("soc_improvement_pct", "mean"),
-           mean_sat_ratio_ops    = ("sat_ratio_ops", "mean"),
-           mean_sat_ratio    = ("sat_ratio",      "mean"),
-           mean_no_improv   = ("no_improvement_run", "mean"),
-           mean_repairs_pct  = ("sat_success_with_repair_pct", "mean"),
-           mean_sat_succ_rate = ("sat_succ_rate_run", "mean"),
-           mean_iter_succ_rate = ("iter_succ_rate_run", "mean"),
-           n_runs            = ("run_id", "count"))
-      .reset_index()
+    .agg(mean_runtime      = ("runtime", "mean"),
+         std_runtime       = ("runtime", "std"),
+         mean_impr_pct     = ("soc_improvement_pct", "mean"),
+         mean_sat_ratio_ops    = ("sat_ratio_ops", "mean"),
+         mean_sat_ratio    = ("sat_ratio",      "mean"),
+         mean_no_improv   = ("no_improvement_run", "mean"),
+         mean_repairs_pct  = ("sat_success_with_repair_pct", "mean"),
+         mean_sat_succ_rate = ("sat_succ_rate_run", "mean"),
+         mean_iter_succ_rate = ("iter_succ_rate_run", "mean"),
+         n_runs            = ("run_id", "count"))
+    .reset_index()
 )
 
 agg.to_csv(RES / "results_compact.csv", index=False)   # hlavní tabulka do práce
 agg.to_csv(RES / "summary.csv", index=False)           # zpětná kompatibilita
 
-# ---------------- grafy -------------------
-# ------------------------------------------------------------------
-# Pomocná funkce pro ukládání obrázků zároveň do PNG i PDF ----------
-OUT_PNG = True        # přepni na False, když chceš jen PDF
+# ---------------- graphs -------------------
+
+OUT_PNG = True        # turn off if you want only PDF output
 
 def _save(fig: plt.Figure, stem: str):
     """Uloží figuru do results/{category}/png a results/{category}/pdf (bez okrajů)."""
@@ -77,9 +87,8 @@ def _save(fig: plt.Figure, stem: str):
         fig.savefig(png_dir / f"{safe_stem}.png", dpi=300, bbox_inches="tight")
     fig.savefig(pdf_dir / f"{safe_stem}.pdf", bbox_inches="tight")
     plt.close(fig)
-# ------------------------------------------------------------------
 
-# === Počet agentů k × vybraná metrika ==========================
+# === number of agents k vs. mean_impr_pct ====
 METRIC = "mean_impr_pct"          # lze snadno změnit
 fig, ax = plt.subplots(figsize=(6, 4))
 sns.lineplot(data=agg, x="k", y=METRIC,
@@ -90,10 +99,10 @@ ax.set_title(f"{METRIC.replace('_', ' ')} depending on the number of agents k")
 ax.legend(title="algo / satProb", bbox_to_anchor=(1.02, 1))
 _save(fig, "fig_k_vs_metric")
 
-# === Relace podílu SAT‑runtime a zlepšení SoC =========================
+# === SAT share vs. SoC improvement ====
 fig, ax = plt.subplots(figsize=(6, 4))
 
-# Globální trend (obyčejná regrese bez LOWESS, ať není závislost na statsmodels)
+# regression line for mean SAT ratio vs. mean improvement
 sns.regplot(
     data=agg,
     x="mean_sat_ratio",
@@ -104,7 +113,7 @@ sns.regplot(
     ax=ax,
 )
 
-# Body: barvy → satProb, tvary → algo, velikost → k
+# scatter plot of mean SAT ratio vs. mean improvement
 sns.scatterplot(
     data=agg,
     x="mean_sat_ratio",
@@ -126,15 +135,15 @@ ax.legend(title="satProb / algo", bbox_to_anchor=(1.02, 1))
 _save(fig, "fig_satshare_vs_impr")
 
 # ================================================================
-#  A) Agregovaný bar‑plot napříč všemi mapami – velikost sub‑mapy
+#  agreggated bar-plot across all maps
 # ================================================================
 df_sat100 = df[(df["algo"] == "SAT") & (df["satProb"] == 100)]
 
 agg_sub = (
     df_sat100
-      .groupby("sub")["soc_improvement_pct"]
-      .agg(mean="mean", std="std")
-      .reset_index()
+    .groupby("sub")["soc_improvement_pct"]
+    .agg(mean="mean", std="std")
+    .reset_index()
 )
 
 fig, ax = plt.subplots(figsize=(4, 3))
@@ -151,13 +160,13 @@ ax.set_title("Influence of sub-map size – aggregation of all maps")
 _save(fig, "bar_submap_allmaps")
 
 # ================================================================
-#  B) Agregovaný bar‑plot napříč všemi mapami – destroy heuristika
+#  aggreggated bar-plot across all maps - destroy heuristics
 # ================================================================
 agg_heur = (
     df_sat100
-      .groupby("satHeur")["soc_improvement_pct"]
-      .agg(mean="mean", std="std")
-      .reset_index()
+    .groupby("satHeur")["soc_improvement_pct"]
+    .agg(mean="mean", std="std")
+    .reset_index()
 )
 
 fig, ax = plt.subplots(figsize=(4, 3))
@@ -174,8 +183,7 @@ ax.set_title("Influence of destroy heuristics – aggregation of all maps")
 _save(fig, "bar_heur_allmaps")
 
 # ================================================================
-#  C) Párové Wilcoxonovy testy (9×9 vs ostatní; adaptive vs ostatní)
-#     a export přehledové tabulky
+#  pair wise Wilcoxon test
 # ================================================================
 from scipy.stats import wilcoxon
 
@@ -198,7 +206,7 @@ for sub_size in sorted(df_sat100["sub"].unique()):
             "n_pairs": len(baseline_9)
         })
 
-# --- heuristiky ---------------------------------------------------
+# --- heuristics --------------------------------
 baseline_adapt = df_sat100[df_sat100["satHeur"] == "adaptive"].sort_values(["map", "inst"]).reset_index(drop=True)
 
 for heur in df_sat100["satHeur"].unique():
@@ -218,11 +226,10 @@ for heur in df_sat100["satHeur"].unique():
 wilcoxon_df = pd.DataFrame(wilcoxon_rows)
 wilcoxon_df.to_csv(RES / "wilcoxon_summary.csv", index=False)
 
-# Také uložíme agregovanou tabulku sub‑map & heuristiky
 agg_sub.to_csv(RES / "submap_summary.csv", index=False)
 agg_heur.to_csv(RES / "heuristic_summary.csv", index=False)
 
-# ---------------- významnost PP vs. čistý SAT -------------
+# ---------------- significance test between PP and SAT 100% ----------------
 def sig_test(sub):
     pp  = sub[(sub.algo == "PP")  & (sub.satProb == 0)]["final_soc"]
     sat = sub[(sub.algo == "SAT") & (sub.satProb == 100)]["final_soc"]
@@ -236,13 +243,13 @@ def sig_test(sub):
         return pd.Series({"p": np.nan, "n_pairs": len(pp)})
 
 sig = (df.groupby(["map", "k"])
-         .apply(sig_test)
-         .reset_index())
+       .apply(sig_test)
+       .reset_index())
 # sig.to_csv(RES / "significance.csv", index=False)  # removed to avoid duplicate files
 sig.to_csv(RES / "signif_pp_vs_sat.csv", index=False)
 
 # ===========================
-# Kontrola, proč chybí p-values
+# control for missing p-values
 # ===========================
 missing = sig[sig["p"].isna()]
 if not missing.empty:
@@ -257,18 +264,18 @@ if not missing.empty:
 print("Post-processing dokončeno ✔")
 
 # ------------------------------------------------------------------
-# ============ Instance‑profile křivky pro vybrané metriky =========
+# ============ Instance-profile curves for selected metrics =========
 #
-# Pro každou kombinaci (map, k) vykreslíme křivky instancí
-#   – každá křivka = konkrétní konfigurace (algo + satProb)
-#   – osa X = instance seřazené podle hodnoty metriky
-#   – osa Y = hodnota metriky
+# For each combination (map, k) we plot instance curves
+# – each curve = a specific configuration (algo + satProb)
+# – X-axis = instances sorted by metric value
+# – Y-axis = metric value
 #
-# Přidáváme čtyři metriky (sloupce se vytvoří, pokud chybí):
-#   1) delta_soc_run            = initial_soc - final_soc
-#   2) soc_improvement_pct      = už existuje
-#   3) sat_ratio_ops            = už existuje
-#   4) sat_repairs              = už existuje
+# We add four metrics (columns are created if missing):
+# 1) delta_soc_run = initial_soc - final_soc
+# 2) soc_improvement_pct = already exists
+# 3) sat_ratio_ops = already exists
+# 4) sat_repairs = already exists
 # ------------------------------------------------------------------
 if "delta_soc_run" not in df.columns:
     df["delta_soc_run"] = df["initial_soc"] - df["final_soc"]
@@ -281,8 +288,8 @@ PROFILE_METRICS = {
 def _profile_plot(sub_df: pd.DataFrame, metric: str, map_name: str, k_val: int):
     fig, ax = plt.subplots(figsize=(6, 4))
 
-    # Vykreslíme křivku pro každou (algo, satProb) konfiguraci,
-    # kromě „SAT 0 %“ (je to duplicitní k PP).
+    # Plot the curve for each (algo, satProb) configuration,
+    # except "SAT 0%" (it's a duplicate of PP).
     filtered = sub_df[~((sub_df["algo"] == "SAT") & (sub_df["satProb"] == 0))]
     grouped = (
         filtered.groupby(["algo", "satProb"])
@@ -304,23 +311,22 @@ def _profile_plot(sub_df: pd.DataFrame, metric: str, map_name: str, k_val: int):
     stem = f"profile_{metric}_{map_name}_k{k_val}"
     _save(fig, stem)
 
-# vytvoříme profily pro všechny mapy a k
+# create profiles for all maps and
 for metric in PROFILE_METRICS:
     for (m, k_val), sub in df.groupby(["map", "k"]):
         _profile_plot(sub, metric, m, k_val)
 
 # =========================
-# Agregovaný průměr soc_improvement_pct vs k
+# Aggregated average soc_improvement_pct vs k
 # =========================
 def _average_improvement_plot(map_name: str):
-    """Generate three avg‑improvement‑vs‑k plots for *map_name*:
+    """Generate three avg-improvement-vs-k plots for *map_name*:
        1) plain means                → avg_plain_improvement_vs_k_<map>
-       2) means ± SD error‑bars      → avg_sd_improvement_vs_k_<map>
+       2) means ± SD error-bars      → avg_sd_improvement_vs_k_<map>
        3) means ± SD + scatter points→ avg_sdpts_improvement_vs_k_<map>"""
     df_map = df[(df["map"] == map_name) & (df["state"] == "OK")]
     df_map = df_map[~((df_map["algo"] == "SAT") & (df_map["satProb"] == 0))]
 
-    # jednotná legenda
     df_map = df_map.copy()
     df_map["config"] = df_map.apply(
         lambda r: "PP" if r.algo == "PP" else f"SAT {r.satProb}%", axis=1
@@ -348,8 +354,8 @@ def _average_improvement_plot(map_name: str):
             # explicit scatter for the mean values
             means = (
                 df_map.groupby(["config", "k"])["soc_improvement_pct"]
-                      .mean()
-                      .reset_index()
+                .mean()
+                .reset_index()
             )
             sns.scatterplot(
                 data=means,
@@ -378,12 +384,12 @@ def _average_improvement_plot(map_name: str):
     _make_plot("sd")
     _make_plot("sdpts")
 
-# Vytvoříme průměry pro všechny mapy
+# we create average improvement plots for each map
 for map_name in sorted(df["map"].unique()):
     _average_improvement_plot(map_name)
 
 # =========================
-# Profilový styl trend mean_impr_pct vs k
+# k vs. metric profile-style graph
 # =========================
 def _k_vs_metric_profile(df: pd.DataFrame, metric: str, map_name: str = "all_maps"):
     """Vykreslí trend mean_impr_pct vs k jako profile-style graf bez CI."""
@@ -399,18 +405,19 @@ def _k_vs_metric_profile(df: pd.DataFrame, metric: str, map_name: str = "all_map
 
     ax.set_xlabel("Number of agents k")
     ax.set_ylabel(PROFILE_METRICS.get(metric, {"label": metric}).get("label", metric))
-    ax.set_title(f"{map_name}: trend {metric} vs k") 
+    ax.set_title(f"{map_name}: trend {metric} vs k")
     ax.legend(title="configuration", bbox_to_anchor=(1.02, 1))
     stem = f"profile_{metric}_vs_k_{map_name}"
     _save(fig, stem)
 
-# Vytvoříme profilový trend (přes všechny mapy) pro vybranou metriku
+# we create the profile-style graph for each metric
 all_maps_agg = agg.groupby(["k", "algo", "satProb"])["mean_impr_pct"].mean().reset_index()
 for metric in ["mean_impr_pct"]:
     _k_vs_metric_profile(all_maps_agg, metric, "all_maps")
 
 # ================================================================
-# Agregovaný profil (průměr přes mapy) – pouze 10 bodů na ose X
+# aggregated profile of all maps
+#   (mean % improvement of SoC across all maps)
 # ================================================================
 
 KS_TO_PLOT = [100, 200, 300, 400]
@@ -422,20 +429,20 @@ def _profile_mean_over_maps(k_value: int):
     if sub.empty:
         return
 
-    # vynechat duplicitní „SAT 0 %“
+    # we filter out the runs where SAT was not called (satProb == 0)
     sub = sub[~((sub["algo"] == "SAT") & (sub["satProb"] == 0))]
 
-    # Vypočítat průměr přes mapy pro každou instanci a konfiguraci
+    # count mean % improvement of SoC per instance, algo and satProb
     mean_per_inst = (
         sub.groupby(["inst", "algo", "satProb"])["soc_improvement_pct"]
-           .mean()
-           .reset_index()
+        .mean()
+        .reset_index()
     )
 
     fig, ax = plt.subplots(figsize=(6, 4))
 
     for (algo, p), grp in mean_per_inst.groupby(["algo", "satProb"]):
-        # řadíme podle hodnoty metriky (vzestupně) – stejně jako u profilů jednotlivých map
+        # sorted by instance index
         grp_sorted = grp.sort_values("soc_improvement_pct")
         x = np.arange(1, len(grp_sorted) + 1)
         y = grp_sorted["soc_improvement_pct"]
@@ -455,8 +462,8 @@ for k_val in KS_TO_PLOT:
     _profile_mean_over_maps(k_val)
 
 # ================================================================
-#  SAT‑100 % — průměrné zlepšení SoC podle velikosti sub‑mapy
-#               a podle destroy‑heuristiky
+#  SAT-100% — average SoC improvement by sub-map size
+#  and by destroy heuristic
 # ================================================================
 
 def _sat100_by_submap(df_map: pd.DataFrame, map_name: str):
@@ -464,7 +471,6 @@ def _sat100_by_submap(df_map: pd.DataFrame, map_name: str):
     df_sat100 = df_map[(df_map["algo"] == "SAT") & (df_map["satProb"] == 100)]
     if df_sat100.empty or "sub" not in df_sat100.columns:
         return
-    # agregace
     data = (df_sat100
             .groupby(["sub", "k"])["soc_improvement_pct"]
             .mean()
@@ -472,7 +478,7 @@ def _sat100_by_submap(df_map: pd.DataFrame, map_name: str):
             .rename(columns={"soc_improvement_pct": "mean_impr_pct"}))
 
     fig, ax = plt.subplots(figsize=(6, 4))
-    # Sloupcový graf: X = velikost sub‑mapy, Y = průměrné zlepšení, hue = k
+    # Bar chart: X = sub-map size, Y = average improvement, hue = k
     sns.barplot(
         data=data,
         x="sub",
@@ -499,7 +505,7 @@ def _sat100_by_heur(df_map: pd.DataFrame, map_name: str):
             .rename(columns={"soc_improvement_pct": "mean_impr_pct"}))
 
     fig, ax = plt.subplots(figsize=(6, 4))
-    # Sloupcový graf: X = heuristika, Y = průměrné zlepšení, hue = k
+    # Bar chart: X = heuristic, Y = average improvement, hue = k
     sns.barplot(
         data=data,
         x="satHeur",
@@ -514,7 +520,6 @@ def _sat100_by_heur(df_map: pd.DataFrame, map_name: str):
     ax.legend(title="Number of agents k", bbox_to_anchor=(1.02, 1))
     _save(fig, f"bar_impr_sat_heur_{map_name}")
 
-# --- generování grafů pro každou mapu ---------------------------
 for map_name, sub_df in df.groupby("map"):
     _sat100_by_submap(sub_df, map_name)
     _sat100_by_heur(sub_df, map_name)
@@ -529,10 +534,10 @@ tables_dir.mkdir(exist_ok=True)
 cols = ["map", "k", "satProb", "mean_impr_pct", "std_runtime"]
 perf_df = (
     pd.read_csv(RES / "summary.csv")[cols]
-      .pivot_table(index=["map", "k"],
-                   columns="satProb",
-                   values="mean_impr_pct")
-      .round(2)
+    .pivot_table(index=["map", "k"],
+                 columns="satProb",
+                 values="mean_impr_pct")
+    .round(2)
 )
 
 try:

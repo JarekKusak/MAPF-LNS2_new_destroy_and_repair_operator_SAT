@@ -101,7 +101,7 @@ private:
     bool generateNeighborBySAT(); // new destroy operator
     bool runSAT(); // new repair operator
     pair<vector<vector<int>>, vector<int>> getSubmapAndAgents(int agent_id, int submap_size, int agent_location, int timestep); // helper function for getting sub-map
-    int last_selected_agent = -1;   // udržuje, na kom jsme skončili
+    int last_selected_agent = -1;   // keeps where we left off
     int countConflicts(const Agent& ag);
     int computeMaxDelay(const Agent& ag);
     double agentScore(const Agent& ag) const;
@@ -161,7 +161,7 @@ private:
 
     void doInitLNSRepair(const string& debug_reason);
     void rollbackNeighbor();
-    std::vector<std::vector<PathEntry>>  iter_backup_paths;   // velikost = agents.size()
+    std::vector<std::vector<PathEntry>>  iter_backup_paths;   // size = agents.size()
     int                       iter_backup_soc;
     bool                      iter_backup_valid;    // flag
 

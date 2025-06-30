@@ -3,29 +3,29 @@
 
 struct RunStats
 {
-    // --- kumulované časy ---
-    double sat_time_total   = 0.0;   // celkový čas strávený v SAT solveru
-    double other_time_total = 0.0;   // re-plan (PP/CBS/…) + init-solution
-    double overhead_total   = 0.0;   // rámcový “overhead”
+    // --- runtimes ---
+    double sat_time_total   = 0.0;   // sat operator runtime
+    double other_time_total = 0.0;   // other operator runtime
+    double overhead_total   = 0.0;   // framework overhead
     double validation_time_total = 0.0;
     double sat_ratio_ops    = 0.0;
     double sat_ratio        = 0.0;
 
-    // --- počty volání / iterací ---
-    std::size_t outer_iterations = 0; // vnější (LNS) iterace
+    // --- count of calls/iterations ---
+    std::size_t outer_iterations = 0; // outer (LNS) iteration
     std::size_t other_iters      = 0;
-    std::size_t sat_iters        = 0; // kolikrát byl jako operátor zvolen SAT
-    std::size_t sat_calls        = 0; // kolikrát se SAT skutečně spustil
-    std::size_t sat_ok           = 0; // úspěšné řešení od SAT
+    std::size_t sat_iters        = 0; // how many times was SAT chosen as the operator
+    std::size_t sat_calls        = 0; // how many times the SAT actually ran
+    std::size_t sat_ok           = 0; // successful solution from SAT
     std::size_t sat_fail         = 0;
 
-    // --- kvalita výsledku ---
+    // --- solution quality ---
     int initial_soc      = -1;
     int final_soc        = -1;
     int failed_iterations = 0;
     int sat_repairs         = 0;
     int sat_no_improve     = 0;
 
-    // --- celkový wall-time ---
+    // --- wall-time ---
     double wall_runtime = 0.0;
 };

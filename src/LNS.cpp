@@ -580,11 +580,6 @@ bool LNS::run()
 {
     auto dt = [&](auto t){ return ((fsec)(Time::now() - t)).count(); };
 
-    // Open file for logging output
-    //std::ofstream out("log.txt");
-    //std::streambuf* coutbuf = std::cout.rdbuf();
-    //std::cout.rdbuf(out.rdbuf());
-
     double sat_time_total   = 0.0; // pure SAT run
     double other_time_total = 0.0; // PP / CBS / InitLNS / validator
     double overhead_total   = 0.0; // overhead of framework (everything else)
@@ -985,7 +980,6 @@ bool LNS::run()
 
     // --------------- END OF CALCULATION AND PRINTING OF STATISTICS ---------------
 
-    //std::cout.rdbuf(coutbuf);
     return true;
 }
 
@@ -1509,12 +1503,12 @@ pair<int, int> LNS::findMostDelayedAgentAndTime() {
     int most_problematic_timestep = -1;
 
     for (const auto& agent : agents) {
-        // přeskoč agenty, kteří už selhali
+        // skip failed agents
         auto [agent_max_delays, problematic_timestep] =
                 agent.getMostProblematicDelay(path_table, ignored_agents_with_timestep);
 
         if (ignored_agents_with_timestep.count({agent.id, problematic_timestep}))
-            continue;    // tuto (agent,timestep) dvojici už jsme zkoušeli
+            continue;
 
         if (agent_max_delays > max_delays) {
             max_delays = agent_max_delays;
@@ -1570,11 +1564,12 @@ void LNS::randomWalk(int agent_id, int start_location, int start_timestep,
 }
 
 // ---------------------------------------------------------------------------
-// validateSolutionFast ‒ O(Σ|Pi|) místo O(N·Σ|Pi|).
-// Zkontroluje pouze (a) strukturální korektnost každé cesty,
-//                 (b) vrcholové a hranné konflikty,
-//                 (c) konflikt v cílovém vrcholu
-// a (d) součet nákladů.  Používá pomocné hash-tabulky.
+// NOT USED
+// validateSolutionFast ‒ O(sum(|Pi|)) instead of O(N sum(|Pi|)).
+// Only checks (a) the structural correctness of each path,
+// b) vertex and play conflicts,
+// (c) conflict at the target vertex
+// and d) the sum of costs. Uses auxiliary hash tables.
 // ---------------------------------------------------------------------------
 void LNS::validateSolutionFast() const
 {
@@ -1585,7 +1580,7 @@ void LNS::validateSolutionFast() const
     for (const auto& ag : agents)
         makespan = std::max(makespan, (int)ag.path.size() - 1);
 
-    // pro každý časový krok hash-tabulka obsazených vrcholů / hran
+    // for each time step hash-table of occupied vertices/edges
     std::vector<std::unordered_map<int,int>>      V(makespan + 1);
     std::vector<std::unordered_map<uint64_t,int>> E(makespan + 1);
 
@@ -1600,17 +1595,17 @@ void LNS::validateSolutionFast() const
             ag.path.back().location  != ag.path_planner->goal_location)
             throw ValidationException("Start/goal mismatch of agent " + std::to_string(ag.id));
 
-        // 1 – lokální validMove
+        // local valid move
         for (int t = 1; t < (int)ag.path.size(); ++t)
             if (!instance.validMove(ag.path[t-1].location, ag.path[t].location))
                 throw ValidationException("Invalid move of agent " + std::to_string(ag.id));
 
-        // 2 – globální konflikty
+        // global conflicts
         for (int t = 0; t < (int)ag.path.size(); ++t)
         {
             int v = ag.path[t].location;
             auto [it,ins] = V[t].emplace(v, ag.id);
-            if (!ins)   // vrcholový konflikt
+            if (!ins)   // node conflict
                 throw ValidationException("Vertex conflict a" +
                                           std::to_string(it->second) + "/a" +
                                           std::to_string(ag.id) + " @" +
@@ -1619,7 +1614,7 @@ void LNS::validateSolutionFast() const
             if (t)
             {
                 uint64_t rev = edgeKey(v, ag.path[t-1].location);
-                if (E[t-1].count(rev))      // hranný (swap) konflikt
+                if (E[t-1].count(rev))      // edge (swap) conflict
                     throw ValidationException("Edge conflict a" +
                                               std::to_string(E[t-1][rev]) + "/a" +
                                               std::to_string(ag.id) + " t=" + std::to_string(t));
@@ -1627,7 +1622,7 @@ void LNS::validateSolutionFast() const
             }
         }
 
-        // 3 – konflikt v cíli (jiný agent vstoupí na cíl po skončení první cesty)
+        // target conflict
         int goal = ag.path.back().location;
         for (int t = (int)ag.path.size(); t <= makespan; ++t)
             if (V[t].count(goal) && V[t][goal] != ag.id)
@@ -1636,7 +1631,7 @@ void LNS::validateSolutionFast() const
         cost_check += ag.path.size() - 1;
     }
 
-    // 4 – sum of costs
+    // sum of costs
     if (cost_check != (size_t)sum_of_costs)
         throw ValidationException("SoC mismatch fast validator");
 }

@@ -16,7 +16,7 @@
 
 #include <random>
 
-enum destroy_heuristic { RANDOMAGENTS, RANDOMWALK, INTERSECTION, DESTORY_COUNT, SAT, NONE };
+enum destroy_heuristic { RANDOMAGENTS, RANDOMWALK, INTERSECTION, DESTORY_COUNT, SAT, NONE }; // to use SAT in ALNS -> has to be moved before DESTORY_COUNT
 
 // TODO: adaptively change the neighbor size, that is,
 // increase it if no progress is made for a while

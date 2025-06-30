@@ -39,14 +39,12 @@ InitLNS::InitLNS(const Instance& instance, vector<Agent>& agents, double time_li
      }
 }
 
-// TODO: pro t-2 SAT nevrací správný plán (konkrétně s jinou goal pozicí), ale měl by...
-
 /*
 * findConflictAgent
-*  - vrací agenta a časový krok, kdy je poprvé zjištěn konflikt
-*  - Pokud collision_graph[a].size() == 0 pro všechny a, vrátí {-1,-1} => žádné konflikty.
-*  - Pro zjednodušení vracíme conflict_time=0;
-*    v reálné implementaci ho lze najít analýzou path_tableWC (např. hasCollisions / getLastCollisionTimestep).
+* - returns the agent and the time step when the conflict is first detected
+* - If collision_graph[a].size() == 0 for all a, returns {-1,-1} => no conflicts.
+* - For simplicity, we return conflict_time=0;
+* in a real implementation it can be found by parsing path_tableWC (e.g. hasCollisions / getLastCollisionTimestep).
 */
 pair<int, int> InitLNS::findConflictAgent() {
     SAT_DBG("Agenti v sat_failed_agents: ");
@@ -62,18 +60,18 @@ pair<int, int> InitLNS::findConflictAgent() {
         if (path.empty())
             continue;
 
-        for (int t = 1; t < (int)path.size(); t++) { // t=1 kvůli edge konfliktům
+        for (int t = 1; t < (int)path.size(); t++) { // t=1 edge conflicts
             int from = path[t - 1].location;
             int to = path[t].location;
 
             if (path_table.hasCollisions(from, to, t, agent.id)) {
                 SAT_DBG(agent.id << " má konflikt!");
-                return {agent.id, t-1 }; // agent a čas_konfliktu-1 (kvůli vertex konfliktům)
+                return {agent.id, t-1 }; // agent and conflict_time-1 (due to vertex conflicts)
             }
         }
     }
 
-    return {-1, -1}; // žádný konflikt nenalezen
+    return {-1, -1}; // no conflicts
 }
 
 // getting the submap around one or more agents and identifying agents in these submaps
@@ -258,28 +256,27 @@ bool InitLNS::runSAT()
     int T_sync = neighbor.T_sync;
     int key_agent_id = neighbor.key_agent_id;
 
-    // Voláme SATUtils::findLocalPaths – vytvoří lokální cesty z globálních pomocí předaných dat
+    // calling SATUtils::findLocalPaths – creates local paths from global ones using passed data
     auto local_paths = SATUtils::findLocalPaths(agents_to_replan, submap, submap_set, global_to_local, T_sync, agents);
 
-    // Voláme SATUtils::solveWithSAT – přeplánujeme lokální cesty
+    // calling SATUtils::solveWithSAT – replan local paths
     bool success = SATUtils::solveWithSAT(map, local_paths, agents_to_replan, submap, T_sync, agents, dummy);
 
     if (!success) {
         cout << "[WARN] SAT solver failed to find a valid solution." << endl;
-        // Vrátíme původní cesty agentům, aby jejich přeplánování nezmizelo.
+        // we will return the original routes to the agents so that their rescheduling does not disappear.
         for (int i = 0; i < (int)neighbor.agents.size(); i++) {
             int a = neighbor.agents[i];
             cout << "[DEBUG] Reverting path for agent " << a << " (agent id: " << agents[a].id << ")" << endl;
-            // Odstraníme aktuální (neúspěšnou) cestu z path_table
+            // we remove the current (failed) path from the path_table
             path_table.deletePath(agents[a].id);
-            // TODO: zkontrolovat, že stará cesta je opravdu stará
-            // Obnovíme původní cestu uloženou v neighbor.old_paths
+            // we restore the original path stored in neighbor.old_paths
             agents[a].path = neighbor.old_paths[i];
-            // Znovu vložíme původní cestu do path_table
+            // we reinsert the original path into the path_table
             path_table.insertPath(agents[a].id, agents[a].path);
         }
         failed_sat_agents.insert(key_agent_id);
-        // Můžete také vymazat key_agent_id z failed_sat_agents nebo jej nepřidávat
+
         return false;
     }
 
@@ -290,7 +287,7 @@ bool InitLNS::runSAT()
     cout << "[DEBUG] Nově přeplánované řešení má " << new_conflicts << " konfliktů." << endl;
     cout << "[DEBUG] Původní počet konfliktů: " << neighbor.old_colliding_pairs.size() << endl;
 
-    // Akceptujeme nové řešení – aktualizujeme path_table
+    // accept new solution
     for (int a : agents_to_replan) {
         cout << "[DEBUG] we decided to accept the solution -> replanning" << endl;
         cout << "[DEBUG] before inserting new path into path_table, path_table has agent " << a
@@ -305,8 +302,8 @@ bool InitLNS::runSAT()
     return true;
 
 
-    // porovnáme s původním počtem kolizních párů, uloženým v neighbor.old_colliding_pairs
-    if (new_conflicts < neighbor.old_colliding_pairs.size()) { // STRIKTNĚ LEPŠÍ ŘEŠENÍ
+    // compare with the original number of collision pairs, stored in neighbor.old_colliding_pairs
+    if (new_conflicts < neighbor.old_colliding_pairs.size()) { // strictly better solution
 
     }
     else {
@@ -355,24 +352,24 @@ void InitLNS::buildCollisionData()
             //cout << "[DEBUG] Agent " << i << " has path length=" << agents[i].path.size() << endl;
        // }
 
-        // sečteme cost
+        // sum soc
         sum_of_costs += (int)agents[i].path.size() - 1;
 
-        // vložíme do path_table
+        // insert into pathtable
         path_table.insertPath(agents[i].id, agents[i].path);
     }
 
-    // Teď projdeme cesty znovu a voláme updateCollidingPairs (může číst z path_table)
+    // Now we go through the paths again and call updateCollidingPairs (can read from path_table)
     for (int i = 0; i < (int)agents.size(); i++)
     {
-        // Najdi kolize s cestou agent[i]
+        // Find collisions with the agent path[i]
         bool foundCollision = updateCollidingPairs(colliding_pairs, agents[i].id, agents[i].path);
         if (foundCollision) {
             SAT_DBG("agent " << i << " => updateCollidingPairs => foundCollision");
         }
     }
 
-    // Naplníme collision_graph
+    // fill collision_graph
     collision_graph.assign(agents.size(), {});
     SAT_DBG("Conflicting agent pairs:");
     for(const auto& ap : colliding_pairs)
@@ -470,8 +467,8 @@ bool InitLNS::run(bool skip_initial_solution)
             chooseDestroyHeuristicbyALNS();
 
         bool opSuccess = false;
-        // Pokud init_destroy_strategy je SAT_BASED, volíme operátor SAT s 20% pravděpodobností,
-        // jinak (není SAT_BASED) použijeme vždy defaultní strategii.
+        // If init_destroy_strategy is SAT_BASED, we choose the SAT operator with a 20% probability,
+        // otherwise (not SAT_BASED) we always use the default strategy.
         if (init_destroy_strategy == SAT_BASED) {
             int r = rand() % 100;
             if (r < 100) {
@@ -480,23 +477,23 @@ bool InitLNS::run(bool skip_initial_solution)
                 bool sat_success = false;
                 for (int attempt = 0; attempt < MAX_SAT_ATTEMPTS && !sat_success; attempt++) {
                     if (!generateNeighborBySAT())
-                        continue; // nepodařilo se nalézt validní neighborhood – zkuste znovu
+                        continue; // failed to find a valid neighborhood - try again
 
-                    // najdi kolizní páry
+                    // find collision pairs
                     neighbor.old_colliding_pairs.clear();
                     for (int a : neighbor.agents)
                         for (auto j: collision_graph[a])
                             neighbor.old_colliding_pairs.emplace(min(a, j), max(a, j));
 
-                    // uložení starých cest
+                    // save old paths
                     neighbor.old_paths.resize(neighbor.agents.size());
                     neighbor.old_sum_of_costs = 0;
                     for (int i = 0; i < (int)neighbor.agents.size(); i++) {
                         int a = neighbor.agents[i];
                         neighbor.old_paths[i] = agents[a].path;
-                        // ============ DŮLEŽITÉ ============
-                        // tady smažeme agentům cestu z path_table, buď ji po přeplánování nahradíme novou, nebo vrátíme starou
-                        // tohle nahrazování nových cest v path_table děláme na konci v runSAT
+                        // ============ IMPORTANT =============
+                        // here we delete the agents' path from the path_table, either replace it with a new one after rescheduling, or return the old one
+                        // we do this replacement of new paths in the path_table at the end in runSAT
                         path_table.deletePath(agents[a].id);
                         neighbor.old_sum_of_costs += (int) agents[a].path.size() - 1;
                     }
@@ -507,7 +504,7 @@ bool InitLNS::run(bool skip_initial_solution)
                 opSuccess = sat_success;
             } else {
                 SAT_DBG("Random chance did not select SAT operator (r=" << r << "), defaulting to non-SAT operator.");
-                int strategy = TARGET_BASED; // defaultní strategie – například TARGET_BASED
+                int strategy = TARGET_BASED; // default strategy
                 SAT_DBG("Používám výchozí neighbor a repair strategii na řešení konfliktů: " << strategy);
                 switch (strategy)
                 {
@@ -579,7 +576,7 @@ bool InitLNS::run(bool skip_initial_solution)
         else if (replan_algo_name == "GCBS")
             succ = runGCBS();
         else if (replan_algo_name == "SAT") {
-            // SAT replanning jsme již provedli výše
+            //
         }
         else if (replan_algo_name == "PBS")
             succ = runPBS();

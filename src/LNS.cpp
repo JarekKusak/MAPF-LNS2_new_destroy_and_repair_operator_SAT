@@ -470,7 +470,7 @@ bool LNS::runSAT()
                         << component_weights[3] << "}");
 
         return true;
-    } else {
+    } else { // worse solution case -> revert
         SAT_DBG("[INFO] New SAT solution is worse, reverting.");
 
         // could possibly be replaces with rollback method

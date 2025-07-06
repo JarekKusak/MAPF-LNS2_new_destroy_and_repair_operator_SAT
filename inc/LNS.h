@@ -12,8 +12,6 @@
 #include "winpibt.h"
 #include "RunStats.h"
 
-
-
 #include <random>
 
 enum destroy_heuristic { RANDOMAGENTS, RANDOMWALK, INTERSECTION, DESTORY_COUNT, SAT, NONE }; // to use SAT in ALNS -> has to be moved before DESTORY_COUNT

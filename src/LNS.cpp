@@ -684,6 +684,9 @@ bool LNS::run()
         if (ALNS && destroy_strategy != SAT)
             chooseDestroyHeuristicbyALNS();
 
+        //if (ALNS) // for usage of SAT in ALNS
+        //  chooseDestroyHeuristicbyALNS();
+
         bool opSuccess = false;
 
         updateAllStats(current_iter);

@@ -38,7 +38,7 @@ build-macos/lns \
   -a instances/random-32-32-20-instances/random-32-32-20-random-1.scen \
   -o test -k 150 --outputPaths=paths.txt \
   --destoryStrategy=SAT --maxIterations 10000 \
-  --satDebug=0 -t 15
+  --satDebug=0 -t 2
 ```
 
 ---

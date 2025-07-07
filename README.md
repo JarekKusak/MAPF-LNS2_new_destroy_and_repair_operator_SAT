@@ -61,7 +61,7 @@ build-linux/lns \
   -m maps/random-32-32-20.map \
   -a instances/random-32-32-20-instances/random-32-32-20-random-1.scen \
   -o test -k 150 --outputPaths=paths.txt \
-  --destoryStrategy=SAT --maxIterations 20
+  --destoryStrategy=SAT --satDebug=0 --maxIterations 20
 ```
 
 > **Note:**  
